@@ -1,0 +1,205 @@
+# -*- coding: utf-8 -*-
+# © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.
+"""
+EDEN3D — Puente entre el motor y la página web
+==============================================
+La web corre este módulo dentro del navegador (Pyodide, en un Web Worker). Las
+mismas funciones se testean con CPython en tests/motor, así que lo que se ve en
+la web es exactamente lo que valida la suite.
+
+    info()                          -> catálogo para armar los controles
+    build(opts)                     -> piezas ubicadas (bytes float32/uint32) + reporte
+    export_3mf(opts)                -> (nombre, bytes del 3MF con todas las piezas)
+
+opts = {"design": "ROMBO", "size": "S", "mode": "screw_dish_sw", "drain": "leaf",
+        "quality": "preview", "overrides": {"tex_count": 36}}
+"""
+import array
+import io
+import json
+import os
+import time
+
+import eden_catalog as ec
+import eden_core as core
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CAT_PATH = os.path.join(HERE, "colecciones", "catalogo_eden3d.json")
+WEB_MODES = ("screw_dish_sw", "screw_dish", "saucer", "pot")
+OVERRIDE_KEYS = ("tex_count", "tex_pitch", "tex_amp", "tex_duty", "tex_wob", "ondas",
+                 "amp_ondas")
+LICENSE_NOTE = ("© Eden3D — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
+                "Prohibida la venta, redistribución o modificación para vender.")
+
+_CAT = {}
+
+
+def catalog():
+    if "cat" not in _CAT:
+        _CAT["cat"] = ec.load_catalog(CAT_PATH)
+    return _CAT["cat"]
+
+
+def info():
+    cat = catalog()
+    return {
+        "brand": cat.get("brand", "Eden3D"),
+        "engine": core.ENGINE_VERSION,
+        "designs": [{"code": d["code"], "name": d.get("name", d["code"]),
+                     "tex_type": d["params"].get("tex_type", "none")} for d in cat["designs"]],
+        "modes": [{"code": m, "label": lab} for m, lab, _ in ec.MODES if m in WEB_MODES],
+        "drains": [{"code": k, "label": lab} for k, lab, _, _ in ec.DRAINS],
+        "sizes": [s for s in ("Mini", "S", "M", "L", "XL")],
+        "overrides": list(OVERRIDE_KEYS),
+        "license": LICENSE_NOTE,
+    }
+
+
+def _clean_overrides(ov):
+    out = {}
+    for k, v in (ov or {}).items():
+        if k not in OVERRIDE_KEYS:
+            continue
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            continue
+        if v > 0:
+            out[k] = int(v) if k in ("tex_count", "ondas") else round(v, 3)
+    return out
+
+
+def params(opts):
+    cat = catalog()
+    mode = opts.get("mode") or "screw_dish_sw"
+    if mode not in WEB_MODES:
+        raise ValueError("modo no disponible en la web: %s" % mode)
+    d = ec.find_design(cat, opts.get("design") or cat["designs"][0]["code"])
+    size = opts.get("size") or "M"
+    if size not in ec.SIZES:
+        raise ValueError("tamaño desconocido: %s" % size)
+    drain = opts.get("drain") or "leaf"
+    q = opts.get("quality") or "preview"
+    if q not in ("preview", "normal"):
+        q = "preview"
+    return ec.design_params(cat, d, size, mode, drain, q, _clean_overrides(opts.get("overrides")))
+
+
+def _placed(res):
+    """[(nombre, V, F, dz)] en posición de uso (la maceta sube sobre el plato)."""
+    A = res["report"].get("assembly") or {}
+    lift = 0.0
+    if res["params"].get("mode") in ("screw_dish", "screw_dish_sw", "saucer"):
+        lift = A.get("pot_bottom_z_mm", 0.0) - A.get("pot_drop_on_seat_mm", 0.0)
+    out = []
+    for nm, V, F in ec.pieces(res):
+        out.append((nm, V, F, lift if nm == "MACETA" else 0.0))
+    return out
+
+
+def _pack(V, F, dz=0.0):
+    pos = array.array("f", [c for x, y, z in V for c in (x, y, z + dz)])
+    idx = array.array("I", [i for f in F for i in f])
+    return pos.tobytes(), idx.tobytes()
+
+
+def build(opts):
+    t0 = time.time()
+    p = params(opts)
+    res = core.build_pot(p)
+    rep = res["report"]
+    parts = []
+    if rep.get("valid"):
+        for nm, V, F, dz in _placed(res):
+            pos, idx = _pack(V, F, dz)
+            parts.append({"name": nm, "positions": pos, "indices": idx,
+                          "vertices": len(V), "triangles": len(F)})
+        Vw, Fw = core.water_mesh(res)
+        if Vw:
+            pos, idx = _pack(Vw, Fw)
+            parts.append({"name": "AGUA", "positions": pos, "indices": idx,
+                          "vertices": len(Vw), "triangles": len(Fw)})
+    A = rep.get("assembly") or {}
+    keep = ("thread_turns", "thread_engagement_mm", "water_gap_under_pot_mm",
+            "water_min_wet_ml", "water_reservoir_ml", "water_over_soil_mm", "tray_h_mm",
+            "dish_diameter_mm", "thread")
+    summary = {
+        "sku": p["model_id"],
+        "valid": bool(rep.get("valid")),
+        "errors": list(rep.get("errors", [])),
+        "warnings": list(rep.get("warnings", [])),
+        "pot_g": rep.get("mass_g_PLA_100pct"),
+        "soil_ml": rep.get("soil_capacity_ml"),
+        "bbox_mm": rep.get("bbox_mm"),
+        "parts_g": {pt["name"]: pt["report"].get("mass_g_PLA_100pct")
+                    for pt in res.get("parts") or []},
+        "drain_holes": rep.get("drain_holes"),
+        "assembly": {k: A[k] for k in keep if k in A},
+        "seconds": round(time.time() - t0, 2),
+        "engine": core.ENGINE_VERSION,
+    }
+    return {"summary": summary, "parts": parts}
+
+
+def build_json(opts_json):
+    """Atajo para JavaScript: recibe y devuelve JSON (sin los bytes)."""
+    r = build(json.loads(opts_json))
+    return json.dumps(r["summary"])
+
+
+def export_3mf(opts):
+    """Todas las piezas del SKU en un 3MF (calidad normal), con la licencia en
+    los metadatos. Devuelve (nombre_de_archivo, bytes)."""
+    o = dict(opts)
+    o["quality"] = "normal"
+    p = params(o)
+    res = core.build_pot(p)
+    if not res["report"].get("valid"):
+        raise ValueError("; ".join(res["report"].get("errors", [])) or "modelo inválido")
+    meta = {"Title": p["model_id"], "Designer": "Eden3D",
+            "Copyright": "© Eden3D — Yoel Almirón. Todos los derechos reservados.",
+            "LicenseTerms": LICENSE_NOTE,
+            "Description": "%s · motor %s" % (p.get("design_name", ""), core.ENGINE_VERSION),
+            "CreationDate": time.strftime("%Y-%m-%d")}
+    objs = [("%s_%s" % (p["model_id"], nm), V, F) for nm, V, F in ec.pieces(res)]
+    path = os.path.join(os.environ.get("TMPDIR", "/tmp"), p["model_id"] + ".3mf")
+    core.write_3mf_multi(path, objs, meta)
+    with open(path, "rb") as fh:
+        data = fh.read()
+    try:
+        os.remove(path)
+    except OSError:
+        pass
+    return p["model_id"] + ".3mf", data
+
+
+def export_stl(opts, part="MACETA"):
+    """Una pieza en STL binario (calidad normal). Devuelve (nombre, bytes)."""
+    o = dict(opts)
+    o["quality"] = "normal"
+    p = params(o)
+    res = core.build_pot(p)
+    if not res["report"].get("valid"):
+        raise ValueError("; ".join(res["report"].get("errors", [])) or "modelo inválido")
+    for nm, V, F in ec.pieces(res):
+        if nm == part:
+            name = "%s_%s.stl" % (p["model_id"], nm)
+            path = os.path.join(os.environ.get("TMPDIR", "/tmp"), name)
+            core.write_stl(path, V, F, name="Eden3D (c) Yoel Almiron - uso personal")
+            with open(path, "rb") as fh:
+                data = fh.read()
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+            return name, data
+    raise ValueError("pieza inexistente: %s" % part)
+
+
+def selftest_json():
+    """El mismo autotest de Grasshopper, para la consola del navegador."""
+    import eden_selftest
+    buf = io.StringIO()
+    ok = eden_selftest.run(catalog(), [catalog()["designs"][0]["code"]], sizes=("S",),
+                           log=lambda s: buf.write(s + "\n"))
+    return json.dumps({"ok": ok, "log": buf.getvalue()})

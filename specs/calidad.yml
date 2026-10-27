@@ -1,0 +1,22 @@
+area: Proceso de calidad
+prefijo: QA
+specs:
+  - id: QA-001
+    titulo: El gate detecta lo que no está controlado
+    descripcion: El build tiene que fallar si algo se testea sin pedirse o se pide sin testearse.
+    criterio: >
+      tools/spec_matrix.py --strict falla ante una spec activa sin tests, un test que
+      referencia un ID inexistente, un test sin spec o un test fallado; y pasa cuando
+      todo está cubierto y en verde. Las specs pendientes no rompen el build.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: QA-002
+    titulo: El tablero de calidad muestra la matriz
+    descripcion: La página /calidad/ publica el estado de cada spec y de cada test.
+    criterio: >
+      La página carga data.json, muestra el gate, los indicadores, una fila por spec
+      con su estado y, al hacer clic, el criterio y sus tests.
+    prioridad: media
+    nivel: web
+    estado: activa

@@ -1,0 +1,63 @@
+EDEN3D — LICENCIA PROPIETARIA (TODOS LOS DERECHOS RESERVADOS)
+=============================================================
+
+Copyright © 2026 Yoel Almirón (Eden3D). Todos los derechos reservados.
+
+Este repositorio es PÚBLICO para que se pueda ver, pero NO es software libre ni
+de código abierto. Incluye, entre otros: el código del motor paramétrico, los
+scripts de Grasshopper, la página web, los diseños y el catálogo de macetas, las
+especificaciones, los tests, las imágenes, los fondos y las texturas (en adelante,
+"la Obra"). Ninguna parte de la Obra se licencia bajo MIT, GPL, Apache, Creative
+Commons ni ninguna otra licencia abierta.
+
+1. QUÉ NO ESTÁ PERMITIDO sin autorización previa y por escrito del titular:
+   a) copiar, reproducir o descargar la Obra para usarla en otro proyecto;
+   b) modificarla o crear obras derivadas (otros motores, configuradores,
+      diseños o catálogos basados en ella);
+   c) distribuirla, publicarla, sublicenciarla, venderla o alquilarla, total o
+      parcialmente, por cualquier medio;
+   d) usarla con fines comerciales, incluida la venta de piezas impresas a
+      partir de los archivos que genera;
+   e) subir los modelos o archivos a plataformas de terceros (Printables,
+      Thingiverse, MakerWorld, Cults3D, Thangs, Etsy, Mercado Libre, etc.);
+   f) quitar o alterar la marca "Eden3D" grabada en los modelos, los avisos de
+      copyright o los metadatos de autoría de los archivos.
+
+2. QUÉ SÍ ESTÁ PERMITIDO
+   a) Ver el código y el contenido en GitHub, y usar las funciones que GitHub
+      ofrece sobre repositorios públicos (ver y "fork" dentro de GitHub) sólo en
+      la medida que exigen los Términos de Servicio de GitHub. Un fork NO otorga
+      ningún otro derecho de los enumerados en el punto 1.
+   b) Usar la página web publicada (GitHub Pages) para configurar macetas y
+      descargar los archivos 3MF/STL que genera, EXCLUSIVAMENTE para imprimirlos
+      para uso personal y no comercial, sin redistribuirlos.
+
+3. MARCA. "Eden3D" y "Edén3D" son marcas de su titular. Esta licencia no otorga
+   ningún derecho sobre ellas.
+
+4. COMPONENTES DE TERCEROS. Las bibliotecas de terceros que usa la página (por
+   ejemplo Pyodide y three.js) NO son parte de la Obra y conservan sus propias
+   licencias; ver THIRD_PARTY_NOTICES.md.
+
+5. SIN GARANTÍA. La Obra se ofrece "tal cual", sin garantía de ningún tipo. El
+   titular no responde por daños derivados de su uso o de las piezas impresas.
+
+6. LEY APLICABLE. Esta licencia se rige por las leyes de la República Argentina,
+   en particular la Ley 11.723 de Propiedad Intelectual. Cualquier uso no
+   autorizado podrá dar lugar a las acciones civiles y penales correspondientes.
+
+7. PERMISOS Y LICENCIAS COMERCIALES. Para cualquier uso fuera del punto 2,
+   contactar al titular por Instagram: @eden3d.ar
+
+-------------------------------------------------------------------------------
+ENGLISH SUMMARY (the Spanish text above prevails)
+
+Copyright © 2026 Yoel Almirón (Eden3D). All rights reserved. This repository is
+publicly visible but it is NOT open source. No permission is granted to copy,
+modify, distribute, sublicense, sell or create derivative works of the code,
+designs, catalog, specifications, tests, images or textures, nor to sell prints
+made from the generated files or upload them to third-party platforms, without
+the owner's prior written permission. Viewing and forking on GitHub are allowed
+only as required by GitHub's Terms of Service. Files downloaded from the
+published web page may be printed for personal, non-commercial use only.
+Third-party libraries keep their own licenses (see THIRD_PARTY_NOTICES.md).

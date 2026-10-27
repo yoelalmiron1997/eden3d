@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calidad · Eden3D</title>
+  <meta name="description" content="Tablero de calidad de Eden3D Studio: specs, trazabilidad y resultados de los tests de cada versión.">
+  <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="calidad.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="../"><span class="pill">Eden3D</span><span class="brand-sub">Calidad</span></a>
+    <nav class="nav"><a href="../">Configurador</a><a href="#matriz">Specs</a><a href="#tests">Tests</a></nav>
+  </header>
+  <main class="q">
+    <section class="q-head">
+      <div>
+        <h1>Tablero de calidad</h1>
+        <p class="muted" id="run" data-testid="q-run">Cargando…</p>
+      </div>
+      <div class="gate" id="gate" data-testid="q-gate">—</div>
+    </section>
+
+    <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+
+    <section class="card">
+      <div class="card-h"><h2>Cobertura de specs por versión</h2><span class="muted">% de specs activas con todos sus tests en verde</span></div>
+      <div id="hist" class="hist" data-testid="q-historial"></div>
+    </section>
+
+    <section class="card" id="matriz">
+      <div class="card-h"><h2>Matriz de trazabilidad</h2>
+        <span class="muted">Cada spec (requisito) con los tests que la verifican · <a href="https://github.com/yoelalmiron1997/eden3d/tree/main/specs">specs/</a></span></div>
+      <div class="filters">
+        <select id="f-area" aria-label="Área"><option value="">Todas las áreas</option></select>
+        <select id="f-estado" aria-label="Estado">
+          <option value="">Todos los estados</option><option value="ok">OK</option><option value="falla">Falla</option>
+          <option value="sin-tests">Sin tests</option><option value="pendiente">Pendiente</option>
+        </select>
+        <input id="f-q" type="search" placeholder="Buscar spec o test…" aria-label="Buscar">
+      </div>
+      <div class="table-wrap"><table class="matrix" data-testid="q-matriz">
+        <thead><tr><th>Spec</th><th>Requisito</th><th>Nivel</th><th>Prioridad</th><th>Estado</th><th class="num">Tests</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </section>
+
+    <section class="card" id="tests">
+      <div class="card-h"><h2>Tests de esta versión</h2><span class="muted" id="suites"></span></div>
+      <div class="filters">
+        <select id="t-out" aria-label="Resultado"><option value="">Todos</option><option value="failed">Fallados</option><option value="passed">Pasados</option><option value="skipped">Salteados</option></select>
+      </div>
+      <div class="table-wrap"><table class="matrix" data-testid="q-tests">
+        <thead><tr><th>Test</th><th>Suite</th><th>Specs</th><th>Resultado</th><th class="num">Duración</th></tr></thead>
+        <tbody id="trows"></tbody>
+      </table></div>
+    </section>
+
+    <section class="card" id="problemas" hidden>
+      <div class="card-h"><h2>Problemas del gate</h2></div>
+      <ul id="probs" class="probs"></ul>
+    </section>
+  </main>
+  <footer class="foot"><p>© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. <a href="../licencia.html">Licencia</a>.</p></footer>
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+  <script type="module" src="calidad.js"></script>
+</body>
+</html>

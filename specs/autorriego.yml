@@ -1,0 +1,71 @@
+area: Autorriego con rosca
+prefijo: AUT
+specs:
+  - id: AUT-001
+    titulo: La maceta queda casi apoyada en el plato
+    descripcion: >
+      En el autorriego con rosca la base de la maceta tiene que quedar muy cerca del
+      piso del plato, para que con poca agua la base ya esté sumergida, pero sin
+      tocarlo, para que el agua pase por debajo hasta los agujeros de drenaje.
+    criterio: >
+      Para cada diseño (S y M) la luz entre la cara de apoyo de la maceta enroscada
+      y el piso del plato está entre 1,0 y 2,0 mm, y coincide con la que informa el
+      reporte (±0,05 mm).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: AUT-002
+    titulo: El agua del plato llega a la tierra
+    descripcion: >
+      Con el nivel mínimo de agua que informa el motor, el agua entra por los
+      agujeros de drenaje y queda por encima del piso interior donde apoya la tierra.
+    criterio: >
+      Simulación con booleanas exactas: al nivel "water_min_wet_level_mm" el agua es
+      una sola masa conectada (>98 % del volumen) y hay más de 20 mm³ de agua dentro
+      de la maceta por encima del piso de la tierra, fuera de la campana de la rosca.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: AUT-003
+    titulo: Con el plato lleno la tierra queda en remojo
+    descripcion: El plato lleno moja una buena parte de la tierra y no rebalsa.
+    criterio: >
+      Con el plato lleno hay ≥10 mm de agua sobre la base de la maceta y ≥8 mm sobre
+      el piso de la tierra, y el nivel queda ≥1,9 mm por debajo del borde bajo.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: AUT-004
+    titulo: Los ml de agua informados son reales
+    descripcion: Los mililitros que muestra el reporte coinciden con la simulación.
+    criterio: >
+      "water_min_wet_ml" y "water_reservoir_ml" difieren de la simulación exacta en
+      menos de 15 % + 2 ml.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: AUT-005
+    titulo: Rosca de 4 vueltas imprimible
+    descripcion: La rosca central tiene más vueltas para que la maceta quede firme.
+    criterio: >
+      En S y M la rosca tiene ≥4 vueltas (≥16 mm de enganche), holgura de rosca
+      ≥0,15 mm y ≥3 mm de luz entre la maceta y la pared del plato.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: AUT-006
+    titulo: Macetas bajas reducen las vueltas en vez de fallar
+    descripcion: Si la altura no alcanza para 4 vueltas, el motor baja las vueltas y avisa.
+    criterio: >
+      Con una maceta de 52 mm de alto se generan entre 2 y 4 vueltas y el reporte
+      incluye un aviso que menciona las vueltas.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: AUT-007
+    titulo: Maceta y plato no se tocan
+    descripcion: Enroscadas, las piezas no se interfieren en ningún punto.
+    criterio: El volumen de intersección exacta entre maceta y plato es < 1 mm³.
+    prioridad: alta
+    nivel: motor
+    estado: activa

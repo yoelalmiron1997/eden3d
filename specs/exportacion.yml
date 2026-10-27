@@ -1,0 +1,21 @@
+area: Exportación y nomenclatura
+prefijo: EXP
+specs:
+  - id: EXP-001
+    titulo: 3MF con todas las piezas
+    descripcion: Un solo 3MF por variante, listo para abrir en el laminador.
+    criterio: >
+      El 3MF exportado tiene un objeto por pieza (maceta + plato en autorriego) y su
+      nombre empieza con el SKU.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: EXP-002
+    titulo: Nomenclatura SKU
+    descripcion: Cada variante tiene un nombre único y legible.
+    criterio: >
+      SKU = Eden3D-<DISEÑO>-<TAMAÑO>-<MODO>-<DRENAJE>, más un sufijo con los ajustes
+      del patrón si se tocaron (p. ej. -N36).
+    prioridad: media
+    nivel: motor
+    estado: activa

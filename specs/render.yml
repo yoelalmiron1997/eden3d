@@ -1,0 +1,28 @@
+area: Render para Instagram (Rhino)
+prefijo: REN
+specs:
+  - id: REN-001
+    titulo: Fondos de naturaleza desenfocados
+    descripcion: Los fondos del render tienen formato Instagram y se ven fuera de foco.
+    criterio: >
+      Cada fondo es 1080×1350, tiene metadatos (suelo entre 0,7 y 0,9, tema claro u
+      oscuro) y su energía de alta frecuencia (varianza del laplaciano a 1/4) es <45.
+    prioridad: media
+    nivel: render
+    estado: activa
+  - id: REN-002
+    titulo: Escena de la foto sana
+    descripcion: Planta, piedritas y tierra que se agregan para la foto.
+    criterio: >
+      Las mallas no tienen triángulos degenerados y la tierra y las piedras quedan
+      dentro de la boca de la maceta.
+    prioridad: media
+    nivel: render
+    estado: activa
+  - id: REN-003
+    titulo: Render de producto en la web
+    descripcion: Generar la foto de producto (fondo + planta) directamente en la página.
+    criterio: Botón "Foto" que descarga un PNG 1080×1350 con la maceta sobre un fondo.
+    prioridad: baja
+    nivel: web
+    estado: pendiente

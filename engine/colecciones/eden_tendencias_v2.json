@@ -1,0 +1,142 @@
+{
+  "collection": "EDEN Tendencias v2 — Japandi, facetas, texturas, plato oculto y autorriego",
+  "base": {
+    "height": 110,
+    "d_base": 96,
+    "d_max": 120,
+    "d_mouth": 118,
+    "belly": 0.75,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "drain_d": 7,
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "quality": "normal",
+    "waves": []
+  },
+  "variants": [
+    {
+      "model_id": "EDEN-Japandi-RIB36-OCULTO",
+      "mode": "hidden_tray",
+      "wave_profile": "rib",
+      "waves": [
+        {
+          "type": "radial",
+          "count": 36,
+          "amp": 1.2
+        }
+      ]
+    },
+    {
+      "model_id": "EDEN-Japandi-RIB36-ROSCA",
+      "mode": "screw_tray",
+      "wave_profile": "rib",
+      "waves": [
+        {
+          "type": "radial",
+          "count": 36,
+          "amp": 1.2
+        }
+      ],
+      "drain_shape": "leaf",
+      "drain_d": 10
+    },
+    {
+      "model_id": "EDEN-Japandi-FLUTE24",
+      "wave_profile": "flute",
+      "d_base": 100,
+      "d_mouth": 116,
+      "belly": 0.55,
+      "waves": [
+        {
+          "type": "radial",
+          "count": 24,
+          "amp": 1.5
+        }
+      ],
+      "drain_shape": "leaf",
+      "drain_d": 10
+    },
+    {
+      "model_id": "EDEN-Facet-PRISMA",
+      "d_base": 90,
+      "d_max": 124,
+      "d_mouth": 116,
+      "belly": 0.6,
+      "lowpoly_cols": 10,
+      "lowpoly_rows": 5,
+      "lowpoly_jitter": 2,
+      "lowpoly_seed": 3
+    },
+    {
+      "model_id": "EDEN-Facet-HEX",
+      "d_base": 86,
+      "d_max": 124,
+      "d_mouth": 124,
+      "belly": 0.99,
+      "lowpoly_cols": 6,
+      "lowpoly_rows": 2,
+      "lowpoly_stagger": false
+    },
+    {
+      "model_id": "EDEN-Textura-SOGA",
+      "rim": "round",
+      "d_base": 92,
+      "d_mouth": 114,
+      "belly": 0.62,
+      "tex_type": "rope",
+      "tex_count": 18,
+      "tex_pitch": 14,
+      "tex_amp": 1.4,
+      "fade_bottom": 6,
+      "fade_top": 6
+    },
+    {
+      "model_id": "EDEN-Textura-TEJIDO-OCULTO",
+      "tex_type": "knit",
+      "tex_count": 30,
+      "tex_pitch": 6,
+      "tex_amp": 1.2,
+      "mode": "hidden_tray"
+    },
+    {
+      "model_id": "EDEN-Riego-PIEDRA",
+      "tex_type": "stone",
+      "tex_scale": 12,
+      "tex_amp": 1.5,
+      "mode": "self_watering"
+    },
+    {
+      "model_id": "EDEN-Riego-DUNA",
+      "mode": "self_watering",
+      "rim": "round",
+      "drain_d": 10,
+      "belly": 0.55,
+      "d_base": 84,
+      "d_max": 120,
+      "d_mouth": 110,
+      "waves": [
+        {
+          "type": "radial",
+          "count": 8,
+          "amp": 2.2
+        },
+        {
+          "type": "vertical",
+          "count": 3.5,
+          "amp": 1.6,
+          "n_theta": 8,
+          "phase": 90
+        }
+      ]
+    }
+  ],
+  "export": {
+    "stl": true,
+    "3mf": true,
+    "3dm": true,
+    "saucer": true,
+    "validate": true
+  }
+}

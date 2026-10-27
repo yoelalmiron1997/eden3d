@@ -1,0 +1,12 @@
+# Tests y CI (no se distribuyen con la web)
+pytest==9.1.1
+pytest-playwright==0.10.0
+playwright==1.56.0
+trimesh==5.1.1
+manifold3d==3.5.4
+rtree==1.4.1
+scipy==1.18.1
+networkx==3.6.1
+numpy==2.5.3
+pillow==12.3.0
+PyYAML==6.0.3

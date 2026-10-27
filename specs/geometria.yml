@@ -1,0 +1,33 @@
+area: Geometría e imprimibilidad
+prefijo: GEO
+specs:
+  - id: GEO-001
+    titulo: Todas las piezas son sólidos cerrados
+    descripcion: Los archivos tienen que poder laminarse sin reparar.
+    criterio: Cada pieza es watertight, con orientación consistente y volumen positivo.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: GEO-002
+    titulo: Todo el catálogo se genera en autorriego
+    descripcion: Los 17 diseños funcionan en el modo estrella en los tamaños de venta.
+    criterio: >
+      El autotest (el mismo del botón "tests" de Grasshopper) da OK para cada diseño
+      de la muestra en S y M (todos los diseños con EDEN3D_TODO=1).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: GEO-003
+    titulo: El agua que se dibuja es un volumen cerrado
+    descripcion: La malla de agua que muestran Grasshopper y la web es válida.
+    criterio: La malla de agua es watertight y de volumen positivo.
+    prioridad: baja
+    nivel: motor
+    estado: activa
+  - id: GEO-004
+    titulo: Tamaño Mini con rosca central
+    descripcion: Hoy el Mini no entra con la rosca central; hay que rediseñar la base.
+    criterio: Los 17 diseños se generan válidos en Mini en modo autorriego.
+    prioridad: baja
+    nivel: motor
+    estado: pendiente

@@ -1,0 +1,49 @@
+/* © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. */
+:root { --ok: #2e7d4f; --bad: #b3261e; --warn: #9a6700; --pend: #6d6a63; --chart: #46704a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ok: #6fcf97; --bad: #ff8a80; --warn: #f2c14e; --pend: #a7a59d; --chart: #8fbf86; } }
+:root[data-theme="dark"] { --ok: #6fcf97; --bad: #ff8a80; --warn: #f2c14e; --pend: #a7a59d; --chart: #8fbf86; }
+.q { width: 100%; max-width: 1200px; margin: 0 auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 16px; }
+.q-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.q-head h1 { margin: 0; font-size: 24px; }
+.q-head p { margin: 4px 0 0; }
+.gate { font-weight: 700; padding: 8px 16px; border-radius: 999px; border: 2px solid currentColor; }
+.gate.ok { color: var(--ok); } .gate.bad { color: var(--bad); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.kpi .v { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 13px; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+.card-h { display: flex; gap: 6px 12px; align-items: baseline; flex-wrap: wrap; margin-bottom: 10px; }
+.card-h h2 { margin: 0; font-size: 17px; }
+.card-h .muted { font-size: 13px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.filters input { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 200px; flex: 1; }
+.table-wrap { overflow-x: auto; }
+table.matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.matrix th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); padding: 8px; white-space: nowrap; }
+.matrix td { border-bottom: 1px solid var(--line); padding: 8px; vertical-align: top; }
+.matrix .num { text-align: right; font-variant-numeric: tabular-nums; }
+.matrix tr.spec { cursor: pointer; }
+.matrix tr.spec:hover td { background: color-mix(in srgb, var(--bg) 70%, transparent); }
+.matrix tr.det td { background: var(--bg); font-size: 13px; }
+.matrix tr.det[hidden] { display: none; }
+.id { font-family: ui-monospace, Consolas, monospace; font-weight: 600; white-space: nowrap; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; white-space: nowrap; }
+.badge.ok { color: var(--ok); } .badge.falla, .badge.failed, .badge.error { color: var(--bad); }
+.badge.sin-tests, .badge.skipped { color: var(--warn); } .badge.pendiente, .badge.obsoleta { color: var(--pend); }
+.badge.passed { color: var(--ok); }
+.det ul { margin: 6px 0 0; padding-left: 18px; }
+.det code { font-size: 12px; word-break: break-all; }
+pre.msg { white-space: pre-wrap; font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; max-height: 240px; overflow: auto; }
+.hist { position: relative; height: 190px; }
+.hist svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.hist .grid line { stroke: var(--line); stroke-width: 1; }
+.hist .axis text { fill: var(--muted); font-size: 11px; }
+.hist .line { fill: none; stroke: var(--chart); stroke-width: 2; }
+.hist .dot { fill: var(--chart); stroke: var(--surface); stroke-width: 2; }
+.hist .dot.bad { fill: var(--bad); }
+.hist .hit { fill: transparent; }
+.hist .cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.tip { position: fixed; z-index: 9; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 12.5px; box-shadow: var(--shadow); max-width: 260px; }
+.tip b { display: block; margin-bottom: 2px; }
+.probs { margin: 0; padding-left: 18px; }

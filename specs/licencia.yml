@@ -1,0 +1,24 @@
+area: Licencia y autoría
+prefijo: LIC
+specs:
+  - id: LIC-001
+    titulo: Licencia propietaria visible
+    descripcion: >
+      El repositorio y la web dejan claro que el código y los diseños están
+      protegidos (todos los derechos reservados).
+    criterio: >
+      Existe LICENSE con "Todos los derechos reservados", cada archivo fuente del
+      motor tiene el aviso de copyright y la web muestra la licencia en el pie y en
+      licencia.html.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: LIC-002
+    titulo: Los archivos llevan la autoría
+    descripcion: Los 3MF/STL descargados identifican al autor y el uso permitido.
+    criterio: >
+      Los metadatos del 3MF incluyen Copyright con "Eden3D" y los términos de uso
+      personal; el STL lleva "Eden3D" en el encabezado.
+    prioridad: alta
+    nivel: motor
+    estado: activa

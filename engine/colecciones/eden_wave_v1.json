@@ -1,0 +1,45 @@
+{
+  "collection": "EDEN-Wave v1 — validación del motor",
+  "base": {
+    "family": "wave",
+    "height": 110, "d_base": 84, "d_max": 120, "d_mouth": 114, "belly": 0.68,
+    "wall": 1.6, "floor": 2.4, "rim": "round", "drain_d": 10,
+    "fade_bottom": 8, "fade_top": 8, "quality": "normal"
+  },
+  "variants": [
+    {
+      "model_id": "EDEN-Wave-MAREA",
+      "waves": [{"type": "radial", "count": 10, "amp": 3.2, "twist": 0.25,
+                 "twist_power": 1.0, "amp_top": 1.35, "amp_power": 1.2}]
+    },
+    {
+      "model_id": "EDEN-Wave-DUNA",
+      "belly": 0.55, "d_mouth": 110,
+      "waves": [{"type": "radial", "count": 8, "amp": 2.2},
+                {"type": "vertical", "count": 3.5, "amp": 1.6, "n_theta": 8, "phase": 90}]
+    },
+    {
+      "model_id": "EDEN-Twist-TORSION16",
+      "d_base": 88, "d_max": 116, "d_mouth": 116, "belly": 1.0, "fade_top": 14,
+      "waves": [{"type": "radial", "count": 16, "amp": 1.8, "sharp": 0.85,
+                 "twist": 0.4, "twist_power": 1.3}]
+    },
+    {
+      "model_id": "EDEN-Origami-FACETWAVE",
+      "polygon_sides": 8, "polygon_blend": 0.6, "polygon_round": 0.18, "polygon_twist": 0.125,
+      "waves": [{"type": "radial", "count": 16, "amp": 1.0, "twist": 0.125}]
+    },
+    {
+      "model_id": "EDEN-Wave-BRISA",
+      "d_base": 80, "d_max": 122, "d_mouth": 118, "belly": 0.42,
+      "asym": 0.6, "asym_angle": 30,
+      "waves": [{"type": "radial", "count": 12, "amp": 2.4,
+                 "amp_top": 1.6, "amp_power": 1.5}]
+    },
+    {
+      "model_id": "TEST-INVALIDA-PLIEGUE",
+      "waves": [{"type": "radial", "count": 30, "amp": 5.5, "sharp": 1.0}]
+    }
+  ],
+  "export": {"stl": true, "3mf": true, "3dm": true, "saucer": true, "validate": true}
+}

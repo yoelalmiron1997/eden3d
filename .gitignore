@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+_site/
+reports/
+test-results/
+out/
+out_v2/
+*.3mf
+*.stl
+!engine/colecciones/

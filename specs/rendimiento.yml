@@ -1,0 +1,24 @@
+area: Rendimiento
+prefijo: PER
+specs:
+  - id: PER-001
+    titulo: El motor responde rápido
+    descripcion: Cambiar un parámetro no puede hacer esperar.
+    criterio: En CPython, ROMBO M en autorriego tarda <3 s en vista previa y <5 s en normal.
+    prioridad: media
+    nivel: rendimiento
+    estado: activa
+  - id: PER-002
+    titulo: No se recalcula lo que no cambió
+    descripcion: Los módulos sólo se recargan si su archivo cambió (conserva las cachés).
+    criterio: Dos cargas seguidas del módulo de superficie devuelven el mismo objeto.
+    prioridad: baja
+    nivel: rendimiento
+    estado: activa
+  - id: PER-003
+    titulo: La web muestra la primera maceta pronto
+    descripcion: Desde que se abre la página hasta ver la maceta.
+    criterio: En CI (Chromium headless) el primer modelo aparece en menos de 90 s.
+    prioridad: media
+    nivel: web
+    estado: activa

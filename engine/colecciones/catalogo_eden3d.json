@@ -1,0 +1,439 @@
+{
+ "catalog": "Eden3D — catálogo de diseños",
+ "brand": "Eden3D",
+ "base": {
+  "wall": 1.6,
+  "floor": 2.4,
+  "chamfer": 0.6
+ },
+ "designs": [
+  {
+   "code": "ROMBO",
+   "name": "Rombo (hélices cruzadas)",
+   "params": {
+    "height": 105,
+    "d_base": 80,
+    "d_max": 128,
+    "d_mouth": 104,
+    "belly": 0.45,
+    "rim": "round",
+    "tex_type": "lattice",
+    "tex_count": 28,
+    "tex_pitch": 18,
+    "tex_amp": 1.8,
+    "tex_duty": 0.26,
+    "fade_bottom": 8,
+    "fade_top": 6,
+    "waves": []
+   }
+  },
+  {
+   "code": "ARCOS",
+   "name": "Arcos góticos",
+   "params": {
+    "height": 115,
+    "d_base": 92,
+    "d_max": 120,
+    "d_mouth": 104,
+    "belly": 0.5,
+    "rim": "round",
+    "tex_type": "arches",
+    "tex_count": 16,
+    "tex_pitch": 46,
+    "tex_wob": 0.6,
+    "tex_duty": 0.2,
+    "tex_amp": 1.6,
+    "fade_bottom": 8,
+    "fade_top": 6,
+    "waves": []
+   }
+  },
+  {
+   "code": "OLAS",
+   "name": "Olas horizontales",
+   "params": {
+    "height": 105,
+    "d_base": 80,
+    "d_max": 128,
+    "d_mouth": 104,
+    "belly": 0.45,
+    "rim": "round",
+    "tex_type": "wavy_h",
+    "tex_count": 4,
+    "tex_pitch": 8.5,
+    "tex_wob": 1.1,
+    "tex_duty": 0.55,
+    "tex_amp": 1.6,
+    "fade_bottom": 8,
+    "fade_top": 6,
+    "waves": []
+   }
+  },
+  {
+   "code": "ACANALADO",
+   "name": "Acanalado vertical",
+   "params": {
+    "height": 100,
+    "d_base": 104,
+    "d_max": 124,
+    "d_mouth": 118,
+    "belly": 0.55,
+    "rim": "flat",
+    "wave_profile": "rib",
+    "waves": [
+     {
+      "type": "radial",
+      "count": 40,
+      "amp": 1.25
+     }
+    ],
+    "fade_bottom": 10,
+    "fade_top": 10
+   }
+  },
+  {
+   "code": "LIANA",
+   "name": "Liana (costillas onduladas)",
+   "params": {
+    "height": 115,
+    "d_base": 78,
+    "d_max": 120,
+    "d_mouth": 96,
+    "belly": 0.42,
+    "rim": "round",
+    "tex_type": "wavy_v",
+    "tex_count": 14,
+    "tex_pitch": 40,
+    "tex_wob": 0.42,
+    "tex_duty": 0.42,
+    "tex_amp": 2.4,
+    "fade_bottom": 8,
+    "fade_top": 6,
+    "waves": []
+   }
+  },
+  {
+   "code": "JAPANDI",
+   "name": "Japandi nervado 36",
+   "params": {
+    "height": 110,
+    "d_base": 96,
+    "d_max": 120,
+    "d_mouth": 118,
+    "belly": 0.75,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 36,
+      "amp": 1.2
+     }
+    ],
+    "wave_profile": "rib"
+   }
+  },
+  {
+   "code": "FLAUTA",
+   "name": "Japandi acanalado 24",
+   "params": {
+    "height": 110,
+    "d_base": 100,
+    "d_max": 120,
+    "d_mouth": 116,
+    "belly": 0.55,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 24,
+      "amp": 1.5
+     }
+    ],
+    "wave_profile": "flute"
+   }
+  },
+  {
+   "code": "PRISMA",
+   "name": "Facetas prisma",
+   "params": {
+    "height": 110,
+    "d_base": 90,
+    "d_max": 124,
+    "d_mouth": 116,
+    "belly": 0.6,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [],
+    "lowpoly_cols": 10,
+    "lowpoly_rows": 5,
+    "lowpoly_jitter": 2,
+    "lowpoly_seed": 3
+   }
+  },
+  {
+   "code": "HEX",
+   "name": "Facetas hexagonal",
+   "params": {
+    "height": 110,
+    "d_base": 86,
+    "d_max": 124,
+    "d_mouth": 124,
+    "belly": 0.99,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [],
+    "lowpoly_cols": 6,
+    "lowpoly_rows": 2,
+    "lowpoly_stagger": false
+   }
+  },
+  {
+   "code": "SOGA",
+   "name": "Textura soga",
+   "params": {
+    "height": 110,
+    "d_base": 92,
+    "d_max": 120,
+    "d_mouth": 114,
+    "belly": 0.62,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "round",
+    "fade_bottom": 6,
+    "fade_top": 6,
+    "waves": [],
+    "tex_type": "rope",
+    "tex_count": 18,
+    "tex_pitch": 14,
+    "tex_amp": 1.4
+   }
+  },
+  {
+   "code": "TEJIDO",
+   "name": "Textura tejido",
+   "params": {
+    "height": 110,
+    "d_base": 96,
+    "d_max": 120,
+    "d_mouth": 118,
+    "belly": 0.75,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [],
+    "tex_type": "knit",
+    "tex_count": 30,
+    "tex_pitch": 6,
+    "tex_amp": 1.2
+   }
+  },
+  {
+   "code": "PIEDRA",
+   "name": "Textura piedra",
+   "params": {
+    "height": 110,
+    "d_base": 96,
+    "d_max": 120,
+    "d_mouth": 118,
+    "belly": 0.75,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "flat",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [],
+    "tex_type": "stone",
+    "tex_scale": 12,
+    "tex_amp": 1.5
+   }
+  },
+  {
+   "code": "DUNA",
+   "name": "Duna",
+   "params": {
+    "height": 110,
+    "d_base": 84,
+    "d_max": 120,
+    "d_mouth": 110,
+    "belly": 0.55,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "round",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 8,
+      "amp": 2.2
+     },
+     {
+      "type": "vertical",
+      "count": 3.5,
+      "amp": 1.6,
+      "n_theta": 8,
+      "phase": 90
+     }
+    ]
+   }
+  },
+  {
+   "code": "MAREA",
+   "name": "Marea (onda con giro)",
+   "params": {
+    "height": 110,
+    "d_base": 84,
+    "d_max": 120,
+    "d_mouth": 114,
+    "belly": 0.68,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "round",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 10,
+      "amp": 3.2,
+      "twist": 0.25,
+      "twist_power": 1.0,
+      "amp_top": 1.35,
+      "amp_power": 1.2
+     }
+    ]
+   }
+  },
+  {
+   "code": "TORSION",
+   "name": "Torsión 16",
+   "params": {
+    "height": 110,
+    "d_base": 88,
+    "d_max": 116,
+    "d_mouth": 116,
+    "belly": 1.0,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "round",
+    "fade_bottom": 8,
+    "fade_top": 14,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 16,
+      "amp": 1.8,
+      "sharp": 0.85,
+      "twist": 0.4,
+      "twist_power": 1.3
+     }
+    ]
+   }
+  },
+  {
+   "code": "ORIGAMI",
+   "name": "Origami facetado",
+   "params": {
+    "height": 110,
+    "d_base": 84,
+    "d_max": 120,
+    "d_mouth": 114,
+    "belly": 0.68,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "round",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "polygon_sides": 8,
+    "polygon_blend": 0.6,
+    "polygon_round": 0.18,
+    "polygon_twist": 0.125,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 16,
+      "amp": 1.0,
+      "twist": 0.125
+     }
+    ]
+   }
+  },
+  {
+   "code": "BRISA",
+   "name": "Brisa asimétrica",
+   "params": {
+    "height": 110,
+    "d_base": 80,
+    "d_max": 122,
+    "d_mouth": 118,
+    "belly": 0.42,
+    "wall": 1.6,
+    "floor": 2.4,
+    "rim": "round",
+    "fade_bottom": 8,
+    "fade_top": 8,
+    "asym": 0.6,
+    "asym_angle": 30,
+    "waves": [
+     {
+      "type": "radial",
+      "count": 12,
+      "amp": 2.4,
+      "amp_top": 1.6,
+      "amp_power": 1.5
+     }
+    ]
+   }
+  }
+ ],
+ "export": {
+  "modes": [
+   "screw_dish_sw",
+   "saucer"
+  ],
+  "drains": [
+   "leaf",
+   "circle"
+  ],
+  "sizes": [
+   "M"
+  ],
+  "stl": false
+ },
+ "_ayuda": {
+  "modes": "pot | saucer | screw_dish | screw_dish_sw | hidden_tray | screw_tray | self_watering",
+  "drains": "leaf | circle | slot | none",
+  "sizes": "Mini | S | M | L | XL  (M = tamaño original del diseño)",
+  "agregar_diseno": "copiá un bloque de 'designs', cambiá 'code' (MAYÚSCULAS, sin espacios), 'name' y los parámetros",
+  "stl": "true = además del .3mf, cada pieza en .stl suelto"
+ },
+ "instagram": {
+  "handle": "@eden3d.ar",
+  "footer": "Consultá por color y tamaño · Fabricación a pedido",
+  "color": "Blanco mate",
+  "chips": {
+   "screw_dish_sw": [
+    "Autorriego personalizable",
+    "Drenaje incluido",
+    "Material 3D ecológico"
+   ]
+  },
+  "_ayuda": "chips: textos de venta por modo (screw_dish_sw, screw_dish, saucer, pot, ...). handle y footer van al pie."
+ }
+}

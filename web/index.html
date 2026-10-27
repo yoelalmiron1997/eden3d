@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eden3D Studio</title>
+  <meta name="description" content="Configurador de macetas paramétricas Eden3D: elegí diseño, tamaño, autorriego y drenaje, y miralo en 3D.">
+  <meta name="copyright" content="© Eden3D — Yoel Almirón. Todos los derechos reservados.">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Eden3D Studio, inicio">
+      <span class="pill">Eden3D</span><span class="brand-sub">Studio</span>
+    </a>
+    <nav class="nav">
+      <a href="calidad/" data-testid="link-calidad">Calidad</a>
+      <a href="calidad/#matriz" data-testid="link-specs">Specs</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset>
+        <legend>Diseño</legend>
+        <label>Modelo
+          <select id="design" data-testid="sel-diseno" disabled></select>
+        </label>
+        <div class="row2">
+          <label>Tamaño
+            <select id="size" data-testid="sel-tamano" disabled></select>
+          </label>
+          <label>Color
+            <select id="color" data-testid="sel-color">
+              <option value="#ece9e2">Blanco mate</option>
+              <option value="#c47052">Terracota</option>
+              <option value="#84a078">Verde salvia</option>
+              <option value="#e8aab2">Rosa pastel</option>
+              <option value="#80b0de">Celeste</option>
+              <option value="#ecc45c">Amarillo</option>
+              <option value="#2c2c2c">Negro mate</option>
+              <option value="#d6c4a6">Arena</option>
+            </select>
+          </label>
+        </div>
+        <div class="row2">
+          <label>Plato
+            <select id="mode" data-testid="sel-modo" disabled></select>
+          </label>
+          <label>Drenaje
+            <select id="drain" data-testid="sel-drenaje" disabled></select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Patrón <span class="hint">0 = el del diseño</span></legend>
+        <div id="sliders" class="sliders"></div>
+        <button type="button" class="link" id="reset" data-testid="btn-reset">Volver al patrón del diseño</button>
+      </fieldset>
+
+      <fieldset class="view-opts">
+        <legend>Vista</legend>
+        <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua del autorriego</label>
+        <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
+        <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> Detalle alto</label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>Descargar 3MF</button>
+        <div class="row2">
+          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL maceta</button>
+          <button type="button" id="dlstlp" data-testid="btn-stl-plato" disabled>STL plato</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings"></ul>
+      </article>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. Los diseños y el
+      código están protegidos: los archivos descargados son para <strong>uso personal y no comercial</strong>;
+      no se pueden vender, redistribuir ni publicar. <a href="licencia.html">Licencia completa</a>.</p>
+    <p class="muted">Motor <span id="engine-v">—</span> · corre en tu navegador, nada se sube a un servidor · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

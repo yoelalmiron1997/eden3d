@@ -1,0 +1,32 @@
+{
+ "interior_sol": {
+  "suelo": 0.8,
+  "tema": "claro",
+  "blur": 0
+ },
+ "interior_sol_detalle": {
+  "suelo": 0.8,
+  "tema": "claro",
+  "blur": 0
+ },
+ "bosque_mesa": {
+  "suelo": 0.815,
+  "tema": "claro",
+  "blur": 0
+ },
+ "bosque_mesa_dorado": {
+  "suelo": 0.815,
+  "tema": "claro",
+  "blur": 0
+ },
+ "hojas_bokeh": {
+  "suelo": 0.83,
+  "tema": "claro",
+  "blur": 0
+ },
+ "musgo_oscuro": {
+  "suelo": 0.8,
+  "tema": "oscuro",
+  "blur": 0
+ }
+}

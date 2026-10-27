@@ -1,0 +1,15 @@
+{
+  "name": "eden3d-studio",
+  "version": "0.4.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "Eden3D Studio: configurador web de macetas paramétricas (motor en Pyodide + visor three.js)",
+  "scripts": {
+    "build": "python tools/build_site.py --out _site",
+    "serve": "python -m http.server 8000 --directory _site"
+  },
+  "devDependencies": {
+    "pyodide": "0.27.7",
+    "three": "0.170.0"
+  }
+}
