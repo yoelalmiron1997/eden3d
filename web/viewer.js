@@ -3,18 +3,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { GroundedSkybox } from "three/addons/objects/GroundedSkybox.js";
 import { Water } from "./water.js";
-import { LAYER_MM, slicerMaterial, sliceSegments, buildPlate } from "./slicer.js";
+import { LAYER_MM, slicerMaterial, sliceSegments, buildPlate, orderSegments, buildPrintHead } from "./slicer.js";
 
 export const LIGHTS = {
   estudio: { label: "Estudio", env: 0.85, sun: [0xfff4e6, 2.4], alt: 52, hemi: [0xfff6e8, 0x8a7a66, 0.55],
     fill: 0.45, exposure: 1.0, shadow: 0.2, stage: "radial-gradient(120% 90% at 60% 30%, #fbf6ee 0%, #efe6d8 55%, #e3d6c2 100%)" },
-  manana: { label: "Mañana de sol", env: 0.7, sun: [0xfff0d0, 3.4], alt: 38, hemi: [0xdcecff, 0x9a8a6a, 0.6],
+  manana: { label: "Mañana", env: 0.7, sun: [0xfff0d0, 3.4], alt: 38, hemi: [0xdcecff, 0x9a8a6a, 0.6],
     fill: 0.3, exposure: 1.05, shadow: 0.32, stage: "radial-gradient(120% 90% at 70% 20%, #fffaf0 0%, #f3ead6 50%, #dfd0b2 100%)" },
-  atardecer: { label: "Atardecer", env: 0.45, sun: [0xffa860, 3.6], alt: 12, hemi: [0xffd2a8, 0x5a4636, 0.45],
+  atardecer: { label: "Tarde", env: 0.45, sun: [0xffa860, 3.6], alt: 12, hemi: [0xffd2a8, 0x5a4636, 0.45],
     fill: 0.18, exposure: 0.95, shadow: 0.38, stage: "radial-gradient(120% 90% at 80% 40%, #ffd9b0 0%, #e9b48a 45%, #8e6550 100%)" },
-  noche: { label: "Noche con lámpara", env: 0.12, sun: [0xffc98a, 1.2], alt: 64, hemi: [0x2a3248, 0x14100c, 0.25],
+  noche: { label: "Noche", env: 0.12, sun: [0xffc98a, 1.2], alt: 64, hemi: [0x2a3248, 0x14100c, 0.25],
     fill: 0.05, exposure: 0.9, shadow: 0.45, lamp: 2600, stage: "radial-gradient(90% 70% at 50% 25%, #4a3c2c 0%, #231d17 55%, #0f0d0b 100%)" },
 };
 
@@ -120,6 +119,8 @@ export class Viewer {
       this.tickWater(dt);
       this.tickPlants(dt);
       this.tickSlicer(dt);
+      this.tickExplode(dt);
+      if (this.onFrame) this.onFrame();
       this.renderer.render(this.scene, this.camera);
       this.stats.frames++;
       // el costo real se ve en el intervalo entre cuadros (la GPU trabaja después)
@@ -328,18 +329,74 @@ export class Viewer {
   explodeOffset() {
     const pot = this.model.getObjectByName("MACETA");
     if (!pot || !this.model.getObjectByName("PLATO")) return 0;
-    pot.geometry.computeBoundingBox();
+    if (!pot.geometry.boundingBox) pot.geometry.computeBoundingBox();
     const bb = pot.geometry.boundingBox;
     return this.explode * (bb.max.z - bb.min.z) * 0.95;
   }
 
+  // Despiece escalonado: plato quieto, maceta arriba, tierra un poco más y las plantas arriba de todo.
   applyExplode() {
     if (this.slicer.on) return;
     const off = this.explodeOffset();
     const pot = this.model.getObjectByName("MACETA");
     if (pot) pot.position.z = off;
     this.plants.position.y = off;
+    const H = off / 0.95 / Math.max(this.explode, 1e-6);
+    for (const g of this.plants.children) {
+      const b = g.userData.base;
+      if (!b) continue;
+      const extra = !pot || !this.model.getObjectByName("PLATO") ? 0 : this.explode * H * (g.userData.k < 0 ? 0.3 : 0.62);
+      g.position.z = b[2] + extra;
+    }
     this.stats.explodeOffset = off;
+  }
+
+  // Animación en loop: arma y desarma mostrando cada pieza (con la cámara girando despacio).
+  setExplodeLoop(on) {
+    this.loop = on ? { t: 0 } : null;
+    this.controls.autoRotate = on;
+    this.controls.autoRotateSpeed = 1.6;
+    if (!on) this.setExplode(this.explode);
+  }
+
+  tickExplode(dt) {
+    const L = this.loop;
+    if (!L || this.slicer.on) return;
+    L.t += dt;
+    const ph = [0.8, 1.8, 2.6, 1.8];          // armada, se abre, abierta, se cierra
+    const T = ph.reduce((a, b) => a + b, 0);
+    let t = L.t % T, k = 0;
+    const ease = (u) => u * u * (3 - 2 * u);
+    if (t < ph[0]) k = 0;
+    else if ((t -= ph[0]) < ph[1]) k = ease(t / ph[1]);
+    else if ((t -= ph[1]) < ph[2]) k = 1;
+    else k = 1 - ease((t - ph[2]) / ph[3]);
+    this.explode = k;
+    this.applyExplode();
+    this.stats.loopCycles = Math.floor(L.t / T);
+    if (this.onExplode) this.onExplode(k);
+  }
+
+  // Etiquetas de cada pieza, proyectadas en pantalla (las dibuja la página).
+  partLabels(names = {}) {
+    if (this.explode < 0.05 || this.slicer.on) return [];
+    const out = [];
+    const v = new THREE.Vector3();
+    const bb = new THREE.Box3();
+    const add = (obj, text, key) => {
+      if (!obj || !obj.visible) return;
+      bb.setFromObject(obj);
+      if (bb.isEmpty()) return;
+      v.set(bb.max.x, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2).project(this.camera);
+      out.push({ key, text, x: (v.x + 1) / 2, y: (1 - v.y) / 2 });
+    };
+    const pls = (this.plants.children || []).filter((g) => g.userData.k >= 0);
+    pls.forEach((g, i) => add(g, names[g.userData.id] || "Planta", "planta-" + i));
+    add(this.plants.children.find((g) => g.userData.k < 0), names.tierra || "Tierra", "tierra");
+    add(this.model.getObjectByName("MACETA"), "Maceta", "maceta");
+    if (this.water && this.water.group.visible) add(this.water.top, "Agua de reserva", "agua");
+    add(this.model.getObjectByName("PLATO"), "Plato con rosca", "plato");
+    return out;
   }
 
   // ------------------------------------------------------------ modo slicer
@@ -377,6 +434,8 @@ export class Viewer {
     mesh.name = "PIEZA_" + S.part;
     S.mesh = mesh;
     S.segs = new Float32Array(geo.index.count * 2);
+    S.raw = new Float32Array(geo.index.count * 2);
+    S.acc = new Float32Array(geo.index.count / 3 + 1);
     const lg = new THREE.BufferGeometry();
     lg.setAttribute("position", new THREE.BufferAttribute(S.segs, 3));
     S.lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0xff7a1a, depthTest: false }));
@@ -384,13 +443,21 @@ export class Viewer {
     S.lines.frustumCulled = false;
     S.lines.position.copy(mesh.position);
     S.lines.name = "CONTORNO_CAPA";
-    g.add(buildPlate(), mesh, S.lines);
+    const hb = buildPrintHead();
+    S.head = hb.head;
+    S.bar = hb.bar;
+    S.head.position.copy(mesh.position);
+    S.bar.position.copy(mesh.position);
+    g.add(buildPlate(), mesh, S.lines, S.head, S.bar);
     this.scene.add(g);
     // se esconde lo demás
-    S.hidden = [this.model, this.plants, this.sceneGroup, this.pano, this.contact].filter((o) => o && o.visible);
+    S.hidden = [this.model, this.plants, this.sceneGroup, this.contact].filter((o) => o && o.visible);
     for (const o of S.hidden) o.visible = false;
     this.setLayer(S.layer);
-    this.fit(new THREE.Box3().setFromObject(mesh), new THREE.Vector3(-0.45, 0.62, 1));
+    const fb = new THREE.Box3().setFromObject(mesh);
+    fb.max.y += 55;                                   // que entre el cabezal
+    fb.expandByScalar(12);
+    this.fit(fb, new THREE.Vector3(-0.5, 0.55, 1));
   }
 
   exitSlicer(silent) {
@@ -420,35 +487,78 @@ export class Viewer {
     S.plane.constant = zc + 1e-3;
     const bbz = S.mesh.geometry.boundingBox;
     const zMesh = Math.min(zc - LAYER_MM * 0.5, S.height - 0.05) + bbz.min.z;
-    const nv = sliceSegments(S.mesh.geometry, zMesh, S.segs);
-    S.lines.geometry.setDrawRange(0, nv);
+    const raw = sliceSegments(S.mesh.geometry, zMesh, S.raw);
+    S.nv = orderSegments(S.raw, raw, S.segs, S.acc);       // recorrido continuo de la boquilla
+    S.zMesh = zMesh;
     S.lines.geometry.attributes.position.needsUpdate = true;
-    S.segments = nv / 2;
+    S.segments = S.nv / 2;
+    this.setLayerProgress(1);
     return this.slicerInfo();
+  }
+
+  // p de 0 a 1: cuánto del recorrido de la capa actual ya hizo la boquilla.
+  setLayerProgress(p) {
+    const S = this.slicer;
+    const n = S.nv / 2;
+    let done = n;
+    let x = 0, y = 0;
+    if (n > 0) {
+      const L = S.acc[n - 1] * p;
+      done = p >= 1 ? n : Math.max(0, S.acc.subarray(0, n).findIndex((a) => a >= L));
+      const k = Math.min(n - 1, done) * 2 * 3;
+      x = S.segs[k]; y = S.segs[k + 1];
+    }
+    S.lines.geometry.setDrawRange(0, done * 2);
+    S.progress = p;
+    // la boquilla apoya sobre la capa que imprime; la barra del eje X la acompaña
+    const base = S.mesh.position;
+    S.head.position.set(base.x + x, base.y + y, base.z + S.zMesh + LAYER_MM * 0.5);
+    S.bar.position.set(base.x, base.y + y, base.z + S.zMesh + 64);
+    S.head.userData.glow.intensity = S.playing ? 30 : 0;
   }
 
   playSlicer(on) {
     const S = this.slicer;
     S.playing = on;
+    S.playAcc = 0;
     if (on && S.layer >= S.layers) this.setLayer(1);
+    if (S.group) this.setLayerProgress(on ? 0 : 1);
   }
 
   tickSlicer(dt) {
     const S = this.slicer;
     if (!S.on || !S.playing) return;
-    S.playAcc = (S.playAcc || 0) + dt * Math.max(25, S.layers / 8);    // toda la pieza en ~8 s
-    const step = Math.floor(S.playAcc);
-    if (!step) return;
-    S.playAcc -= step;
-    this.setLayer(S.layer + step);
-    if (S.layer >= S.layers) S.playing = false;
-    if (this.onSlicer) this.onSlicer(this.slicerInfo());
+    // ~30 s para toda la pieza; dentro de cada capa la boquilla recorre el contorno
+    const rate = Math.max(3, S.layers / 30);
+    S.playAcc = (S.playAcc || 0) + dt * rate;
+    if (S.playAcc >= 1) {
+      const step = Math.floor(S.playAcc);
+      S.playAcc -= step;
+      this.setLayer(S.layer + step);
+      if (S.layer >= S.layers) { S.playing = false; S.playAcc = 0; this.setLayerProgress(1); }
+      if (this.onSlicer) this.onSlicer(this.slicerInfo());
+    }
+    if (S.playing) this.setLayerProgress(S.playAcc);
+  }
+
+  // capas de 0,2 mm de cada pieza (para la guía)
+  pieceLayers() {
+    const out = {};
+    for (const n of ["MACETA", "PLATO"]) {
+      const m = this.model.getObjectByName(n);
+      if (!m) continue;
+      if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+      const b = m.geometry.boundingBox;
+      out[n === "MACETA" ? "maceta" : "plato"] = Math.ceil((b.max.z - b.min.z) / LAYER_MM - 1e-6);
+    }
+    return out;
   }
 
   slicerInfo() {
     const S = this.slicer;
     return { on: S.on, part: S.part, layer: S.layer, layers: S.layers, z: +(S.layer * LAYER_MM).toFixed(2),
-      height: S.height || 0, segments: S.segments || 0, playing: S.playing, clip: S.plane ? S.plane.constant : null };
+      height: S.height || 0, segments: S.segments || 0, playing: S.playing, clip: S.plane ? S.plane.constant : null,
+      progress: S.progress ?? 1, head: S.head ? S.head.position.toArray() : null };
   }
 
   // ------------------------------------------------------------ plantas
@@ -498,7 +608,7 @@ export class Viewer {
         const g = new THREE.Group();
         const b = p.base || [0, 0, 0];
         g.position.set(b[0], b[1], b[2]);
-        g.userData = { id: ids[k], k };
+        g.userData = { id: ids[k], k, base: b.slice() };
         groups.set(k, g);
         this.plants.add(g);
         if (k >= 0) this.plantGroups.push(g);
@@ -531,6 +641,7 @@ export class Viewer {
     }
     this.plantTriangles = tris;
     if (this.cut) this.setCut(true);
+    this.applyExplode();
   }
 
   tickPlants(dt) {
@@ -579,38 +690,29 @@ export class Viewer {
     const bg = S.stage || LIGHTS[this.lightKey].stage;
     this.host.parentElement.style.background = bg;
     this.host.parentElement.style.setProperty("--stage", bg);
-    if (S.light) this.setLight(S.light);
+    if (S.light) this.setLight(S.light, S.sun ? S.sun[0] : undefined);
+    this.altOverride = S.sun ? S.sun[1] : null;
+    this.placeSun();
   }
 
-  // Panorama real como fondo + piso (GroundedSkybox) y como luz ambiente.
+  // Fondo fotográfico (foto 360° real) desenfocado como en una foto de producto, y
+  // la misma foto como luz ambiente (reflejos y color de la luz del jardín).
   setPano(P) {
-    if (this.pano) { this.scene.remove(this.pano); this.pano.geometry.dispose(); this.pano = null; }
-    this.altOverride = null;
+    this.scene.background = null;
     this.scene.environment = this.lowPower ? null : this.envTex;
     this.stats.panoLoaded = false;
     if (!P) return;
-    const rot = THREE.MathUtils.degToRad(P.rot || 0);
-    // dirección del sol en la foto (u de la equirectangular) -> azimut del visor
-    const ph = 2 * Math.PI * P.u;
-    this.sunAz = (THREE.MathUtils.radToDeg(Math.atan2(-Math.cos(ph), Math.sin(ph))) + (P.rot || 0) + 360) % 360;
-    this.altOverride = P.elev;
     const done = (tex) => {
       if (SCENES[this.sceneKey].pano !== P) return;
-      const sky = new GroundedSkybox(tex, P.height, P.radius, 96);
-      sky.material.toneMapped = false;            // la foto ya viene con su tono
-      sky.position.set(this.camera.position.x, P.height - 0.01, this.camera.position.z);
-      sky.rotation.y = rot;
-      sky.name = "PANORAMA";
-      sky.visible = !this.slicer.on;
-      this.pano = sky;
-      this.scene.add(sky);
+      this.scene.background = tex;
+      this.scene.backgroundBlurriness = P.blur;
+      this.scene.backgroundIntensity = P.intensity || 1;
+      this.scene.backgroundRotation.y = THREE.MathUtils.degToRad(P.rot || 0);
       if (!this.lowPower) {
-        P.env = P.env || this.pmrem.fromEquirectangular(tex).texture;
-        this.scene.environment = P.env;
-        this.scene.environmentRotation.y = rot;
+        this.scene.environment = tex;
+        this.scene.environmentRotation.y = this.scene.backgroundRotation.y;
       }
       this.stats.panoLoaded = true;
-      this.placeSun();
     };
     if (P.tex) done(P.tex);
     else new THREE.TextureLoader().load(P.url, (tex) => {
@@ -640,7 +742,7 @@ export class Viewer {
 
   // ------------------------------------------------------------ foto
   // PNG 1080×1350 (formato Instagram) del encuadre actual.
-  photo(w = 1080, h = 1350) {
+  photo(w = 1080, h = 1350, mime = "image/png") {
     const r = this.renderer;
     const prevPR = r.getPixelRatio(), prevSize = r.getSize(new THREE.Vector2());
     const prevAspect = this.camera.aspect;
@@ -659,9 +761,9 @@ export class Viewer {
     ctx.fillStyle = gr; ctx.fillRect(0, 0, 4, 256);
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
-    this.scene.background = tex;
+    if (!prevBg) this.scene.background = tex;
     r.render(this.scene, this.camera);
-    const url = r.domElement.toDataURL("image/png");
+    const url = r.domElement.toDataURL(mime, 0.9);
     this.scene.background = prevBg;
     tex.dispose();
     r.setPixelRatio(prevPR);
@@ -746,6 +848,50 @@ function buildOficina(THREE) {
   return g;
 }
 
+const TEX = {};
+function loadTex(THREE, url, srgb) {
+  if (!TEX[url]) {
+    TEX[url] = new THREE.TextureLoader().load(url);
+    TEX[url].colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    TEX[url].wrapS = TEX[url].wrapT = THREE.RepeatWrapping;
+    TEX[url].anisotropy = 8;
+  }
+  return TEX[url];
+}
+
+function buildJardin(THREE) {
+  const g = new THREE.Group();
+  const d = "assets/escenarios/";
+  const rep = (t) => { const c = t.clone(); c.repeat.set(1.5, 1.0); c.needsUpdate = true; return c; };
+  const madera = new THREE.MeshStandardMaterial({
+    map: rep(loadTex(THREE, d + "madera_color.jpg", true)),
+    normalMap: rep(loadTex(THREE, d + "madera_normal.jpg", false)), normalScale: new THREE.Vector2(0.9, 0.9),
+    roughnessMap: rep(loadTex(THREE, d + "madera_rugosidad.jpg", false)), roughness: 1, metalness: 0 });
+  // tapa de la mesa (tablas a lo largo de X) y su canto
+  g.add(box(THREE, madera, 820, 34, 540, 0, -17, -60, "mesa_jardin"));
+  const canto = std(THREE, 0x6e4a2e, 0.85);
+  g.add(box(THREE, canto, 830, 50, 18, 0, -40, 214));
+  // hojas caídas y una piedrita sobre la mesa
+  const hoja = new THREE.Shape();
+  hoja.moveTo(0, 0); hoja.quadraticCurveTo(9, 10, 0, 26); hoja.quadraticCurveTo(-9, 10, 0, 0);
+  const hg = new THREE.ShapeGeometry(hoja, 8);
+  const cols = [0x6f8f3a, 0x9aa645, 0xc9a23c, 0x8a6a2c];
+  [[-140, 95, 0.6], [-105, 140, 2.2], [150, 120, 4.1], [190, 30, 1.2], [-175, -25, 5.4]].forEach(([x, z, r], i) => {
+    const m = new THREE.Mesh(hg, new THREE.MeshStandardMaterial({ color: cols[i % 4], roughness: 0.7, side: THREE.DoubleSide }));
+    m.rotation.set(-Math.PI / 2 + 0.06, 0, r);
+    m.position.set(x, 0.6, z);
+    m.scale.setScalar(2.2 + (i % 3) * 0.4);
+    m.userData.noShadow = true;
+    if (!i) m.name = "hojas";
+    g.add(m);
+  });
+  const piedra = new THREE.Mesh(new THREE.IcosahedronGeometry(14, 2), std(THREE, 0x9b968c, 0.9));
+  piedra.scale.set(1.4, 0.55, 1);
+  piedra.position.set(170, 6, -60);
+  g.add(piedra);
+  return g;
+}
+
 function buildTaller(THREE) {
   const g = new THREE.Group();
   const madera = std(THREE, 0xffffff, 0.7, { map: woodTex(THREE, "#b88a58", "#6e4c2a", [2, 1]) });
@@ -794,11 +940,10 @@ export const SCENES = {
   estudio: { label: "Estudio" },
   oficina: { label: "Oficina", build: buildOficina, light: "manana",
     stage: "linear-gradient(180deg, #ece7de 0%, #ddd5c8 100%)", sky: ["#ece7de", "#d8cfc1"] },
-  // foto 360° real (Poly Haven, CC0) proyectada sobre el piso: la maceta apoya en el camino de piedras
-  jardin: { label: "Jardín", light: "manana", stage: "linear-gradient(180deg, #8fc6ee 0%, #cfe6c0 100%)",
-    sky: ["#8fc6ee", "#e4f2ff"],
-    viewDir: [-0.45, 0.24, 1], viewDist: 1.9,
-    pano: { url: "assets/escenarios/jardin_chino.jpg", u: 0.6006, elev: 30.4, height: 1500, radius: 24000, rot: 140 } },
-  taller: { label: "Taller de trabajo", build: buildTaller, light: "estudio",
+  // mesa de madera al aire libre con el jardín real (foto 360° de Poly Haven, CC0) desenfocado atrás
+  jardin: { label: "Jardín", build: buildJardin, light: "manana", sun: [62, 40],
+    stage: "linear-gradient(180deg, #8fc6ee 0%, #cfe6c0 100%)", viewDir: [-0.45, 0.22, 1], viewDist: 1.6,
+    pano: { url: "assets/escenarios/jardin_chino.jpg", blur: 0.14, intensity: 1.0, rot: 70 } },
+  taller: { label: "Taller", build: buildTaller, light: "estudio",
     stage: "linear-gradient(180deg, #d9cdbb 0%, #b9a88f 100%)", sky: ["#d9cdbb", "#b3a186"] },
 };

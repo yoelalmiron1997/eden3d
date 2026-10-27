@@ -233,11 +233,16 @@ def test_escenarios(browser, base_url):
         assert page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage") != bg0
         assert page.evaluate("window.__edenViewer.sceneGroup.scale.x") > 0.5
     assert "impresora_3d" in page.evaluate("window.__eden.viewer.sceneMeshes")
-    # jardín: foto 360° real como fondo y piso, cámara a la altura de la maceta
+    # jardín: mesa de madera con texturas y foto real desenfocada atrás, cámara baja
     y0 = page.evaluate("window.__edenViewer.camera.position.y - window.__edenViewer.controls.target.y")
     page.locator(T % "escena-jardin").click(no_wait_after=True)
     page.wait_for_function("window.__eden.viewer.panoLoaded", timeout=60_000)
-    assert page.evaluate("window.__edenViewer.scene.getObjectByName('PANORAMA').material.map.image.width") >= 2048
+    assert "mesa_jardin" in page.evaluate("window.__eden.viewer.sceneMeshes")
+    assert page.evaluate("""() => { const m = window.__edenViewer.sceneGroup.getObjectByName('mesa_jardin').material;
+        return !!(m.map && m.normalMap && m.roughnessMap); }""")
+    bg = page.evaluate("""() => { const s = window.__edenViewer.scene;
+        return [s.background && s.background.image ? s.background.image.width : 0, s.backgroundBlurriness]; }""")
+    assert bg[0] >= 2048 and bg[1] > 0.05
     y1 = page.evaluate("window.__edenViewer.camera.position.y - window.__edenViewer.controls.target.y")
     assert y1 < y0 * 0.75, "en el jardín la cámara baja"
     page.locator(T % "escena-estudio").click(no_wait_after=True)
@@ -372,8 +377,24 @@ def test_separar_piezas(browser, base_url):
     assert page.evaluate("window.__edenViewer.model.getObjectByName('MACETA').position.z") == v["explodeOffset"]
     assert page.evaluate("window.__edenViewer.model.getObjectByName('PLATO').position.z") == 0
     assert page.evaluate("window.__edenViewer.plants.position.y") == v["explodeOffset"]
+    # escalonado: tierra por encima de la maceta y plantas por encima de la tierra
+    zs = page.evaluate("""() => window.__edenViewer.plants.children.map(g => [g.userData.k, g.position.z - g.userData.base[2]])""")
+    soil = [z for k, z in zs if k < 0][0]
+    plant = [z for k, z in zs if k >= 0][0]
+    assert 0 < soil < plant
+    page.wait_for_timeout(300)
+    labels = page.evaluate("window.__eden.viewer.labels")
+    for t in ("Maceta", "Plato con rosca", "Agua de reserva", "Echeveria"):
+        assert t in labels, (t, labels)
     mover(0)
     assert page.evaluate("window.__eden.viewer.explodeOffset") == 0
+    # loop: se separa y se vuelve a armar sola
+    page.locator(T % "btn-despiece").click(no_wait_after=True)
+    page.wait_for_function("window.__eden.viewer.explode > 0.95", timeout=30_000)
+    page.wait_for_function("window.__eden.viewer.explode < 0.05", timeout=30_000)
+    assert page.evaluate("window.__edenViewer.controls.autoRotate") is True
+    page.locator(T % "btn-despiece").click(no_wait_after=True)
+    assert page.evaluate("window.__eden.viewer.loop") is False
     page.context.close()
 
 
@@ -397,8 +418,55 @@ def test_modo_slicer(browser, base_url):
     page.evaluate("""() => { const s = document.querySelector('[data-testid=sl-capa]');
         s.value = 1; s.dispatchEvent(new Event('input')); }""")
     page.locator(T % "btn-capas").click(no_wait_after=True)
+    h0 = page.evaluate("window.__eden.viewer.slicer.head")
     page.wait_for_function("window.__eden.viewer.slicer.layer > 5", timeout=30_000)
+    s = page.evaluate("window.__eden.viewer.slicer")
+    assert s["playing"] and s["head"] != h0, "el cabezal se mueve"
+    assert abs(s["head"][2] - s["z"]) < 0.5, "la boquilla está en la capa que imprime"
+    assert page.evaluate("!!window.__edenViewer.scene.getObjectByName('CABEZAL')")
     page.locator(T % "chk-slicer").uncheck(no_wait_after=True)
     assert page.evaluate("window.__edenViewer.model.visible") is True
     assert page.evaluate("window.__eden.viewer.slicer.on") is False
+    page.context.close()
+
+
+@pytest.mark.spec("WEB-009")
+def test_guia_pdf(app):
+    page = app
+    page.wait_for_function("window.__eden.plantBuilds >= 1 && !window.__eden.busy", timeout=120_000)
+    with page.expect_download() as dl:
+        page.locator(T % "btn-pdf").click()
+    d = dl.value
+    assert d.suggested_filename == page.evaluate("window.__eden.summary.sku") + "_guia.pdf"
+    data = open(d.path(), "rb").read()
+    assert data[:5] == b"%PDF-"
+    assert page.evaluate("window.__eden.lastPdf.pages") >= 2
+    A = page.evaluate("window.__eden.summary.assembly")
+    for txt in ("usar el autorriego", "Echeveria", "Cuidado de la maceta",
+                "%d ml" % round(A["water_min_wet_ml"]), "%d ml" % round(A["water_reservoir_ml"])):
+        assert txt.encode("cp1252") in data, txt
+    assert b"/Subtype /Image" in data, "lleva la foto"
+
+
+@pytest.mark.spec("WEB-010")
+def test_celular_simple(browser, base_url):
+    page = open_app(browser, base_url, viewport=(390, 844))
+    y = {k: page.locator(sel).bounding_box()["y"] for k, sel in
+         (("visor", T % "visor"), ("panel", "section.panel"), ("cuidados", T % "cuidados"))}
+    assert y["visor"] < y["panel"] < y["cuidados"]
+    for sec in ("ambiente", "vista", "impresion"):
+        lg = page.locator(T % ("sec-" + sec))
+        assert lg.get_attribute("aria-expanded") == "false", sec
+    assert page.locator(T % "sl-separar").is_hidden()
+    page.locator(T % "sec-vista").click()
+    assert page.locator(T % "sec-vista").get_attribute("aria-expanded") == "true"
+    assert page.locator(T % "sl-separar").is_visible()
+    largos = page.evaluate("""() => [...document.querySelectorAll('section.panel button:not(.chip)')]
+        .map(b => b.textContent.trim()).filter(t => t.length > 14)""")
+    assert not largos, largos
+    # ficha: lo esencial visible y el resto plegado
+    assert page.locator(T % "ficha-autorriego").is_visible()
+    assert page.locator(T % "ficha-senales").is_hidden()
+    page.locator(T % "ficha-mas" + " summary").click()
+    assert page.locator(T % "ficha-senales").is_visible()
     page.context.close()

@@ -79,3 +79,78 @@ export function buildPlate() {
   plate.receiveShadow = true;
   return plate;
 }
+
+// Ordena los segmentos sueltos del corte en recorridos continuos (como los hace la
+// boquilla): devuelve la cantidad de vértices escritos en `out` (en pares, ordenados)
+// y las longitudes acumuladas por segmento en `acc`.
+export function orderSegments(src, nv, out, acc) {
+  const ns = nv / 2;
+  const key = (x, y) => Math.round(x * 200) + "," + Math.round(y * 200);
+  const map = new Map();
+  for (let s = 0; s < ns; s++) {
+    for (let e = 0; e < 2; e++) {
+      const k = key(src[(s * 2 + e) * 3], src[(s * 2 + e) * 3 + 1]);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(s * 2 + e);
+    }
+  }
+  const used = new Uint8Array(ns);
+  let w = 0, total = 0;
+  const put = (vi) => {
+    out[w * 3] = src[vi * 3]; out[w * 3 + 1] = src[vi * 3 + 1]; out[w * 3 + 2] = src[vi * 3 + 2];
+    w++;
+  };
+  for (let s0 = 0; s0 < ns; s0++) {
+    if (used[s0]) continue;
+    let s = s0, from = s0 * 2;               // recorre desde el extremo 0
+    while (s >= 0) {
+      used[s] = 1;
+      const to = from ^ 1;
+      put(from); put(to);
+      const dx = src[to * 3] - src[from * 3], dy = src[to * 3 + 1] - src[from * 3 + 1];
+      total += Math.hypot(dx, dy);
+      acc[w / 2 - 1] = total;
+      // siguiente segmento que empieza donde terminó este
+      const cand = map.get(key(src[to * 3], src[to * 3 + 1])) || [];
+      s = -1;
+      for (const v of cand) {
+        const sv = v >> 1;
+        if (!used[sv]) { s = sv; from = v; break; }
+      }
+    }
+  }
+  return w;
+}
+
+// Cabezal de impresión (boquilla de bronce, bloque calefactor, disipador y ventilador)
+// y la barra del eje X, en coordenadas de la pieza (Z hacia arriba, punta en z = 0).
+export function buildPrintHead() {
+  const head = new THREE.Group();
+  head.name = "CABEZAL";
+  const bronce = new THREE.MeshStandardMaterial({ color: 0xc8963e, metalness: 0.9, roughness: 0.3 });
+  const alu = new THREE.MeshStandardMaterial({ color: 0xb9bec4, metalness: 0.8, roughness: 0.35 });
+  const negro = new THREE.MeshStandardMaterial({ color: 0x24262a, metalness: 0.1, roughness: 0.6 });
+  const nozzle = new THREE.Mesh(new THREE.ConeGeometry(3.2, 5, 16), bronce);
+  nozzle.rotation.x = -Math.PI / 2;
+  nozzle.position.z = 2.5;
+  const hex = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 3, 6), bronce);
+  hex.rotation.x = Math.PI / 2;
+  hex.position.z = 6.2;
+  const block = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 10), alu);
+  block.position.set(4, 0, 12.5);
+  const sink = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 24, 20), alu);
+  sink.rotation.x = Math.PI / 2;
+  sink.position.z = 30;
+  const shroud = new THREE.Mesh(new THREE.BoxGeometry(42, 34, 46), negro);
+  shroud.position.set(0, -6, 34);
+  const fan = new THREE.Mesh(new THREE.CylinderGeometry(13, 13, 2, 24), new THREE.MeshStandardMaterial({ color: 0x3a3d42 }));
+  fan.position.set(0, -24, 34);
+  const glow = new THREE.PointLight(0xff8a3d, 0, 40, 2);
+  glow.position.z = 1;
+  head.add(nozzle, hex, block, sink, shroud, fan, glow);
+  head.userData.glow = glow;
+  head.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(320, 18, 18), negro);
+  bar.name = "EJE_X";
+  return { head, bar };
+}

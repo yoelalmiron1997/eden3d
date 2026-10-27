@@ -1,6 +1,7 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { renderCare, renderCompat } from "./care.js";
+import { makeGuide } from "./guia.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -55,6 +56,8 @@ Object.defineProperty(state, "viewer", { get: () => ({
   wind: viewer.windOn && viewer.wind ? viewer.wind.value : 0,
   impacts: viewer.stats.impacts || 0, taps: viewer.stats.taps || 0, panoLoaded: !!viewer.stats.panoLoaded,
   explode: viewer.explode, explodeOffset: viewer.stats.explodeOffset || 0, slicer: viewer.slicerInfo(),
+  loop: !!viewer.loop, loopCycles: viewer.stats.loopCycles || 0,
+  labels: [...document.querySelectorAll("#labels span")].filter((e) => e.style.opacity !== "0").map((e) => e.textContent),
 }) });
 
 // ------------------------------------------------------------------ UI
@@ -80,8 +83,8 @@ function setBusy(on, text = "Calculando…") {
   state.busy = on;
   $("busy").hidden = !on;
   $("busy-text").textContent = text;
-  for (const id of ["build", "dl3mf", "dlstl", "dlstlp", "photo"]) $(id).disabled = on || !state.ready;
-  if (!on && !state.summary?.valid) for (const id of ["dl3mf", "dlstl", "dlstlp", "photo"]) $(id).disabled = true;
+  for (const id of ["build", "dl3mf", "dlstl", "dlstlp", "photo", "pdf"]) $(id).disabled = on || !state.ready;
+  if (!on && !state.summary?.valid) for (const id of ["dl3mf", "dlstl", "dlstlp", "photo", "pdf"]) $(id).disabled = true;
   if (!on && !state.parts.some((p) => p.name === "PLATO")) $("dlstlp").disabled = true;
 }
 
@@ -94,17 +97,17 @@ function showReport(s) {
     ["Maceta", fmt(s.pot_g, " g PLA"), "f-maceta"],
     ["Tierra", fmt(s.soil_ml, " ml"), "f-tierra"],
     ["Medidas", s.bbox_mm ? s.bbox_mm.map((x) => Math.round(x)).join(" × ") + " mm" : "—", "f-medidas"],
-    ["Drenaje", fmt(s.drain_holes, " agujeros"), "f-drenaje"],
+    ["Drenaje", fmt(s.drain_holes, " agujeros"), "f-drenaje", "minor"],
   ];
-  if (plate) facts.push(["Plato", fmt(plate[1], " g PLA"), "f-plato"]);
+  if (plate) facts.push(["Plato", fmt(plate[1], " g PLA"), "f-plato", "minor"]);
   if (A.thread_turns !== undefined) {
-    facts.push(["Rosca", `${A.thread_turns} vueltas · ${A.thread_engagement_mm} mm`, "f-rosca"]);
-    facts.push(["Luz bajo la maceta", fmt(A.water_gap_under_pot_mm, " mm"), "f-luz"]);
-    facts.push(["Agua para mojar la tierra", fmt(A.water_min_wet_ml, " ml"), "f-agua-min"]);
+    facts.push(["Rosca", `${A.thread_turns} vueltas · ${A.thread_engagement_mm} mm`, "f-rosca", "minor"]);
+    facts.push(["Luz bajo la maceta", fmt(A.water_gap_under_pot_mm, " mm"), "f-luz", "minor"]);
+    facts.push(["Agua mínima", fmt(A.water_min_wet_ml, " ml"), "f-agua-min"]);
     facts.push(["Plato lleno", `${fmt(A.water_reservoir_ml, " ml")} · ${fmt(A.water_over_soil_mm, " mm")} de tierra en remojo`, "f-agua-max"]);
   }
-  facts.push(["Cálculo", fmt(s.seconds, " s"), "f-tiempo"]);
-  $("facts").innerHTML = facts.map(([k, v, t]) => `<div><dt>${k}</dt><dd data-testid="${t}">${v}</dd></div>`).join("");
+  facts.push(["Cálculo", fmt(s.seconds, " s"), "f-tiempo", "minor"]);
+  $("facts").innerHTML = facts.map(([k, v, t, c]) => `<div class="${c || ""}"><dt>${k}</dt><dd data-testid="${t}">${v}</dd></div>`).join("");
   $("warnings").innerHTML = [...(s.errors || []).map((e) => `<li class="err">${esc(e)}</li>`),
     ...(s.warnings || []).map((w) => `<li>${esc(w)}</li>`)].join("");
   $("water-level").hidden = A.dish_inner_r0_mm === undefined;
@@ -183,7 +186,7 @@ function plantChips() {
       <h3>${esc(g.nombre)}</h3><div class="chips">${ps.map((p) => `
       <button type="button" class="chip${p.nativa ? " nativa" : ""}" role="radio" data-id="${p.id}" data-testid="planta-${p.id}"
         aria-pressed="${sel(p.id)}" aria-checked="${sel(p.id)}" ${lleno ? "disabled" : ""}
-        title="${esc(p.tipo)} · ${esc(p.dificultad)}">${esc(p.nombre)}<small>${esc(p.tipo.split(" ")[0])}</small></button>`).join("")}
+        title="${esc(p.tipo)} · ${esc(p.dificultad)}">${esc(p.nombre)}</button>`).join("")}
       </div></div>`;
   }).join("");
 }
@@ -204,7 +207,7 @@ function togglePlant(id) {
 }
 
 function coberturas() {
-  $("cobertura").innerHTML = `<option value="">Automática (según la planta)</option>` +
+  $("cobertura").innerHTML = `<option value="">Automática</option>` +
     state.info.coberturas.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("");
   $("cobertura").value = state.cobertura || "";
   coberturaDesc();
@@ -293,6 +296,23 @@ function buildSliders() {
   }
 }
 
+// secciones plegables del panel (en el celular arrancan cerradas las menos usadas)
+function sections() {
+  const mobile = window.matchMedia("(max-width: 860px)").matches;
+  for (const f of document.querySelectorAll("fieldset.sec")) {
+    if (f.hasAttribute("data-closed") || (mobile && f.hasAttribute("data-closed-mobile"))) f.classList.add("closed");
+    const lg = f.querySelector("legend");
+    lg.setAttribute("role", "button");
+    lg.tabIndex = 0;
+    lg.dataset.testid = "sec-" + f.dataset.sec;
+    const toggle = () => { f.classList.toggle("closed"); lg.setAttribute("aria-expanded", String(!f.classList.contains("closed"))); };
+    lg.setAttribute("aria-expanded", String(!f.classList.contains("closed")));
+    lg.addEventListener("click", toggle);
+    lg.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+  }
+}
+sections();
+
 async function main() {
   buildSliders();
   lightButtons();
@@ -362,14 +382,79 @@ $("scenes").addEventListener("click", (ev) => {
 $("wind").addEventListener("change", () => viewer.setWind($("wind").checked));
 $("photo").addEventListener("click", () => takePhoto());
 
+// guía de uso en PDF
+async function guidePdf() {
+  if (!state.ready || state.busy || !state.summary?.valid) return;
+  setBusy(true, "Armando la guía en PDF…");
+  try {
+    const fichas = state.plants.map((id) => state.info.plantas.find((p) => p.id === id)).filter(Boolean);
+    const cobId = state.cobertura || state.coberturaUsada;
+    const doc = await makeGuide({
+      summary: state.summary, plantas: fichas, compat: state.compat || [],
+      cobertura: $("decor").checked ? state.info.coberturas.find((c) => c.id === cobId) : null,
+      selfWatering: ["screw_dish_sw", "screw_dish"].includes($("mode").value) && !!state.summary.assembly?.water_reservoir_ml,
+      photo: viewer.photo(780, 975, "image/jpeg").url,
+      layers: viewer.pieceLayers(),
+      fecha: new Date().toLocaleDateString("es-AR"),
+    });
+    const buf = doc.output("arraybuffer");
+    const name = `${state.summary.sku}_guia.pdf`;
+    save(name, buf, "application/pdf");
+    state.lastPdf = { name, bytes: buf.byteLength, pages: doc.getNumberOfPages() };
+    setStatus("Guía descargada", "ok");
+  } catch (e) {
+    state.errors.push(String(e));
+    setStatus("Error en el PDF: " + e.message, "err");
+  } finally {
+    setBusy(false);
+  }
+}
+$("pdf").addEventListener("click", () => guidePdf());
+
 // ------------------------------------------------------------------ agua, piezas y slicer
 $("drop").addEventListener("click", () => viewer.randomDrop());
 $("waves").addEventListener("click", () => viewer.makeWaves());
 $("rain").addEventListener("change", () => viewer.setRain($("rain").checked));
 $("explode").addEventListener("input", () => {
+  if (viewer.loop) loopButton(false);
   $("o-explode").textContent = $("explode").value + " %";
   viewer.setExplode(+$("explode").value / 100);
 });
+
+// despiece en loop, con etiquetas de cada pieza
+function loopButton(on) {
+  viewer.setExplodeLoop(on);
+  $("explode-loop").setAttribute("aria-pressed", String(on));
+  $("explode-loop").textContent = on ? "❚❚ Pausa" : "▶ Animar";
+}
+$("explode-loop").addEventListener("click", () => loopButton(!viewer.loop));
+viewer.onExplode = (k) => {
+  $("explode").value = Math.round(k * 100);
+  $("o-explode").textContent = Math.round(k * 100) + " %";
+};
+const labelsEl = document.createElement("div");
+labelsEl.className = "labels";
+labelsEl.id = "labels";
+labelsEl.setAttribute("aria-hidden", "true");
+$("viewer").appendChild(labelsEl);
+viewer.onFrame = () => {
+  const names = { tierra: "Tierra" };
+  for (const p of state.info?.plantas || []) names[p.id] = p.nombre;
+  const cob = (state.info?.coberturas || []).find((c) => c.id === (state.cobertura || state.coberturaUsada));
+  if (cob) names.tierra = "Tierra con " + cob.nombre.toLowerCase();
+  const list = viewer.partLabels(names);
+  const seen = new Set();
+  for (const L of list) {
+    let el = labelsEl.querySelector(`[data-k="${L.key}"]`);
+    if (!el) { el = document.createElement("span"); el.dataset.k = L.key; labelsEl.appendChild(el); }
+    el.textContent = L.text;
+    el.style.left = (L.x * 100).toFixed(2) + "%";
+    el.style.top = (L.y * 100).toFixed(2) + "%";
+    el.style.opacity = String(Math.min(1, (viewer.explode - 0.05) * 3));
+    seen.add(L.key);
+  }
+  for (const el of labelsEl.children) if (!seen.has(el.dataset.k)) el.style.opacity = "0";
+};
 
 function slicerUi(info) {
   info = info || viewer.slicerInfo();
@@ -378,7 +463,7 @@ function slicerUi(info) {
   $("layer").max = info.layers;
   $("layer").value = info.layer;
   $("o-layer").textContent = `${info.layer} / ${info.layers}`;
-  $("slicer-info").textContent = `${info.z.toFixed(1)} mm de ${info.height.toFixed(1)} mm · capas de 0,2 mm`;
+  $("slicer-info").textContent = `${info.z.toFixed(1)} de ${info.height.toFixed(1)} mm`;
   $("play-layers").textContent = info.playing ? "❚❚ Pausa" : "▶ Imprimir";
   for (const b of $("slicer-part").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.p === info.part));
   $("slicer-part").querySelector("[data-p=PLATO]").disabled = !viewer.meshNames().includes("PLATO");

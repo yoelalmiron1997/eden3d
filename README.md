@@ -19,14 +19,18 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
   según qué tan flexibles son.
 * **Tipo de tierra**: piedritas blancas, tierra negra, arcilla expandida, corteza de
   pino, piedra volcánica o musgo (por defecto, la sugerida para el riego de la planta).
-* **Escenarios**: estudio, oficina, **jardín real** (foto 360° de Poly Haven, CC0,
-  proyectada en el piso) y taller de trabajo, con **iluminación** ajustable (estudio,
+* **Escenarios**: estudio, oficina, **jardín** (mesa de madera al aire libre con una
+  foto real de jardín desenfocada atrás, de Poly Haven, CC0) y taller de trabajo, con **iluminación** ajustable (estudio,
   mañana, atardecer, noche) y dirección del sol.
 * **Agua interactiva** en el plato de autorriego: olas, vaivén y una simulación de
   ondas; tocás el agua y cae una gota que salpica, y hay lluvia y "hacer olas".
-* **Separar piezas**: la maceta sube y deja ver el plato, la rosca y el agua.
-* **Modo slicer**: la maceta o el plato sobre la cama de la impresora, capa por capa
-  (0,2 mm), con la capa actual resaltada y botón para "imprimir" la animación.
+* **Despiece animado**: plato, agua, maceta, tierra y plantas se separan y se vuelven
+  a armar en loop, con el nombre de cada pieza.
+* **Impresión 3D**: la maceta o el plato sobre la cama de la impresora, capa por capa
+  (0,2 mm), con el cabezal recorriendo el contorno de cada capa.
+* **Guía de uso en PDF**: foto, medidas, cómo usar el autorriego con los ml reales,
+  cuidados de cada planta y de la pieza de PLA.
+* Panel con textos cortos y secciones plegables, pensado para el celular.
 * **Foto** de producto 1080×1350 (formato Instagram) con un clic.
 
 * **Web:** https://yoelalmiron1997.github.io/eden3d/

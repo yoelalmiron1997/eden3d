@@ -37,13 +37,13 @@ specs:
     titulo: Escenarios de oficina, jardín y taller
     descripcion: >
       Además del estudio, la maceta se puede ver sobre un escritorio de oficina, en un
-      jardín real (foto 360° de Poly Haven, CC0, proyectada en el piso) o sobre un
-      banco de taller de trabajo (con impresora 3D).
+      jardín (mesa de madera al aire libre con una foto real de jardín desenfocada
+      atrás, de Poly Haven, CC0) o sobre un banco de taller de trabajo (con impresora 3D).
     criterio: >
       Oficina y taller agregan su ambiente (escritorio o banco de trabajo), ocultan el
-      piso de sombra del estudio y se escalan con la maceta; el jardín carga la foto
-      360° como fondo, piso y luz ambiente, con la cámara baja para ver el jardín; al
-      volver a Estudio se quita todo.
+      piso de sombra del estudio y se escalan con la maceta; el jardín pone la mesa de
+      madera (texturas de color, relieve y rugosidad) y la foto del jardín como fondo
+      desenfocado y luz ambiente, con la cámara baja; al volver a Estudio se quita todo.
     prioridad: media
     nivel: web
     estado: activa
@@ -61,13 +61,14 @@ specs:
     nivel: web
     estado: activa
   - id: VIS-006
-    titulo: Separar las piezas
+    titulo: Separar las piezas (despiece animado)
     descripcion: >
-      Un control separa la maceta (con su tierra y plantas) del plato para ver cómo
-      encajan, la rosca y el agua del autorriego.
+      Un control separa plato, agua, maceta, tierra y plantas para ver cómo encajan;
+      "Animar" lo arma y desarma en loop, girando la cámara y nombrando cada pieza.
     criterio: >
-      Al 100 % la maceta sube casi su altura completa junto con las plantas, el plato
-      no se mueve y el agua queda a la vista; al 0 % vuelve a estar armada.
+      Al 100 % la maceta sube casi su altura completa, la tierra sube por encima y las
+      plantas más arriba; el plato no se mueve; aparecen etiquetas de cada pieza; en
+      loop la separación va y vuelve sola; al 0 % vuelve a estar armada.
     prioridad: media
     nivel: web
     estado: activa
@@ -76,12 +77,13 @@ specs:
     descripcion: >
       Vista como la de un programa de laminado: la pieza sola sobre la cama de la
       impresora, cortada en la capa elegida, con la capa actual resaltada y su
-      contorno; se puede reproducir la impresión capa por capa.
+      contorno; "Imprimir" muestra el cabezal de la impresora recorriendo el contorno
+      de cada capa.
     criterio: >
       Con capas de 0,2 mm la cantidad de capas es la altura de la pieza / 0,2; al
       elegir la capa n el corte queda a n × 0,2 mm, hay contorno de esa capa, se puede
-      elegir maceta o plato, "Imprimir" avanza las capas solo y al salir vuelve la
-      vista normal.
+      elegir maceta o plato; "Imprimir" avanza las capas solo con el cabezal
+      siguiendo el recorrido continuo de cada capa; al salir vuelve la vista normal.
     prioridad: media
     nivel: web
     estado: activa

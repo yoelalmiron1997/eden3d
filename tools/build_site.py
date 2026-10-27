@@ -63,13 +63,14 @@ def build(out, node_modules):
         if os.path.isfile(os.path.join(node_modules, "three", "build", "three.core.js")) else None
     shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "controls",
                               "OrbitControls.js"), os.path.join(vt, "addons", "controls"))
-    os.makedirs(os.path.join(vt, "addons", "objects"), exist_ok=True)
-    shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "objects",
-                              "GroundedSkybox.js"), os.path.join(vt, "addons", "objects"))
     os.makedirs(os.path.join(vt, "addons", "environments"), exist_ok=True)
     shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "environments",
                               "RoomEnvironment.js"), os.path.join(vt, "addons", "environments"))
     shutil.copy2(os.path.join(node_modules, "three", "LICENSE"), os.path.join(vt, "LICENSE"))
+    vj = os.path.join(out, "vendor", "jspdf")
+    os.makedirs(vj, exist_ok=True)
+    shutil.copy2(os.path.join(node_modules, "jspdf", "dist", "jspdf.umd.min.js"), vj)
+    shutil.copy2(os.path.join(node_modules, "jspdf", "LICENSE"), os.path.join(vj, "LICENSE"))
     # licencia legible en la web
     with open(os.path.join(ROOT, "LICENSE"), encoding="utf-8") as fh:
         lic = fh.read()

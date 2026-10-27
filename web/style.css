@@ -180,3 +180,54 @@ p.hint.small { margin: 2px 0 0; font-size: 12px; line-height: 1.4; }
 #slicer-ui { display: grid; gap: 8px; margin-top: 6px; }
 #slicer-ui[hidden] { display: none; }
 #slicer-info { margin: 0; align-self: center; }
+
+/* ---- panel en secciones plegables (en el celular arrancan cerradas) ---- */
+fieldset.sec { border-top: 1px solid var(--line); padding-top: 10px; }
+fieldset.sec:first-of-type { border-top: 0; padding-top: 0; }
+fieldset.sec > legend { width: 100%; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+fieldset.sec > legend::after { content: "▾"; margin-left: auto; color: var(--muted); transition: transform .15s; }
+fieldset.sec.closed > legend::after { transform: rotate(-90deg); }
+fieldset.sec.closed > :not(legend) { display: none !important; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.seg4 { grid-template-columns: repeat(4, 1fr); }
+.seg4 button { padding: 6px 4px; font-size: 12.5px; }
+.row-play { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.row-play button { min-height: 34px; padding: 6px 10px; font-size: 13px; }
+.row-play button[aria-pressed="true"] { background: #2f4f2e; color: #fff; border-color: #2f4f2e; }
+.row3.even { grid-template-columns: 1fr 1fr 1fr; }
+.panel .slider { grid-template-columns: 64px 1fr 44px; }
+
+/* etiquetas de las piezas (despiece) */
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.labels span {
+  position: absolute; transform: translate(10px, -50%); white-space: nowrap; font-size: 12.5px; font-weight: 600;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 999px; padding: 3px 10px; box-shadow: var(--shadow); transition: opacity .2s;
+}
+.labels span::before {
+  content: ""; position: absolute; left: -12px; top: 50%; width: 12px; height: 1px; background: var(--muted);
+}
+
+/* ficha compacta: lo esencial a la vista y el resto plegado */
+.care-more { margin-top: 10px; }
+.care-more > summary { cursor: pointer; font-weight: 700; color: var(--green); padding: 6px 0; }
+@media (max-width: 860px) {
+  .seg4 { grid-template-columns: repeat(2, 1fr); }
+  .care-grid { grid-template-columns: 1fr; }
+  .signs thead { display: none; }
+  .signs, .signs tbody, .signs tr, .signs td { display: block; width: 100%; }
+  .signs tr { border: 1px solid var(--line); border-radius: 10px; margin: 6px 0; padding: 4px 8px; }
+  .signs td { border: 0; padding: 2px 0; }
+  .signs td:first-child { font-weight: 700; }
+  .report dl { grid-template-columns: repeat(2, 1fr); }
+  .top { padding: 10px 16px; }
+}
+@media (max-width: 860px) {
+  /* orden en el celular: visor, configuración y después los cuidados */
+  .column { display: contents; }
+  .stage { order: -2; }
+  .panel { order: -1; }
+  .care { order: 1; }
+  .report .minor, .report .warnings { display: none; }
+  .report { padding: 10px 12px; }
+}

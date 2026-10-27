@@ -67,3 +67,29 @@ specs:
     prioridad: baja
     nivel: web
     estado: activa
+  - id: WEB-009
+    titulo: Guía de uso en PDF
+    descripcion: >
+      Un botón genera un PDF con recomendaciones de uso de la maceta elegida: foto,
+      medidas, cómo usar el autorriego con los ml reales, cuidados de cada planta, la
+      tierra elegida y cómo cuidar la pieza de PLA.
+    criterio: >
+      "Guía PDF" descarga <SKU>_guia.pdf, un PDF A4 de al menos 2 páginas con la
+      foto, los ml de agua mínima y plato lleno, la ficha de cada planta elegida y el
+      cuidado del PLA, generado en el navegador.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: WEB-010
+    titulo: Textos cortos y panel plegable en el celular
+    descripcion: >
+      En pantallas chicas el panel se ordena en secciones que se pliegan, con textos
+      cortos, y la ficha de cuidados muestra primero lo esencial.
+    criterio: >
+      En 390×844 el orden es visor, panel y cuidados; las secciones Ambiente, Vista e
+      Impresión 3D arrancan cerradas y se abren al tocar el título; los botones del
+      panel tienen textos de hasta 14 letras; la ficha muestra autorriego, luz, riego
+      y mascotas, y el resto queda en "Más cuidados".
+    prioridad: media
+    nivel: web
+    estado: activa

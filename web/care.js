@@ -2,9 +2,9 @@
 // Ficha de cuidados de las plantas elegidas.
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const AUTO = {
-  recomendado: ["good", "Autorriego recomendado"],
+  recomendado: ["good", "Ideal con autorriego"],
   "con-cuidado": ["warn", "Autorriego con cuidado"],
-  "no-recomendado": ["bad", "Autorriego no recomendado"],
+  "no-recomendado": ["bad", "Sin autorriego"],
 };
 
 export function fillMl(text, A) {
@@ -22,37 +22,41 @@ export function renderCare(f, A, modeIsSelfWatering) {
   const signs = f.senales.map((s) => `<tr><td>${esc(s.sintoma)}</td><td>${esc(s.causa)}</td><td>${esc(s.solucion)}</td></tr>`).join("");
   const autoTxt = modeIsSelfWatering
     ? esc(fillMl(f.autorriego.consejo, A))
-    : "Elegiste una maceta sin plato de autorriego: regá desde arriba según el calendario y vaciá el agua que drene.";
+    : "Esta maceta no tiene autorriego: regá desde arriba y vaciá el agua que drene.";
   return `
   <div class="care-title" data-testid="ficha-${esc(f.id)}">
     <h3>${esc(f.nombre)}</h3><span class="sci">${esc(f.cientifico)}</span>
   </div>
   <div class="tags">
-    <span class="tag">${esc(f.tipo)}</span><span class="tag">Dificultad: ${esc(f.dificultad)}</span>
+    <span class="tag">${esc(f.tipo)}</span><span class="tag">${esc(f.dificultad)}</span>
     <span class="tag ${cls}">${lab}</span>${pet}
-    ${f.otros_nombres && f.otros_nombres.length ? `<span class="tag">También: ${esc(f.otros_nombres.join(", "))}</span>` : ""}
   </div>
   <p>${esc(f.resumen)}</p>
   <div class="care-grid">
-    <section class="auto" data-testid="ficha-autorriego"><h4>Autorriego en esta maceta</h4><p>${autoTxt}</p></section>
+    <section class="auto" data-testid="ficha-autorriego"><h4>Autorriego</h4><p>${autoTxt}</p></section>
     <section><h4>Luz</h4><p>${esc(f.luz)}</p></section>
     <section><h4>Riego</h4>
-      <p><b>Primavera y verano:</b> ${esc(f.riego.primavera_verano)}</p>
-      <p><b>Otoño e invierno:</b> ${esc(f.riego.otono_invierno)}</p>
-      <p><b>Cómo:</b> ${esc(f.riego.como)}</p></section>
-    <section><h4>Sustrato</h4><p>${esc(f.sustrato)}</p></section>
-    <section><h4>Temperatura</h4><p>Entre ${f.temperatura.min} °C y ${f.temperatura.max} °C. ${esc(f.temperatura.nota)}</p></section>
-    <section><h4>Humedad</h4><p>${esc(f.humedad)}</p></section>
-    <section><h4>Fertilizante</h4><p>${esc(f.fertilizante)}</p></section>
-    <section><h4>Trasplante</h4><p>${esc(f.trasplante)}</p></section>
-    <section><h4>Reproducción</h4><p>${esc(f.propagacion)}</p></section>
-    <section><h4>Plagas frecuentes</h4><p>${esc(f.plagas)}</p></section>
+      <p><b>Verano:</b> ${esc(f.riego.primavera_verano)}</p>
+      <p><b>Invierno:</b> ${esc(f.riego.otono_invierno)}</p></section>
     <section><h4>Mascotas</h4><p>${esc(f.mascotas.detalle)}</p></section>
   </div>
-  <table class="signs" data-testid="ficha-senales">
-    <thead><tr><th>Si ves…</th><th>Probable causa</th><th>Qué hacer</th></tr></thead>
-    <tbody>${signs}</tbody>
-  </table>`;
+  <details class="care-more" data-testid="ficha-mas">
+    <summary>Más cuidados</summary>
+    <div class="care-grid">
+      <section><h4>Cómo regar</h4><p>${esc(f.riego.como)}</p></section>
+      <section><h4>Sustrato</h4><p>${esc(f.sustrato)}</p></section>
+      <section><h4>Temperatura</h4><p>${f.temperatura.min} a ${f.temperatura.max} °C. ${esc(f.temperatura.nota)}</p></section>
+      <section><h4>Humedad</h4><p>${esc(f.humedad)}</p></section>
+      <section><h4>Fertilizante</h4><p>${esc(f.fertilizante)}</p></section>
+      <section><h4>Trasplante</h4><p>${esc(f.trasplante)}</p></section>
+      <section><h4>Reproducción</h4><p>${esc(f.propagacion)}</p></section>
+      <section><h4>Plagas</h4><p>${esc(f.plagas)}</p></section>
+    </div>
+    <table class="signs" data-testid="ficha-senales">
+      <thead><tr><th>Si ves…</th><th>Causa</th><th>Qué hacer</th></tr></thead>
+      <tbody>${signs}</tbody>
+    </table>
+  </details>`;
 }
 
 export function renderCompat(list) {

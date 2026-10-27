@@ -28,8 +28,8 @@
     <section class="panel" aria-label="Configuración">
       <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
 
-      <fieldset>
-        <legend>Diseño</legend>
+      <fieldset class="sec" data-sec="diseno">
+        <legend>Maceta</legend>
         <label>Modelo
           <select id="design" data-testid="sel-diseno" disabled></select>
         </label>
@@ -39,13 +39,13 @@
           </label>
           <label>Color
             <select id="color" data-testid="sel-color">
-              <option value="#ece9e2">Blanco mate</option>
+              <option value="#ece9e2">Blanco</option>
               <option value="#c47052">Terracota</option>
-              <option value="#84a078">Verde salvia</option>
-              <option value="#e8aab2">Rosa pastel</option>
+              <option value="#84a078">Salvia</option>
+              <option value="#e8aab2">Rosa</option>
               <option value="#80b0de">Celeste</option>
               <option value="#ecc45c">Amarillo</option>
-              <option value="#2c2c2c">Negro mate</option>
+              <option value="#2c2c2c">Negro</option>
               <option value="#d6c4a6">Arena</option>
             </select>
           </label>
@@ -60,63 +60,61 @@
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend>Patrón <span class="hint">0 = el del diseño</span></legend>
+      <fieldset class="sec" data-sec="patron" data-closed>
+        <legend>Patrón</legend>
         <div id="sliders" class="sliders"></div>
-        <button type="button" class="link" id="reset" data-testid="btn-reset">Volver al patrón del diseño</button>
+        <button type="button" class="link" id="reset" data-testid="btn-reset">Restablecer</button>
       </fieldset>
 
-      <fieldset>
-        <legend>Plantas <span class="hint">una por tipo, hasta 4</span></legend>
+      <fieldset class="sec" data-sec="plantas">
+        <legend>Plantas <span class="hint">una por tipo</span></legend>
         <div id="plant-list" class="plant-groups" data-testid="plantas" role="group" aria-label="Plantas"></div>
         <div class="row2">
           <label>Tierra
             <select id="cobertura" data-testid="sel-tierra"></select>
           </label>
-          <label class="check end"><input type="checkbox" id="decor" data-testid="chk-piedras" checked> Mostrar tierra</label>
+          <label class="check end"><input type="checkbox" id="decor" data-testid="chk-piedras" checked> Ver tierra</label>
         </div>
         <p class="hint small" id="cob-desc" data-testid="tierra-desc"></p>
       </fieldset>
 
-      <fieldset>
-        <legend>Escenario</legend>
-        <div class="seg" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Iluminación</legend>
-        <div class="seg" id="light-presets" role="radiogroup" aria-label="Iluminación" data-testid="luces"></div>
-        <label class="slider"><span>Dirección del sol</span>
+      <fieldset class="sec" data-sec="ambiente" data-closed-mobile>
+        <legend>Ambiente</legend>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+        <div class="seg seg4" id="light-presets" role="radiogroup" aria-label="Luz" data-testid="luces"></div>
+        <label class="slider"><span>Sol</span>
           <input type="range" id="sun-az" data-testid="sl-sol" min="0" max="360" step="1" value="35">
           <output id="o-sun">35°</output></label>
       </fieldset>
 
-      <fieldset class="view-opts">
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
         <legend>Vista</legend>
-        <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua animada</label>
-        <label class="check"><input type="checkbox" id="wind" data-testid="chk-viento" checked> Viento</label>
-        <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
-        <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> Detalle alto</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua</label>
+          <label class="check"><input type="checkbox" id="wind" data-testid="chk-viento" checked> Viento</label>
+          <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
+          <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> HD</label>
+        </div>
         <div class="seg small" id="water-level" role="radiogroup" aria-label="Nivel de agua">
-          <button type="button" data-v="min" data-testid="agua-min">Mínimo para mojar</button>
+          <button type="button" data-v="min" data-testid="agua-min">Agua mínima</button>
           <button type="button" data-v="max" data-testid="agua-max" aria-pressed="true">Plato lleno</button>
         </div>
-        <label class="slider"><span>Separar piezas</span>
-          <input type="range" id="explode" data-testid="sl-separar" min="0" max="100" step="1" value="0">
-          <output id="o-explode">0 %</output></label>
-      </fieldset>
-
-      <fieldset id="water-fx">
-        <legend>Agua <span class="hint">tocá el agua para tirar una gota</span></legend>
-        <div class="row3">
+        <div class="row-play">
+          <label class="slider"><span>Separar</span>
+            <input type="range" id="explode" data-testid="sl-separar" min="0" max="100" step="1" value="0">
+            <output id="o-explode">0 %</output></label>
+          <button type="button" id="explode-loop" data-testid="btn-despiece" aria-pressed="false">▶ Animar</button>
+        </div>
+        <div class="row3" id="water-fx">
           <button type="button" id="drop" data-testid="btn-gota">Gota</button>
-          <button type="button" id="waves" data-testid="btn-olas">Hacer olas</button>
+          <button type="button" id="waves" data-testid="btn-olas">Olas</button>
           <label class="check"><input type="checkbox" id="rain" data-testid="chk-lluvia"> Lluvia</label>
         </div>
+        <p class="hint small">Tocá el agua para tirar una gota.</p>
       </fieldset>
 
-      <fieldset>
-        <legend>Modo slicer <span class="hint">capa por capa, como en la impresora</span></legend>
+      <fieldset class="sec" data-sec="impresion" data-closed-mobile>
+        <legend>Impresión 3D</legend>
         <label class="check"><input type="checkbox" id="slicer" data-testid="chk-slicer"> Ver capas</label>
         <div id="slicer-ui" hidden>
           <div class="seg small" id="slicer-part" role="radiogroup" aria-label="Pieza">
@@ -136,12 +134,13 @@
       <div class="actions">
         <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
         <div class="row2">
-          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>Descargar 3MF</button>
-          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto 1080×1350</button>
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="pdf" data-testid="btn-pdf" disabled>Guía PDF</button>
         </div>
-        <div class="row2">
+        <div class="row3 even">
           <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL maceta</button>
           <button type="button" id="dlstlp" data-testid="btn-stl-plato" disabled>STL plato</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
         </div>
       </div>
     </section>
@@ -159,26 +158,24 @@
 
     <section class="care" id="care" data-testid="cuidados" aria-labelledby="care-title" hidden>
       <div class="care-h">
-        <h2 id="care-title">Cuidados de tus plantas</h2>
+        <h2 id="care-title">Cuidados</h2>
         <div class="tabs" id="care-tabs" role="tablist"></div>
       </div>
       <ul id="compat" class="compat" data-testid="compatibilidad"></ul>
       <div id="care-body" class="care-body" role="tabpanel"></div>
-      <p class="muted small">Recomendaciones generales para interior en clima templado (Argentina). Toxicidad según
-        <a href="https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants" target="_blank" rel="noopener">ASPCA</a>
-        <a href="https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/" target="_blank" rel="noopener">Clemson University</a>
+      <p class="muted small">Consejos generales para clima templado. Toxicidad según
+        <a href="https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants" target="_blank" rel="noopener">ASPCA</a>,
+        <a href="https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/" target="_blank" rel="noopener">Clemson</a>
         y <a href="https://ucanr.edu/sites/PlantSafely/ToxicPlantList/Jacaranda_mimosifolia" target="_blank" rel="noopener">UC ANR</a>.
-        Las nativas (árboles y arbustos) se cultivan en maceta como ejemplar joven o bonsái:
-        ante cualquier ingesta, consultá a tu veterinario.</p>
+        Ante una ingesta, consultá al veterinario.</p>
     </section>
     </div>
   </main>
 
   <footer class="foot">
-    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. Los diseños y el
-      código están protegidos: los archivos descargados son para <strong>uso personal y no comercial</strong>;
-      no se pueden vender, redistribuir ni publicar. <a href="licencia.html">Licencia completa</a>.</p>
-    <p class="muted">Motor <span id="engine-v">—</span> · corre en tu navegador, nada se sube a un servidor · <span id="build-id"></span></p>
+    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Motor <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
   </footer>
 
   <script type="module" src="app.js"></script>
