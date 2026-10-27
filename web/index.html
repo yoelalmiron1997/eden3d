@@ -67,9 +67,20 @@
       </fieldset>
 
       <fieldset>
-        <legend>Plantas <span class="hint">elegí hasta 4</span></legend>
-        <div id="plant-list" class="chips" data-testid="plantas" role="group" aria-label="Plantas"></div>
-        <label class="check"><input type="checkbox" id="decor" data-testid="chk-piedras" checked> Tierra y piedritas</label>
+        <legend>Plantas <span class="hint">una por tipo, hasta 4</span></legend>
+        <div id="plant-list" class="plant-groups" data-testid="plantas" role="group" aria-label="Plantas"></div>
+        <div class="row2">
+          <label>Tierra
+            <select id="cobertura" data-testid="sel-tierra"></select>
+          </label>
+          <label class="check end"><input type="checkbox" id="decor" data-testid="chk-piedras" checked> Mostrar tierra</label>
+        </div>
+        <p class="hint small" id="cob-desc" data-testid="tierra-desc"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Escenario</legend>
+        <div class="seg" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
       </fieldset>
 
       <fieldset>
@@ -83,6 +94,7 @@
       <fieldset class="view-opts">
         <legend>Vista</legend>
         <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua animada</label>
+        <label class="check"><input type="checkbox" id="wind" data-testid="chk-viento" checked> Viento</label>
         <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
         <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> Detalle alto</label>
         <div class="seg small" id="water-level" role="radiogroup" aria-label="Nivel de agua">
@@ -93,7 +105,10 @@
 
       <div class="actions">
         <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
-        <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>Descargar 3MF</button>
+        <div class="row2">
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>Descargar 3MF</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto 1080×1350</button>
+        </div>
         <div class="row2">
           <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL maceta</button>
           <button type="button" id="dlstlp" data-testid="btn-stl-plato" disabled>STL plato</button>
@@ -121,7 +136,9 @@
       <div id="care-body" class="care-body" role="tabpanel"></div>
       <p class="muted small">Recomendaciones generales para interior en clima templado (Argentina). Toxicidad según
         <a href="https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants" target="_blank" rel="noopener">ASPCA</a>
-        y <a href="https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/" target="_blank" rel="noopener">Clemson University</a>:
+        <a href="https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/" target="_blank" rel="noopener">Clemson University</a>
+        y <a href="https://ucanr.edu/sites/PlantSafely/ToxicPlantList/Jacaranda_mimosifolia" target="_blank" rel="noopener">UC ANR</a>.
+        Las nativas (árboles y arbustos) se cultivan en maceta como ejemplar joven o bonsái:
         ante cualquier ingesta, consultá a tu veterinario.</p>
     </section>
     </div>

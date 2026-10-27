@@ -5,13 +5,25 @@
 Configurador web de **macetas paramétricas para impresión 3D (FDM, PLA)** de Eden3D:
 elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás el 3MF.
 
-* **11 plantas en 3D** (echeveria, haworthia, aloe, sansevieria, cactus columnar,
-  mammillaria, opuntia, jade, rosario, potus, lithops): elegí una o hasta 4 en la
-  misma maceta, con **ficha de cuidados** completa (luz, riego por estación, cómo usar
-  el autorriego con los ml de tu maceta, sustrato, plagas, señales de problemas y
-  toxicidad para mascotas) y aviso si combinás plantas con cuidados distintos.
-* **Iluminación** con presets (estudio, mañana, atardecer, noche) y dirección del sol.
-* **Agua animada** en el plato de autorriego, con nivel mínimo y plato lleno.
+* **20 plantas en 3D**, agrupadas por tipo (**una por tipo**, hasta 4 por maceta):
+  * suculentas: echeveria, haworthia, aloe, jade, lithops;
+  * cactus: cactus columnar, mammillaria, opuntia y **cardón**;
+  * colgantes: rosario, potus; follaje: sansevieria;
+  * **nativas argentinas**: ceibo, jacarandá, ombú, lapacho y arrayán (árboles, como
+    ejemplar joven o bonsái), yerba mate, cortadera y espinillo/aromo.
+
+  Cada una trae su **ficha de cuidados** (luz, riego por estación, cómo usar el
+  autorriego con los ml de tu maceta, sustrato, plagas, señales de problemas y
+  toxicidad para mascotas con fuente) y aviso si combinás plantas con cuidados distintos.
+* Las plantas **nacen** desde la tierra al elegirlas y se **mueven con el viento**
+  según qué tan flexibles son.
+* **Tipo de tierra**: piedritas blancas, tierra negra, arcilla expandida, corteza de
+  pino, piedra volcánica o musgo (por defecto, la sugerida para el riego de la planta).
+* **Escenarios**: estudio, oficina, jardín y taller de trabajo, con **iluminación**
+  ajustable (estudio, mañana, atardecer, noche) y dirección del sol.
+* **Agua animada** en el plato de autorriego, con ondulaciones, gotas y nivel mínimo
+  o plato lleno.
+* **Foto** de producto 1080×1350 (formato Instagram) con un clic.
 
 * **Web:** https://yoelalmiron1997.github.io/eden3d/
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/

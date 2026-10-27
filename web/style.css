@@ -167,3 +167,11 @@ button.link { background: none; border: 0; color: var(--green); padding: 0; min-
 .signs td { border-bottom: 1px solid var(--line); padding: 6px; vertical-align: top; }
 .small { font-size: 12px; }
 @media (max-width: 860px) { .column { order: -1; } .signs { display: block; overflow-x: auto; } }
+
+/* plantas agrupadas por tipo (una por grupo) */
+.plant-groups { display: grid; gap: 10px; }
+.pgroup h3 { margin: 0 0 4px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); text-transform: uppercase; }
+.chip.nativa { border-style: dashed; }
+.chip.nativa[aria-pressed="true"] { border-style: solid; }
+.check.end { align-self: end; min-height: 38px; }
+p.hint.small { margin: 2px 0 0; font-size: 12px; line-height: 1.4; }

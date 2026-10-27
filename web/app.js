@@ -1,5 +1,5 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
-import { Viewer, LIGHTS } from "./viewer.js";
+import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { renderCare, renderCompat } from "./care.js";
 
 const $ = (id) => document.getElementById(id);
@@ -18,7 +18,7 @@ const SLIDERS = [
 // estado visible para los tests e2e (window.__eden)
 const state = {
   ready: false, busy: false, info: null, summary: null, parts: [], builds: 0, errors: [],
-  plants: [], plantBuilds: 0, careTab: null, light: "estudio",
+  plants: [], plantBuilds: 0, careTab: null, light: "estudio", scene: "estudio", cobertura: null,
 };
 window.__eden = state;
 
@@ -48,6 +48,11 @@ Object.defineProperty(state, "viewer", { get: () => ({
   waterTime: viewer.stats.waterTime, waterLevel: viewer.stats.waterLevel, frames: viewer.stats.frames,
   light: viewer.lightKey, sunAz: viewer.sunAz, cut: viewer.cut,
   sunIntensity: viewer.sun.intensity, lamp: viewer.lamp.intensity,
+  scene: viewer.sceneKey, sceneMeshes: viewer.sceneMeshes(), groundVisible: viewer.ground.visible, lowPower: !!viewer.lowPower,
+  drops: viewer.stats.drops, growing: viewer.stats.growing, born: viewer.stats.born || [], animTime: viewer.animTime,
+  plantGroups: (viewer.plantGroups || []).map((g) => ({ id: g.userData.id, scale: g.scale.x,
+    base: [g.position.x, g.position.y, g.position.z], meshes: g.children.length })),
+  wind: viewer.windOn && viewer.wind ? viewer.wind.value : 0,
 }) });
 
 // ------------------------------------------------------------------ UI
@@ -73,8 +78,8 @@ function setBusy(on, text = "Calculando…") {
   state.busy = on;
   $("busy").hidden = !on;
   $("busy-text").textContent = text;
-  for (const id of ["build", "dl3mf", "dlstl", "dlstlp"]) $(id).disabled = on || !state.ready;
-  if (!on && !state.summary?.valid) for (const id of ["dl3mf", "dlstl", "dlstlp"]) $(id).disabled = true;
+  for (const id of ["build", "dl3mf", "dlstl", "dlstlp", "photo"]) $(id).disabled = on || !state.ready;
+  if (!on && !state.summary?.valid) for (const id of ["dl3mf", "dlstl", "dlstlp", "photo"]) $(id).disabled = true;
   if (!on && !state.parts.some((p) => p.name === "PLATO")) $("dlstlp").disabled = true;
 }
 
@@ -140,12 +145,19 @@ async function updatePlants() {
   const ids = state.plants.slice();
   const my = ++plantReq;
   renderCarePanel([]);
-  if (!ids.length) { viewer.showPlants([]); state.plantBuilds++; state.compat = []; return; }
   try {
-    const r = await call("plants", { opts: opts(), ids, decor: $("decor").checked });
+    if (!ids.length) {                                 // sin plantas igual se ve la tierra
+      const r = $("decor").checked ? await call("plants", { opts: opts(), ids: [], decor: true, cobertura: state.cobertura }) : { parts: [] };
+      if (my !== plantReq) return;
+      viewer.showPlants(r.parts, []);
+      state.plantBuilds++; state.compat = []; return;
+    }
+    const r = await call("plants", { opts: opts(), ids, decor: $("decor").checked, cobertura: state.cobertura });
     if (my !== plantReq) return;                       // llegó una selección más nueva
-    viewer.showPlants(r.parts);
+    viewer.showPlants(r.parts, r.ids);
     state.compat = r.compat;
+    state.coberturaUsada = r.cobertura;
+    coberturaDesc();
     renderCarePanel(r.compat);
     state.plantBuilds++;
   } catch (e) {
@@ -154,23 +166,67 @@ async function updatePlants() {
   }
 }
 
+// una planta por tipo: los chips de un mismo grupo se comportan como radio
 function plantChips() {
   const max = state.info.max_plantas;
-  $("plant-list").innerHTML = state.info.plantas.map((p) => `
-    <button type="button" class="chip" data-id="${p.id}" data-testid="planta-${p.id}" aria-pressed="${state.plants.includes(p.id)}"
-      title="${esc(p.tipo)} · ${esc(p.dificultad)}">${esc(p.nombre)}<small>${esc(p.tipo.split(" ")[0])}</small></button>`).join("");
-  for (const b of $("plant-list").querySelectorAll(".chip")) {
-    b.disabled = !state.plants.includes(b.dataset.id) && state.plants.length >= max;
-  }
+  const grupos = state.info.grupos || [];
+  const sel = (id) => state.plants.includes(id);
+  const grupoDe = (id) => (state.info.plantas.find((p) => p.id === id) || {}).grupo;
+  const usados = new Set(state.plants.map(grupoDe));
+  $("plant-list").innerHTML = grupos.map((g) => {
+    const ps = state.info.plantas.filter((p) => p.grupo === g.id);
+    const lleno = !usados.has(g.id) && state.plants.length >= max;
+    return `<div class="pgroup" role="radiogroup" aria-label="${esc(g.nombre)}" data-testid="grupo-${g.id}">
+      <h3>${esc(g.nombre)}</h3><div class="chips">${ps.map((p) => `
+      <button type="button" class="chip${p.nativa ? " nativa" : ""}" role="radio" data-id="${p.id}" data-testid="planta-${p.id}"
+        aria-pressed="${sel(p.id)}" aria-checked="${sel(p.id)}" ${lleno ? "disabled" : ""}
+        title="${esc(p.tipo)} · ${esc(p.dificultad)}">${esc(p.nombre)}<small>${esc(p.tipo.split(" ")[0])}</small></button>`).join("")}
+      </div></div>`;
+  }).join("");
 }
 
 function togglePlant(id) {
+  const info = state.info;
+  const grupo = (x) => (info.plantas.find((p) => p.id === x) || {}).grupo;
   const i = state.plants.indexOf(id);
   if (i >= 0) state.plants.splice(i, 1);
-  else if (state.plants.length < state.info.max_plantas) state.plants.push(id);
+  else {
+    const j = state.plants.findIndex((x) => grupo(x) === grupo(id));
+    if (j >= 0) state.plants.splice(j, 1, id);          // reemplaza a la del mismo tipo
+    else if (state.plants.length < info.max_plantas) state.plants.push(id);
+  }
   if (!state.plants.includes(state.careTab)) state.careTab = state.plants[state.plants.length - 1] || null;
   plantChips();
   if (state.ready && !state.busy) updatePlants();
+}
+
+function coberturas() {
+  $("cobertura").innerHTML = `<option value="">Automática (según la planta)</option>` +
+    state.info.coberturas.map((c) => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("");
+  $("cobertura").value = state.cobertura || "";
+  coberturaDesc();
+}
+
+function coberturaDesc() {
+  const id = state.cobertura || state.coberturaUsada;
+  const c = (state.info?.coberturas || []).find((x) => x.id === id);
+  $("cob-desc").textContent = c ? (state.cobertura ? "" : `Sugerida: ${c.nombre}. `) + c.descripcion : "";
+}
+
+function sceneButtons() {
+  $("scenes").innerHTML = Object.entries(SCENES).map(([k, S]) => `
+    <button type="button" role="radio" data-k="${k}" data-testid="escena-${k}" aria-pressed="${k === state.scene}">${S.label}</button>`).join("");
+}
+
+function takePhoto() {
+  const r = viewer.photo(1080, 1350);
+  const a = Object.assign(document.createElement("a"), { href: r.url,
+    download: `${state.summary?.sku || "eden3d"}_${state.scene}.png` });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  state.lastPhoto = { width: r.width, height: r.height, bytes: Math.round((r.url.length - 22) * 0.75) };
+  setStatus("Foto descargada (1080×1350)", "ok");
 }
 
 function renderCarePanel(compat) {
@@ -237,11 +293,12 @@ function buildSliders() {
 async function main() {
   buildSliders();
   lightButtons();
+  sceneButtons();
   try {
     const boot = await call("init");
     const info = boot.info;
     state.info = info;
-    viewer.setPlantMaterials(info.materiales);
+    viewer.setPlantMaterials(info.materiales, info.decor_mats || []);
     fill($("design"), info.designs, (d) => d.code, (d) => `${d.code} · ${d.name}`);
     fill($("size"), info.sizes, (s) => s, (s) => s);
     fill($("mode"), info.modes, (m) => m.code, (m) => m.label);
@@ -255,6 +312,7 @@ async function main() {
     }
     state.plants = ["echeveria"];
     plantChips();
+    coberturas();
     state.ready = true;
     state.bootSeconds = boot.seconds;
     setStatus(`Motor listo en ${boot.seconds.toFixed(1)} s`, "ok");
@@ -284,6 +342,22 @@ $("care-tabs").addEventListener("click", (ev) => {
   renderCarePanel(state.compat);
 });
 $("decor").addEventListener("change", () => updatePlants());
+$("cobertura").addEventListener("change", () => {
+  state.cobertura = $("cobertura").value || null;
+  coberturaDesc();
+  updatePlants();
+});
+$("scenes").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-k]");
+  if (!b) return;
+  state.scene = b.dataset.k;
+  viewer.setScene(state.scene);
+  state.light = viewer.lightKey;
+  sceneButtons();
+  lightButtons();
+});
+$("wind").addEventListener("change", () => viewer.setWind($("wind").checked));
+$("photo").addEventListener("click", () => takePhoto());
 $("light-presets").addEventListener("click", (ev) => {
   const b = ev.target.closest("button[data-k]");
   if (!b) return;

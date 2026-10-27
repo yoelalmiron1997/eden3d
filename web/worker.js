@@ -57,8 +57,8 @@ function build(opts) {
   }
 }
 
-function plants(opts, ids, decor) {
-  const res = api.plants(py.toPy(opts), py.toPy(ids), decor);
+function plants(opts, ids, decor, cobertura) {
+  const res = api.plants(py.toPy(opts), py.toPy(ids), decor, cobertura || null);
   try {
     const cp = res.get("compat");
     const compat = cp.toJs({ dict_converter: Object.fromEntries });
@@ -67,11 +67,17 @@ function plants(opts, ids, decor) {
     const pl = res.get("parts");
     for (let i = 0; i < pl.length; i++) {
       const p = pl.get(i);
-      parts.push({ name: p.get("name"), positions: bytesOf(p.get("positions")), indices: bytesOf(p.get("indices")) });
+      const base = p.get("base");
+      parts.push({ name: p.get("name"), positions: bytesOf(p.get("positions")), indices: bytesOf(p.get("indices")),
+        planta: p.get("planta"), base: base.toJs(), flex: p.get("flex") });
+      base.destroy();
       p.destroy();
     }
     pl.destroy();
-    return { parts, compat };
+    const ids = res.get("ids");
+    const idsJs = ids.toJs();
+    ids.destroy();
+    return { parts, compat, ids: idsJs, cobertura: res.get("cobertura") };
   } finally {
     res.destroy();
   }
@@ -89,7 +95,7 @@ function exportFile(kind, opts, part) {
 const ready = init();
 
 self.onmessage = async (ev) => {
-  const { id, type, opts, part, ids, decor } = ev.data;
+  const { id, type, opts, part, ids, decor, cobertura } = ev.data;
   try {
     const boot = await ready;
     if (type === "init") {
@@ -99,7 +105,7 @@ self.onmessage = async (ev) => {
       self.postMessage({ id, ok: true, result: r },
         r.parts.flatMap((p) => [p.positions, p.indices]));
     } else if (type === "plants") {
-      const r = plants(opts, ids || [], decor !== false);
+      const r = plants(opts, ids || [], decor !== false, cobertura);
       self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
     } else if (type === "3mf" || type === "stl") {
       const r = exportFile(type, opts, part);

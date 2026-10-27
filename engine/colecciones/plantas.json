@@ -1,8 +1,10 @@
 {
- "_ayuda": "Fichas de cuidado de las plantas del configurador. {min_ml} y {max_ml} se reemplazan por los ml del plato de autorriego del diseño elegido. grupo_riego: seco | medio | humedo. grupo_luz: sol | brillante | media. autorriego.nivel: recomendado | con-cuidado | no-recomendado.",
+ "_ayuda": "Fichas de cuidado de las plantas del configurador. {min_ml} y {max_ml} se reemplazan por los ml del plato de autorriego del diseño elegido. grupo_riego: seco | medio | humedo. grupo_luz: sol | brillante | media. autorriego.nivel: recomendado | con-cuidado | no-recomendado. grupo: una planta por grupo en la misma maceta. nativa: especie nativa de Argentina (se tiene en maceta como ejemplar joven o bonsái).",
  "fuentes": {
   "toxicidad": "https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants",
-  "toxicidad_2": "https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/"
+  "toxicidad_2": "https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/",
+  "jacaranda": "https://ucanr.edu/sites/PlantSafely/ToxicPlantList/Jacaranda_mimosifolia",
+  "ombu": "https://en.wikipedia.org/wiki/Phytolacca_dioica"
  },
  "plantas": [
   {
@@ -65,7 +67,9 @@
     "detalle": "Considerada no tóxica para perros y gatos (ASPCA)."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "sol"
+   "grupo_luz": "sol",
+   "grupo": "suculentas",
+   "nativa": false
   },
   {
    "id": "haworthia",
@@ -122,7 +126,9 @@
     "detalle": "Considerada no tóxica para perros y gatos."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "brillante"
+   "grupo_luz": "brillante",
+   "grupo": "suculentas",
+   "nativa": false
   },
   {
    "id": "aloe",
@@ -179,7 +185,9 @@
     "detalle": "Tóxica para perros y gatos (saponinas y antraquinonas): puede causar vómitos, letargo y diarrea si la comen."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "sol"
+   "grupo_luz": "sol",
+   "grupo": "suculentas",
+   "nativa": false
   },
   {
    "id": "sansevieria",
@@ -236,7 +244,9 @@
     "detalle": "Tóxica para perros y gatos (saponinas): vómitos, salivación, diarrea."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "media"
+   "grupo_luz": "media",
+   "grupo": "follaje",
+   "nativa": false
   },
   {
    "id": "cereus",
@@ -293,7 +303,9 @@
     "detalle": "No se considera tóxico, pero las espinas pueden lastimar a perros y gatos."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "sol"
+   "grupo_luz": "sol",
+   "grupo": "cactus",
+   "nativa": false
   },
   {
    "id": "mammillaria",
@@ -350,7 +362,9 @@
     "detalle": "No se considera tóxico; cuidado con las espinas."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "sol"
+   "grupo_luz": "sol",
+   "grupo": "cactus",
+   "nativa": false
   },
   {
    "id": "opuntia",
@@ -408,7 +422,9 @@
     "detalle": "No tóxica, pero los gloquidios irritan piel, boca y ojos de mascotas y personas."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "sol"
+   "grupo_luz": "sol",
+   "grupo": "cactus",
+   "nativa": false
   },
   {
    "id": "crassula",
@@ -465,7 +481,9 @@
     "detalle": "Tóxica para perros y gatos (ASPCA): vómitos, decaimiento e incoordinación."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "sol"
+   "grupo_luz": "sol",
+   "grupo": "suculentas",
+   "nativa": false
   },
   {
    "id": "senecio",
@@ -522,7 +540,9 @@
     "detalle": "Tóxica para perros y gatos: puede causar vómitos, diarrea y decaimiento."
    },
    "grupo_riego": "seco",
-   "grupo_luz": "brillante"
+   "grupo_luz": "brillante",
+   "grupo": "colgantes",
+   "nativa": false
   },
   {
    "id": "pothos",
@@ -584,7 +604,9 @@
     "detalle": "Tóxica para perros y gatos (oxalatos de calcio): irritación de boca, babeo, vómitos y dificultad para tragar."
    },
    "grupo_riego": "medio",
-   "grupo_luz": "media"
+   "grupo_luz": "media",
+   "grupo": "colgantes",
+   "nativa": false
   },
   {
    "id": "lithops",
@@ -640,7 +662,562 @@
     "detalle": "Considerada no tóxica para perros y gatos."
    },
    "grupo_riego": "seco",
+   "grupo_luz": "sol",
+   "grupo": "suculentas",
+   "nativa": false
+  },
+  {
+   "id": "ceibo",
+   "nombre": "Ceibo",
+   "otros_nombres": [
+    "Seibo",
+    "Flor nacional"
+   ],
+   "cientifico": "Erythrina crista-galli (Fabaceae)",
+   "tipo": "Árbol nativo",
+   "dificultad": "Media",
+   "colgante": false,
+   "grupo": "arboles_nativos",
+   "nativa": true,
+   "resumen": "Flor nacional de Argentina, de un rojo intenso. Árbol de ríos y bañados: en maceta se cultiva como ejemplar joven o bonsái y florece en primavera y verano.",
+   "luz": "Sol pleno: al menos 6 horas. Con poca luz no florece.",
+   "riego": {
+    "primavera_verano": "Frecuente: cada 2 o 3 días en verano, sin dejar secar del todo (es de zonas húmedas).",
+    "otono_invierno": "Pierde las hojas: regá poco, sólo para que la tierra no se seque por completo.",
+    "como": "Riego abundante hasta que drene."
+   },
+   "autorriego": {
+    "nivel": "recomendado",
+    "consejo": "Le encanta el riego por abajo: en primavera y verano mantené el plato entre {min_ml} y {max_ml} ml. En invierno, sin hojas, cargá sólo {min_ml} ml cada tanto."
+   },
+   "sustrato": "Universal con 20 a 30 % de perlita; tolera suelos pesados y húmedos.",
+   "temperatura": {
+    "min": -3,
+    "max": 40,
+    "nota": "Tolera heladas suaves una vez establecido; joven conviene protegerlo."
+   },
+   "humedad": "Media a alta.",
+   "fertilizante": "Cada 15 días en primavera y verano con fertilizante para plantas con flor.",
+   "trasplante": "Cada 1 o 2 años en primavera; en maceta conviene podar raíces si se lo lleva como bonsái.",
+   "propagacion": "Por semillas (germinan rápido) o estacas de ramas al final del invierno.",
+   "plagas": "Chinches, cochinilla y orugas en hojas tiernas.",
+   "senales": [
+    {
+     "sintoma": "No florece",
+     "causa": "Poca luz o falta de agua en verano",
+     "solucion": "Más sol directo y riego abundante en la temporada."
+    },
+    {
+     "sintoma": "Pierde las hojas en otoño",
+     "causa": "Es caducifolio: normal",
+     "solucion": "Reducí el riego hasta que rebrote en primavera."
+    },
+    {
+     "sintoma": "Hojas amarillas en verano",
+     "causa": "Falta de agua o de nutrientes",
+     "solucion": "Riego más frecuente y fertilizante."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Las semillas del género Erythrina contienen alcaloides tóxicos: evitá que perros y gatos las coman."
+   },
+   "grupo_riego": "humedo",
    "grupo_luz": "sol"
+  },
+  {
+   "id": "jacaranda",
+   "nombre": "Jacarandá",
+   "otros_nombres": [
+    "Tarco"
+   ],
+   "cientifico": "Jacaranda mimosifolia (Bignoniaceae)",
+   "tipo": "Árbol nativo",
+   "dificultad": "Media",
+   "colgante": false,
+   "grupo": "arboles_nativos",
+   "nativa": true,
+   "resumen": "El árbol que tiñe de violeta las calles en primavera. En maceta se tiene como ejemplar joven o bonsái; necesita mucho sol para florecer.",
+   "luz": "Sol pleno. En interior pierde hojas y no florece: ideal en balcón o patio soleado.",
+   "riego": {
+    "primavera_verano": "Cada 3 o 4 días, dejando secar la superficie.",
+    "otono_invierno": "Cada 10 a 15 días.",
+    "como": "Riego profundo; no tolera encharcamiento."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Usá el plato como reserva de verano: {min_ml} ml cuando la superficie esté seca. Evitá tenerlo siempre lleno ({max_ml} ml)."
+   },
+   "sustrato": "Universal con 30 % de perlita o arena gruesa.",
+   "temperatura": {
+    "min": -2,
+    "max": 40,
+    "nota": "Joven es sensible a heladas: protegelo el primer invierno."
+   },
+   "humedad": "Media.",
+   "fertilizante": "Mensual en primavera y verano; un poco de estrés hídrico a fines de invierno favorece la floración.",
+   "trasplante": "Cada 2 años en primavera.",
+   "propagacion": "Por semillas (las cápsulas leñosas) o esquejes semileñosos.",
+   "plagas": "Pulgones y cochinilla en brotes nuevos.",
+   "senales": [
+    {
+     "sintoma": "Ramas largas y pocas hojas",
+     "causa": "Falta de luz",
+     "solucion": "Pasalo a pleno sol."
+    },
+    {
+     "sintoma": "Hojas que caen en invierno",
+     "causa": "Semicaducifolio: normal con frío",
+     "solucion": "Menos riego hasta primavera."
+    },
+    {
+     "sintoma": "Hojas amarillas y raíz negra",
+     "causa": "Exceso de agua",
+     "solucion": "Dejá secar y mejorá el drenaje."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Según la Universidad de California (UCANR), todas sus partes son tóxicas si se ingieren."
+   },
+   "grupo_riego": "medio",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "ombu",
+   "nombre": "Ombú",
+   "otros_nombres": [
+    "Bellasombra"
+   ],
+   "cientifico": "Phytolacca dioica (Phytolaccaceae)",
+   "tipo": "Árbol nativo",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "grupo": "arboles_nativos",
+   "nativa": true,
+   "resumen": "Símbolo de la pampa: en realidad es una hierba gigante, de tronco blando que guarda agua. Crece rápido y es muy usado como bonsái.",
+   "luz": "Sol pleno o mucha luz. Tolera media sombra pero se estira.",
+   "riego": {
+    "primavera_verano": "Cada 4 o 5 días; tolera bien la sequía porque acumula agua en el tronco.",
+    "otono_invierno": "Cada 15 días.",
+    "como": "Dejá secar entre riegos: la base del tronco se pudre con exceso de agua."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Cargá {min_ml} ml con la tierra seca y que se consuma. No lo dejes con el plato lleno: su base engrosada es sensible al encharcamiento."
+   },
+   "sustrato": "Drenante: universal con 30 a 40 % de perlita o arena gruesa.",
+   "temperatura": {
+    "min": -3,
+    "max": 40,
+    "nota": "Adulto tolera heladas; joven protegelo."
+   },
+   "humedad": "Baja a media.",
+   "fertilizante": "Mensual en primavera y verano.",
+   "trasplante": "Cada 1 o 2 años; crece rápido y engrosa la base del tronco.",
+   "propagacion": "Por semillas o esquejes.",
+   "plagas": "Muy resistente: la savia lo protege de la mayoría de las plagas.",
+   "senales": [
+    {
+     "sintoma": "Base del tronco blanda",
+     "causa": "Exceso de agua",
+     "solucion": "Suspendé el riego y revisá raíces."
+    },
+    {
+     "sintoma": "Hojas grandes y ramas largas",
+     "causa": "Poca luz o mucho fertilizante",
+     "solucion": "Más sol y poda de formación."
+    },
+    {
+     "sintoma": "Hojas caídas en invierno",
+     "causa": "Frío",
+     "solucion": "Normal con heladas; rebrota en primavera."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "La savia y las hojas son tóxicas (por eso el ganado no lo come): evitá que perros y gatos lo mastiquen."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "yerba_mate",
+   "nombre": "Yerba mate",
+   "otros_nombres": [
+    "Ka'a"
+   ],
+   "cientifico": "Ilex paraguariensis (Aquifoliaceae)",
+   "tipo": "Arbusto nativo",
+   "dificultad": "Difícil",
+   "colgante": false,
+   "grupo": "arbustos_nativos",
+   "nativa": true,
+   "resumen": "Arbusto de la selva misionera del que se hace la infusión nacional. En maceta pide humedad constante, suelo ácido y luz filtrada.",
+   "luz": "Media sombra o luz filtrada (crece bajo otros árboles). El sol fuerte de la tarde le quema las hojas.",
+   "riego": {
+    "primavera_verano": "Frecuente: la tierra siempre apenas húmeda, nunca encharcada.",
+    "otono_invierno": "Cada 5 a 7 días.",
+    "como": "Usá agua de lluvia o sin cal: le gusta el suelo ácido."
+   },
+   "autorriego": {
+    "nivel": "recomendado",
+    "consejo": "Ideal para el autorriego: mantené el plato con {min_ml} a {max_ml} ml en primavera y verano para que la tierra no se seque. En invierno, cargas más espaciadas."
+   },
+   "sustrato": "Ácido y rico en materia orgánica: tierra para plantas acidófilas (tipo azalea) con perlita.",
+   "temperatura": {
+    "min": 0,
+    "max": 32,
+    "nota": "No tolera heladas fuertes ni calor seco."
+   },
+   "humedad": "Alta: pulverizá en verano.",
+   "fertilizante": "Fertilizante para acidófilas cada 20 días en primavera y verano.",
+   "trasplante": "Cada 2 años en primavera.",
+   "propagacion": "Por semillas (germinación lenta y difícil) o esquejes con hormona.",
+   "plagas": "Rulo de la yerba, ácaros y cochinilla.",
+   "senales": [
+    {
+     "sintoma": "Hojas con puntas marrones",
+     "causa": "Ambiente seco o sol fuerte",
+     "solucion": "Más humedad y luz filtrada."
+    },
+    {
+     "sintoma": "Hojas amarillas con nervios verdes",
+     "causa": "Suelo poco ácido (clorosis)",
+     "solucion": "Sustrato para acidófilas y agua sin cal."
+    },
+    {
+     "sintoma": "Hojas caídas",
+     "causa": "Falta de agua",
+     "solucion": "Regá y mantené la humedad pareja."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Sus hojas tienen cafeína, que es tóxica para perros y gatos."
+   },
+   "grupo_riego": "humedo",
+   "grupo_luz": "media"
+  },
+  {
+   "id": "cortadera",
+   "nombre": "Cortadera",
+   "otros_nombres": [
+    "Carrizo de las pampas"
+   ],
+   "cientifico": "Cortaderia selloana (Poaceae)",
+   "tipo": "Gramínea nativa",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "grupo": "arbustos_nativos",
+   "nativa": true,
+   "resumen": "Pasto alto de los campos pampeanos con plumeros blancos en verano y otoño. En maceta conviene una variedad enana; las hojas cortan.",
+   "luz": "Sol pleno.",
+   "riego": {
+    "primavera_verano": "Cada 3 a 5 días.",
+    "otono_invierno": "Cada 10 a 15 días.",
+    "como": "Riego profundo; tolera sequías cortas."
+   },
+   "autorriego": {
+    "nivel": "recomendado",
+    "consejo": "Tolera bien el riego por abajo: {min_ml} a {max_ml} ml en verano, dejando que el plato se vacíe entre cargas."
+   },
+   "sustrato": "Universal con 20 % de arena; no es exigente.",
+   "temperatura": {
+    "min": -10,
+    "max": 40,
+    "nota": "Muy rústica."
+   },
+   "humedad": "Indiferente.",
+   "fertilizante": "Una o dos veces en primavera.",
+   "trasplante": "Cada 1 o 2 años: crece mucho y conviene dividir la mata.",
+   "propagacion": "Por división de matas a fines de invierno.",
+   "plagas": "Casi no tiene.",
+   "senales": [
+    {
+     "sintoma": "Centro seco y marrón",
+     "causa": "Mata vieja",
+     "solucion": "Cortá todo a ras a fines de invierno (con guantes) y rebrota."
+    },
+    {
+     "sintoma": "Pocos plumeros",
+     "causa": "Falta de sol",
+     "solucion": "Pleno sol."
+    },
+    {
+     "sintoma": "Puntas secas",
+     "causa": "Falta de agua en verano",
+     "solucion": "Riego más frecuente."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "No se la considera tóxica, pero los bordes de las hojas cortan: cuidado con mascotas y chicos. Fuera de Sudamérica es invasora."
+   },
+   "grupo_riego": "medio",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "lapacho",
+   "nombre": "Lapacho",
+   "otros_nombres": [
+    "Lapacho rosado",
+    "Tajy"
+   ],
+   "cientifico": "Handroanthus impetiginosus (Bignoniaceae)",
+   "tipo": "Árbol nativo",
+   "dificultad": "Media",
+   "colgante": false,
+   "grupo": "arboles_nativos",
+   "nativa": true,
+   "resumen": "Árbol del norte argentino que florece sin hojas a fines del invierno, cubierto de flores rosadas (hay especies amarillas).",
+   "luz": "Sol pleno.",
+   "riego": {
+    "primavera_verano": "Cada 3 o 4 días.",
+    "otono_invierno": "Poco: cada 15 días. Un invierno seco favorece la floración.",
+    "como": "Dejá secar la superficie entre riegos."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "En verano, {min_ml} ml cuando la superficie esté seca. En invierno, plato vacío para provocar la floración."
+   },
+   "sustrato": "Universal con 30 % de perlita, bien drenado.",
+   "temperatura": {
+    "min": -2,
+    "max": 42,
+    "nota": "Joven es sensible a heladas."
+   },
+   "humedad": "Media.",
+   "fertilizante": "Mensual en primavera y verano.",
+   "trasplante": "Cada 2 años; crecimiento lento en maceta.",
+   "propagacion": "Por semillas frescas.",
+   "plagas": "Hormigas cortadoras y cochinilla.",
+   "senales": [
+    {
+     "sintoma": "No florece",
+     "causa": "Planta joven o invierno con mucho riego",
+     "solucion": "Paciencia (florece de adulto) e invierno seco."
+    },
+    {
+     "sintoma": "Hojas que caen en invierno",
+     "causa": "Es caducifolio",
+     "solucion": "Normal: florece antes de rebrotar."
+    },
+    {
+     "sintoma": "Raíz podrida",
+     "causa": "Encharcamiento",
+     "solucion": "Mejorá el drenaje."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "No hay datos confiables de toxicidad para mascotas: evitá que la mastiquen."
+   },
+   "grupo_riego": "medio",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "espinillo",
+   "nombre": "Espinillo",
+   "otros_nombres": [
+    "Aromo",
+    "Aromito"
+   ],
+   "cientifico": "Vachellia caven (Fabaceae)",
+   "tipo": "Arbusto nativo",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "grupo": "arbustos_nativos",
+   "nativa": true,
+   "resumen": "Arbusto espinoso del monte con esferas amarillas muy perfumadas a fines del invierno. Muy resistente a la sequía.",
+   "luz": "Sol pleno.",
+   "riego": {
+    "primavera_verano": "Cada 5 a 7 días, con la tierra seca.",
+    "otono_invierno": "Cada 15 a 20 días.",
+    "como": "Riego espaciado; no tolera el encharcamiento."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Cargá {min_ml} ml sólo con la tierra seca. No mantengas el plato lleno."
+   },
+   "sustrato": "Drenante: universal con 40 % de arena o perlita.",
+   "temperatura": {
+    "min": -8,
+    "max": 42,
+    "nota": "Muy rústico."
+   },
+   "humedad": "Baja.",
+   "fertilizante": "Poco: una vez en primavera (fija nitrógeno).",
+   "trasplante": "Cada 2 o 3 años, con guantes por las espinas.",
+   "propagacion": "Por semillas escarificadas (remojadas en agua caliente).",
+   "plagas": "Pocas: alguna cochinilla.",
+   "senales": [
+    {
+     "sintoma": "Hojas amarillas",
+     "causa": "Exceso de agua",
+     "solucion": "Espaciá los riegos."
+    },
+    {
+     "sintoma": "Pocas flores",
+     "causa": "Poca luz",
+     "solucion": "Pleno sol."
+    },
+    {
+     "sintoma": "Ramas finas y largas",
+     "causa": "Falta de poda",
+     "solucion": "Poda de formación después de florecer."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "Tiene espinas largas que pueden lastimar. No hay datos confiables de toxicidad para mascotas: evitá que la mastiquen."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "cardon",
+   "nombre": "Cardón",
+   "otros_nombres": [
+    "Cardón grande",
+    "Pasacana"
+   ],
+   "cientifico": "Leucostele terscheckii (Cactaceae)",
+   "tipo": "Cactus nativo",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "grupo": "cactus",
+   "nativa": true,
+   "resumen": "El cactus gigante de los paisajes del noroeste, con brazos como candelabro. En maceta crece muy lento: un ejemplar joven dura años.",
+   "luz": "Sol pleno, cuanto más mejor.",
+   "riego": {
+    "primavera_verano": "Cada 15 a 20 días con la tierra totalmente seca.",
+    "otono_invierno": "Nada: reposo seco.",
+    "como": "Riego profundo y muy espaciado."
+   },
+   "autorriego": {
+    "nivel": "no-recomendado",
+    "consejo": "Plato vacío como drenaje. Si regás por abajo, {min_ml} ml una vez y que se consuma."
+   },
+   "sustrato": "Muy mineral: 60 % pómez, arena gruesa o grava y 40 % tierra para cactus.",
+   "temperatura": {
+    "min": -5,
+    "max": 45,
+    "nota": "Seco tolera frío de altura; húmedo y frío se pudre."
+   },
+   "humedad": "Muy baja.",
+   "fertilizante": "Una vez en primavera, para cactus.",
+   "trasplante": "Cada 3 o 4 años, con papel o guantes gruesos.",
+   "propagacion": "Por semillas (muy lento).",
+   "plagas": "Cochinilla.",
+   "senales": [
+    {
+     "sintoma": "Base blanda",
+     "causa": "Exceso de agua",
+     "solucion": "Cortá lo dañado y secá."
+    },
+    {
+     "sintoma": "Punta fina",
+     "causa": "Poca luz",
+     "solucion": "Más sol."
+    },
+    {
+     "sintoma": "Manchas amarillas",
+     "causa": "Quemadura por sol de golpe",
+     "solucion": "Aclimatalo de a poco."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "Espinas muy largas y duras: ubicalo fuera del alcance de mascotas y chicos."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "arrayan",
+   "nombre": "Arrayán",
+   "otros_nombres": [
+    "Palo colorado",
+    "Quetri"
+   ],
+   "cientifico": "Luma apiculata (Myrtaceae)",
+   "tipo": "Árbol nativo",
+   "dificultad": "Media",
+   "colgante": false,
+   "grupo": "arboles_nativos",
+   "nativa": true,
+   "resumen": "Árbol de los bosques patagónicos famoso por su corteza color canela y su tronco frío al tacto. Muy apreciado como bonsái.",
+   "luz": "Luz brillante o media sombra; sol directo sólo de mañana.",
+   "riego": {
+    "primavera_verano": "Frecuente: tierra siempre húmeda (no encharcada).",
+    "otono_invierno": "Cada 5 a 7 días.",
+    "como": "No dejes secar el pan de tierra: no tolera la sequía."
+   },
+   "autorriego": {
+    "nivel": "recomendado",
+    "consejo": "Le viene muy bien: mantené {min_ml} a {max_ml} ml en el plato en primavera y verano; en invierno, cargas espaciadas."
+   },
+   "sustrato": "Ácido y con materia orgánica, con 20 % de perlita.",
+   "temperatura": {
+    "min": -5,
+    "max": 30,
+    "nota": "Sufre con calor seco: protegelo del sol fuerte en verano."
+   },
+   "humedad": "Alta.",
+   "fertilizante": "Cada 20 días en primavera y verano, para acidófilas.",
+   "trasplante": "Cada 2 años en primavera.",
+   "propagacion": "Por semillas (sus frutos negros son comestibles) o esquejes.",
+   "plagas": "Pulgones y cochinilla.",
+   "senales": [
+    {
+     "sintoma": "Hojas secas y crujientes",
+     "causa": "Sequía o calor",
+     "solucion": "Más riego y ubicación más fresca."
+    },
+    {
+     "sintoma": "Hojas amarillas",
+     "causa": "Agua con cal o suelo poco ácido",
+     "solucion": "Agua de lluvia y sustrato ácido."
+    },
+    {
+     "sintoma": "Corteza sin color canela",
+     "causa": "Planta joven",
+     "solucion": "Normal: el color aparece con los años."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "Sus frutos son comestibles; no se lo considera tóxico."
+   },
+   "grupo_riego": "humedo",
+   "grupo_luz": "brillante"
+  }
+ ],
+ "grupos": [
+  {
+   "id": "suculentas",
+   "nombre": "Suculentas"
+  },
+  {
+   "id": "cactus",
+   "nombre": "Cactus"
+  },
+  {
+   "id": "colgantes",
+   "nombre": "Colgantes"
+  },
+  {
+   "id": "follaje",
+   "nombre": "Follaje"
+  },
+  {
+   "id": "arboles_nativos",
+   "nombre": "Árboles nativos"
+  },
+  {
+   "id": "arbustos_nativos",
+   "nombre": "Arbustos y pastos nativos"
   }
  ]
 }

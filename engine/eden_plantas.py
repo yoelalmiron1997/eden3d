@@ -43,7 +43,47 @@ MATERIALES = {
     "tallo": ((96, 120, 70), 0.20),
     "tronco": ((112, 92, 66), 0.10),
     "banda": ((226, 226, 214), 0.10),
+    # nativas
+    "verde_hoja": ((74, 120, 58), 0.30),
+    "verde_claro": ((118, 158, 72), 0.25),
+    "verde_yerba": ((46, 98, 50), 0.55),
+    "verde_arrayan": ((40, 78, 44), 0.50),
+    "verde_pasto": ((116, 136, 82), 0.20),
+    "verde_cardon": ((96, 128, 84), 0.15),
+    "flor_roja": ((200, 28, 36), 0.30),
+    "flor_violeta": ((136, 104, 196), 0.20),
+    "flor_rosa": ((222, 104, 168), 0.25),
+    "flor_amarilla": ((246, 196, 40), 0.15),
+    "flor_blanca": ((246, 244, 236), 0.15),
+    "pluma": ((238, 230, 210), 0.05),
+    "corteza_canela": ((190, 104, 58), 0.20),
+    "corteza_gris": ((120, 108, 96), 0.08),
+    # coberturas de la tierra
+    "tierra": ((88, 64, 46), 0.0),
+    "tierra_oscura": ((52, 38, 28), 0.0),
+    "piedra": ((228, 222, 210), 0.05),
+    "arcilla": ((172, 108, 72), 0.05),
+    "leca": ((168, 96, 60), 0.10),
+    "corteza_pino": ((122, 70, 40), 0.05),
+    "volcanica": ((112, 52, 40), 0.0),
+    "volcanica_negra": ((48, 44, 42), 0.05),
+    "musgo": ((86, 120, 52), 0.0),
 }
+
+# materiales que no son de la planta (no se mueven con el viento)
+DECOR_MATS = ("tierra", "tierra_oscura", "piedra", "arcilla", "leca", "corteza_pino",
+              "volcanica", "volcanica_negra", "musgo")
+
+# cobertura de la tierra: id -> (nombre, descripción)
+COBERTURAS = {
+    "piedra_blanca": ("Piedritas blancas", "Canto rodado blanco con algunas bolitas de arcilla."),
+    "tierra": ("Tierra negra", "Sustrato universal a la vista, sin cobertura."),
+    "leca": ("Arcilla expandida", "Bolitas de LECA: aireadas y livianas, ideales con autorriego."),
+    "corteza": ("Corteza de pino", "Chips de corteza: guardan humedad, para plantas de riego frecuente."),
+    "volcanica": ("Piedra volcánica", "Grava roja y negra: drena rápido, ideal para cactus y suculentas."),
+    "musgo": ("Musgo", "Cobertura verde que mantiene la humedad de la superficie."),
+}
+COBERTURA_SUGERIDA = {"seco": "volcanica", "medio": "piedra_blanca", "humedo": "musgo"}
 
 
 # ===================================================================== datos
@@ -579,12 +619,224 @@ def p_lithops(m, R, ctx, rnd):
             m.add("lithops", *_clean(V, F))
 
 
+# ===================================================================== nativas
+def _pad(m, rnd, c, a, b, h, mat, leaves=None, n_leaf=0, leaf_size=1.0):
+    """Mata de follaje (estilo bonsái): elipsoide abollado + hojitas en la superficie."""
+    bumps = [(rnd.uniform(0, TAU), rnd.uniform(-0.8, 1.2), rnd.uniform(0.08, 0.16)) for _ in range(6)]
+
+    def bump(th, ph):
+        k = 1.0
+        for bt, bp, amp in bumps:
+            k += amp * math.cos(th - bt) * math.cos(ph - bp)
+        return k
+    V, F = ellipsoid(a, b, h, 16, 9, bump)
+    m.add(mat, *_clean(_rot(V, yaw=rnd.uniform(0, TAU), t=c), F))
+    for _ in range(n_leaf):
+        th = rnd.uniform(0, TAU)
+        ph = rnd.uniform(-0.2, 1.2)
+        p = (c[0] + a * 0.95 * math.cos(ph) * math.cos(th), c[1] + b * 0.95 * math.cos(ph) * math.sin(th),
+             c[2] + h * 0.95 * math.sin(ph))
+        L = leaf_size * rnd.uniform(0.8, 1.2)
+        V, F = leaf(L, lambda t, L=L: 0.28 * L * math.sin(math.pi * t) + 0.02, lambda t: 0.25,
+                    ph * 0.6, ph * 0.6 + 0.3, cup=0.05, nu=4, nv=2)
+        m.add(leaves or mat, *_clean(_rot(V, yaw=th, t=p), F))
+
+
+def _blossoms(m, rnd, c, a, b, h, n, mat, size, shape=(1.0, 1.0, 0.8), only_top=False):
+    """Flores (o pompones) sobre la superficie de una mata."""
+    for _ in range(n):
+        th = rnd.uniform(0, TAU)
+        ph = rnd.uniform(0.15 if only_top else -0.3, 1.3)
+        s = size * rnd.uniform(0.75, 1.2)
+        V, F = ellipsoid(s * shape[0], s * shape[1], s * shape[2], 8, 5)
+        p = (c[0] + a * 1.02 * math.cos(ph) * math.cos(th), c[1] + b * 1.02 * math.cos(ph) * math.sin(th),
+             c[2] + h * 1.02 * math.sin(ph))
+        m.add(mat, *_clean(_rot(V, yaw=th, pitch=-ph * 0.5, t=p), F))
+
+
+def _tree(m, rnd, R, h, trunk_r, n_br, trunk_mat, pad_mat, leaf_mat=None, flower_mat=None,
+          n_flowers=0, flower_size=1.0, spread=1.0, pad_scale=1.0, base_flare=1.0, n_leaf=10,
+          flower_shape=(1.0, 1.0, 0.8)):
+    """Árbol joven / bonsái: tronco algo curvo, ramas y matas de follaje con flores."""
+    lean = rnd.uniform(-0.12, 0.12) * R
+    trunk = [(0, 0, 0), (lean * 0.4, 0.04 * R, h * 0.3), (lean, -0.03 * R, h * 0.62), (lean * 0.7, 0, h)]
+    radii = [trunk_r * base_flare, trunk_r * 0.85, trunk_r * 0.68, trunk_r * 0.5]
+    m.add(trunk_mat, *tube(trunk, radii, 12))
+    if base_flare > 1.2:                                # base engrosada (ombú)
+        V, F = lathe([(trunk_r * base_flare * 1.25, 0.0), (trunk_r * base_flare * 1.1, h * 0.06),
+                      (trunk_r * base_flare * 0.8, h * 0.16), (trunk_r * 0.8, h * 0.3), (0.01, h * 0.32)], 18,
+                     lambda th, z: 1.0 + 0.12 * math.sin(5 * th) * max(0.0, 1 - z / (h * 0.3)))
+        m.add(trunk_mat, *_clean(V, F))
+    tops = [(lean * 0.7, 0.0, h)]
+    for k in range(n_br):
+        ang = TAU * k / n_br + rnd.uniform(-0.35, 0.35)
+        t0 = rnd.uniform(0.5, 0.85)
+        z0 = h * t0
+        x0 = lean * t0
+        L = R * spread * rnd.uniform(0.55, 0.8)
+        end = (x0 + L * math.cos(ang), L * math.sin(ang), z0 + L * rnd.uniform(0.25, 0.6))
+        mid = ((x0 + end[0]) * 0.5, end[1] * 0.5, (z0 + end[2]) * 0.5 - 0.04 * R)
+        m.add(trunk_mat, *tube([(x0, 0, z0), mid, end], [trunk_r * 0.45, trunk_r * 0.32, trunk_r * 0.2], 7))
+        tops.append(end)
+    for k, (x, y, z) in enumerate(tops):
+        a = R * pad_scale * rnd.uniform(0.32, 0.42) * (1.25 if k == 0 else 1.0)
+        hh = a * rnd.uniform(0.45, 0.6)
+        c = (x, y, z + hh * 0.35)
+        _pad(m, rnd, c, a, a * rnd.uniform(0.8, 1.0), hh, pad_mat, leaf_mat, n_leaf, R * 0.12)
+        if flower_mat and n_flowers:
+            _blossoms(m, rnd, c, a, a * 0.9, hh, n_flowers, flower_mat, flower_size, flower_shape)
+
+
+def p_ceibo(m, R, ctx, rnd):
+    _tree(m, rnd, R, 1.7 * R, 0.13 * R, 4, "tronco", "verde_hoja", "verde_claro", None,
+          spread=1.0, pad_scale=0.85)
+    # racimos de flores rojas en las puntas (flores alargadas, tipo cresta de gallo)
+    for _ in range(7):
+        th = rnd.uniform(0, TAU)
+        rr = R * rnd.uniform(0.35, 0.75)
+        base = (rr * math.cos(th), rr * math.sin(th), 1.7 * R + R * rnd.uniform(0.0, 0.35))
+        for j in range(6):
+            s = R * 0.065
+            V, F = ellipsoid(s * 0.55, s * 0.5, s * 1.4, 8, 6)
+            V = _rot(V, pitch=rnd.uniform(-0.6, 0.6), yaw=rnd.uniform(0, TAU),
+                     t=(base[0] + rnd.uniform(-1, 1) * s, base[1] + rnd.uniform(-1, 1) * s, base[2] + j * s * 1.1))
+            m.add("flor_roja", *_clean(V, F))
+
+
+def p_jacaranda(m, R, ctx, rnd):
+    _tree(m, rnd, R, 1.9 * R, 0.11 * R, 5, "corteza_gris", "verde_claro", "verde_hoja", "flor_violeta",
+          n_flowers=26, flower_size=0.07 * R, spread=1.1, pad_scale=0.85, n_leaf=8,
+          flower_shape=(0.8, 0.8, 1.3))
+
+
+def p_ombu(m, R, ctx, rnd):
+    _tree(m, rnd, R, 1.35 * R, 0.16 * R, 5, "corteza_gris", "verde_hoja", "verde_oscuro", None,
+          spread=1.15, pad_scale=1.0, base_flare=1.9, n_leaf=14)
+
+
+def p_lapacho(m, R, ctx, rnd):
+    _tree(m, rnd, R, 1.8 * R, 0.11 * R, 4, "corteza_gris", "flor_rosa", "verde_claro", "flor_rosa",
+          n_flowers=30, flower_size=0.06 * R, spread=1.0, pad_scale=0.8, n_leaf=4,
+          flower_shape=(0.9, 0.9, 1.4))
+
+
+def p_arrayan(m, R, ctx, rnd):
+    _tree(m, rnd, R, 1.6 * R, 0.13 * R, 4, "corteza_canela", "verde_arrayan", "verde_arrayan",
+          "flor_blanca", n_flowers=10, flower_size=0.04 * R, spread=0.95, pad_scale=0.85, n_leaf=12)
+
+
+def p_yerba_mate(m, R, ctx, rnd):
+    """Arbusto de varios tallos con hojas ovaladas brillantes."""
+    for k in range(5):
+        ang = TAU * k / 5 + rnd.uniform(-0.3, 0.3)
+        h = R * rnd.uniform(1.2, 1.7)
+        lean = R * rnd.uniform(0.25, 0.5)
+        path = [(0, 0, 0), (lean * 0.3 * math.cos(ang), lean * 0.3 * math.sin(ang), h * 0.45),
+                (lean * math.cos(ang), lean * math.sin(ang), h)]
+        m.add("tronco", *tube(path, [0.06 * R, 0.045 * R, 0.03 * R], 7))
+        for j in range(9):
+            t = 0.3 + 0.7 * j / 8.0
+            p = (lean * math.cos(ang) * t ** 1.5, lean * math.sin(ang) * t ** 1.5, h * t)
+            V, F = ellipsoid(0.17 * R, 0.075 * R, 0.018 * R + 0.3, 12, 6)
+            V = _rot(V, pitch=-rnd.uniform(0.2, 0.7), yaw=ang + (j % 2 * 2 - 1) * 1.2 + rnd.uniform(-0.4, 0.4),
+                     t=(p[0] + 0.1 * R * math.cos(ang + (j % 2 * 2 - 1) * 1.2),
+                        p[1] + 0.1 * R * math.sin(ang + (j % 2 * 2 - 1) * 1.2), p[2]))
+            m.add("verde_yerba", *_clean(V, F))
+
+
+def p_cortadera(m, R, ctx, rnd):
+    """Mata de hojas finas arqueadas y plumeros blancos."""
+    narrow = lambda t: math.sin(math.pi * min(1.0, 0.1 + 0.9 * t) ** 0.6) * (1 - t ** 3)
+    for k in range(34):
+        ang = k * GOLD + rnd.uniform(-0.1, 0.1)
+        L = R * rnd.uniform(1.3, 2.0)
+        W = R * 0.03
+        V, F = leaf(L, lambda t, W=W: W * narrow(t), lambda t: 0.35, math.radians(rnd.uniform(62, 86)),
+                    math.radians(rnd.uniform(10, 50)), cup=0.3, nu=12, nv=4, droop=rnd.uniform(0.2, 0.9))
+        rr = R * 0.12 * math.sqrt(rnd.random())
+        tt = rnd.uniform(0, TAU)
+        m.add("verde_pasto", *_clean(_rot(V, yaw=ang, t=(rr * math.cos(tt), rr * math.sin(tt), 0)), F))
+    for k in range(4):
+        ang = TAU * k / 4 + rnd.uniform(-0.4, 0.4)
+        h = R * rnd.uniform(2.1, 2.6)
+        off = R * 0.18
+        top = (off * math.cos(ang), off * math.sin(ang), h)
+        m.add("tallo", *tube([(0, 0, 0), (top[0] * 0.5, top[1] * 0.5, h * 0.5), top], 0.6, 5))
+        for j in range(5):
+            s = R * 0.12 * (1 - j * 0.12)
+            V, F = ellipsoid(s * 0.55, s * 0.55, s * 1.3, 10, 7,
+                             lambda th, ph: 1.0 + 0.08 * math.sin(7 * th + 3 * ph))
+            m.add("pluma", *_clean(_rot(V, pitch=0.15 * math.cos(ang), roll=0.15 * math.sin(ang),
+                                        t=(top[0] * (1 + j * 0.06), top[1] * (1 + j * 0.06),
+                                           h + j * s * 0.9)), F))
+
+
+def p_espinillo(m, R, ctx, rnd):
+    """Arbusto ramoso de follaje fino con pompones amarillos y espinas."""
+    _tree(m, rnd, R, 1.2 * R, 0.08 * R, 6, "tronco", "verde_claro", "verde_claro", "flor_amarilla",
+          n_flowers=16, flower_size=0.06 * R, spread=1.0, pad_scale=0.7, n_leaf=6,
+          flower_shape=(1.0, 1.0, 1.0))
+    for _ in range(26):                                   # espinas blancas en el tronco
+        z = R * rnd.uniform(0.15, 1.1)
+        th = rnd.uniform(0, TAU)
+        r0 = 0.07 * R
+        a = (r0 * math.cos(th), r0 * math.sin(th), z)
+        b = ((r0 + 0.12 * R) * math.cos(th), (r0 + 0.12 * R) * math.sin(th), z + 0.03 * R)
+        m.add("espinas", *tube([a, b], [0.012 * R + 0.15, 0.1], 4))
+
+
+def p_cardon(m, R, ctx, rnd):
+    """Cardón joven: columna acanalada con brazos de candelabro."""
+    ribs = 12
+    rad = 0.3 * R
+    h = 2.6 * R
+    rm = lambda th, z: 1.0 + 0.08 * math.cos(ribs * th)
+
+    def column(x, y, z0, hh, rr, yaw):
+        prof = [(rr * 0.85, 0.0)] + [(rr, hh * i / 12.0) for i in range(1, 12)] + \
+               [(rr * math.cos(math.pi / 2 * i / 5.0), hh + rr * 0.8 * math.sin(math.pi / 2 * i / 5.0))
+                for i in range(1, 6)]
+        prof[-1] = (0.01, prof[-1][1])
+        V, F = lathe(prof, 60, rm)
+        m.add("verde_cardon", *_clean(_rot(V, yaw=yaw, t=(x, y, z0)), F))
+        pts = []
+        for r in range(ribs):
+            th = TAU * r / ribs + yaw
+            z = rr * 0.5
+            while z < hh:
+                pts.append((x + (rr * 1.08 + 0.3) * math.cos(th), y + (rr * 1.08 + 0.3) * math.sin(th), z0 + z))
+                z += rr * 0.45
+        _areoles(m, rnd, pts, max(0.5, rr * 0.06))
+    column(0, 0, 0, h, rad, 0.0)
+    for side, zf in ((1, 0.42), (-1, 0.58)):            # brazos: codo horizontal y suben
+        ang = rnd.uniform(-0.3, 0.3) + (0 if side > 0 else math.pi)
+        z0 = h * zf
+        ra = rad * 0.7
+        out = rad + ra * 1.6
+        elbow = [(rad * 0.6 * math.cos(ang), rad * 0.6 * math.sin(ang), z0),
+                 (out * 0.75 * math.cos(ang), out * 0.75 * math.sin(ang), z0 + ra * 0.2),
+                 (out * math.cos(ang), out * math.sin(ang), z0 + ra * 1.1)]
+        m.add("verde_cardon", *tube(elbow, ra, 14))
+        column(out * math.cos(ang), out * math.sin(ang), z0 + ra * 0.9, h * (0.55 - 0.1 * zf), ra, ang)
+    V, F = ellipsoid(rad * 0.35, rad * 0.35, rad * 0.3, 10, 6)   # flor blanca en la punta
+    m.add("flor_blanca", *_clean(_rot(V, t=(rad * 0.3, 0, h + rad * 0.75)), F))
+
+
 GENERADORES = {
     "echeveria": p_echeveria, "haworthia": p_haworthia, "aloe": p_aloe,
     "sansevieria": p_sansevieria, "cereus": p_cereus, "mammillaria": p_mammillaria,
     "opuntia": p_opuntia, "crassula": p_crassula, "senecio": p_senecio, "pothos": p_pothos,
     "lithops": p_lithops,
+    "ceibo": p_ceibo, "jacaranda": p_jacaranda, "ombu": p_ombu, "yerba_mate": p_yerba_mate,
+    "cortadera": p_cortadera, "lapacho": p_lapacho, "espinillo": p_espinillo, "cardon": p_cardon,
+    "arrayan": p_arrayan,
 }
+
+# qué tanto se mueve con el viento (0 rígida .. 1 muy flexible)
+FLEX = {"cereus": 0.12, "mammillaria": 0.05, "opuntia": 0.1, "cardon": 0.08, "lithops": 0.0,
+        "haworthia": 0.25, "echeveria": 0.3, "aloe": 0.35, "sansevieria": 0.35, "crassula": 0.45,
+        "ombu": 0.5, "arrayan": 0.6, "ceibo": 0.7, "lapacho": 0.7, "jacaranda": 0.8,
+        "espinillo": 0.7, "yerba_mate": 0.8, "senecio": 1.0, "pothos": 1.0, "cortadera": 1.0}
 
 
 def layout(n, r_in):
@@ -600,22 +852,42 @@ def layout(n, r_in):
              Rk * r_in) for i in range(n)]
 
 
-def build(ids, abertura, seed=3):
-    """Plantas elegidas, ubicadas en la boca. -> [(material, V, F)]."""
+def limpiar_ids(ids):
+    """Sin repetidas, sólo conocidas, una por grupo (la última elegida gana) y hasta 4."""
+    out, grupos = [], {}
+    for i in dict.fromkeys(ids or []):
+        if i not in GENERADORES:
+            continue
+        g = ficha(i).get("grupo", i)
+        if g in grupos:
+            out.remove(grupos[g])
+        grupos[g] = i
+        out.append(i)
+    return out[:MAX_PLANTAS]
+
+
+def build_por_planta(ids, abertura, seed=3):
+    """Cada planta por separado: [{"id", "base": (x, y, z), "flex", "items": [(mat, V, F)]}].
+    base es el punto de la tierra donde nace (pivote para animarla en la web)."""
     ids = [i for i in dict.fromkeys(ids) if i in GENERADORES][:MAX_PLANTAS]
-    m = Mesh()
-    ctx = dict(abertura)
+    out = []
     for k, ((x, y, R), pid) in enumerate(zip(layout(len(ids), abertura["r_in"]), ids)):
         rnd = random.Random(seed * 101 + k * 7 + sum(map(ord, pid)))
         sub = Mesh()
-        c = dict(ctx)
-        GENERADORES[pid](sub, R, c, rnd)
-        hanging = ficha(pid).get("colgante")
-        for mat, V, F in sub.items():
-            if hanging:                         # las colgantes ya vienen en coordenadas de la boca
-                V = [(vx + x * 0.3, vy + y * 0.3, vz + abertura["z_s"]) for vx, vy, vz in V]
-            else:
-                V = [(vx + x, vy + y, vz + abertura["z_s"]) for vx, vy, vz in V]
+        GENERADORES[pid](sub, R, dict(abertura), rnd)
+        if ficha(pid).get("colgante"):          # las colgantes ya vienen en coordenadas de la boca
+            x, y = x * 0.3, y * 0.3
+        z = abertura["z_s"]
+        items = [(mat, [(vx + x, vy + y, vz + z) for vx, vy, vz in V], F) for mat, V, F in sub.items()]
+        out.append({"id": pid, "base": (x, y, z), "flex": FLEX.get(pid, 0.5), "items": items})
+    return out
+
+
+def build(ids, abertura, seed=3):
+    """Plantas elegidas, ubicadas en la boca. -> [(material, V, F)]."""
+    m = Mesh()
+    for p in build_por_planta(ids, abertura, seed):
+        for mat, V, F in p["items"]:
             m.add(mat, V, F)
     return m.items()
 
@@ -629,16 +901,77 @@ def abertura_de(V):
             "z_bot": min(v[2] for v in V)}
 
 
-def decor(abertura, ids, seed=7):
-    """Tierra y piedritas alrededor de las plantas. -> [(material, V, F)]."""
+def cobertura_sugerida(ids):
+    """Cobertura que mejor acompaña el riego de las plantas elegidas."""
+    ids = [i for i in ids if i in GENERADORES]
+    if not ids:
+        return "piedra_blanca"
+    orden = ["seco", "medio", "humedo"]
+    rs = sorted(orden.index(ficha(i)["grupo_riego"]) for i in ids)
+    return COBERTURA_SUGERIDA[orden[rs[0]]]        # manda la más sensible al exceso de agua
+
+
+def _granos(r_in, z_s, avoid, seed, size, kinds, shape, gap=0.78, nu=14, nv=8, sink=0.55):
+    """Granos sueltos sobre la tierra (Poisson simple). kinds: [(material, prob)];
+    shape(rnd, size) -> (a, b, c)."""
+    import eden_escena
+    rnd = random.Random(seed)
+    placed = []
+    out = {k: ([], []) for k, _ in kinds}
+    for _ in range(9000):
+        rr = r_in * math.sqrt(rnd.random())
+        th = rnd.uniform(0, TAU)
+        sz = rnd.uniform(*size) * (0.8 if r_in < 30 else 1.0)
+        a, b, c = shape(rnd, sz)
+        if rr + max(a, b) * 1.45 > r_in - 0.5:          # 1.45: abolladuras del grano
+            continue
+        x, y = rr * math.cos(th), rr * math.sin(th)
+        if any(math.hypot(x - ax, y - ay) < ar + a * 1.2 for ax, ay, ar in avoid):
+            continue
+        if any(math.hypot(x - px, y - py) < (sz + ps) * gap for px, py, ps in placed):
+            continue
+        placed.append((x, y, sz))
+        u, acc, kind = rnd.random(), 0.0, kinds[-1][0]
+        for k, pr in kinds:
+            acc += pr
+            if u < acc:
+                kind = k
+                break
+        pv, pf = eden_escena._pebble(x, y, z_s + c * sink, a, b, c, rnd.uniform(0, TAU), rnd, nu, nv)
+        V, F = out[kind]
+        o = len(V)
+        V += pv
+        F += [(p + o, q + o, r + o) for p, q, r in pf]
+    return [(k, V, F) for k, (V, F) in out.items() if F]
+
+
+def decor(abertura, ids, seed=7, cobertura=None):
+    """Tierra y cobertura alrededor de las plantas. -> [(material, V, F)].
+    cobertura: una de COBERTURAS (None = la sugerida para esas plantas)."""
     import eden_escena
     r_in, z_s = abertura["r_in"], abertura["z_s"]
-    out = [("tierra",) + eden_escena.soil(r_in, z_s)]
     ids = [i for i in dict.fromkeys(ids) if i in GENERADORES][:MAX_PLANTAS]
+    cob = cobertura if cobertura in COBERTURAS else cobertura_sugerida(ids)
+    out = [("tierra_oscura" if cob in ("tierra", "musgo") else "tierra",) + eden_escena.soil(r_in, z_s)]
     avoid = [(x, y, R * (0.45 if ficha(pid).get("colgante") else 0.55))
              for (x, y, R), pid in zip(layout(len(ids), r_in), ids)]
-    pb = eden_escena.pebbles(r_in, z_s, seed=seed, avoid=avoid)
-    for k in ("piedra", "arcilla"):
-        if pb[k][0]:
-            out.append((k,) + pb[k])
+    if cob == "piedra_blanca":
+        pb = eden_escena.pebbles(r_in, z_s, seed=seed, avoid=avoid)
+        out += [(k,) + pb[k] for k in ("piedra", "arcilla") if pb[k][0]]
+    elif cob == "tierra":                      # grumos chicos de la misma tierra
+        out += _granos(r_in, z_s, [(x, y, R * 0.4) for x, y, R in avoid], seed, (0.9, 1.8),
+                       [("tierra_oscura", 0.7), ("tierra", 0.3)],
+                       lambda rnd, s: (s, s * rnd.uniform(0.7, 1.0), s * 0.45), gap=1.1, nu=8, nv=5, sink=0.3)
+    elif cob == "leca":
+        out += _granos(r_in, z_s, avoid, seed, (2.6, 3.8), [("leca", 1.0)],
+                       lambda rnd, s: (s, s * rnd.uniform(0.9, 1.0), s * rnd.uniform(0.85, 0.95)), gap=0.95)
+    elif cob == "corteza":
+        out += _granos(r_in, z_s, avoid, seed, (3.5, 6.0), [("corteza_pino", 1.0)],
+                       lambda rnd, s: (s, s * rnd.uniform(0.5, 0.75), s * 0.22), gap=0.72, sink=0.2)
+    elif cob == "volcanica":
+        out += _granos(r_in, z_s, avoid, seed, (1.8, 3.2), [("volcanica", 0.65), ("volcanica_negra", 0.35)],
+                       lambda rnd, s: (s, s * rnd.uniform(0.6, 0.9), s * rnd.uniform(0.5, 0.75)), gap=0.8, nu=9, nv=6)
+    elif cob == "musgo":                       # almohadones bajos y abollados
+        out += _granos(r_in, z_s, [(x, y, R * 0.35) for x, y, R in avoid], seed, (3.5, 6.0), [("musgo", 1.0)],
+                       lambda rnd, s: (s, s * rnd.uniform(0.8, 1.0), s * 0.38), gap=0.62, sink=0.15)
     return out

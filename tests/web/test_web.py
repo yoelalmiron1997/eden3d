@@ -177,9 +177,105 @@ def test_plantas_y_cuidados(browser, base_url):
     assert "Riego distinto" in compat and "Luz distinta" in compat
     page.locator(T % "tab-pothos").click()
     assert page.locator(T % "ficha-pothos").is_visible()
-    # tope de 4
-    _plant_click(page, "aloe")
-    assert page.locator(T % "planta-lithops").is_disabled()
+    # tope de 4: con 4 tipos elegidos, los de otro tipo se bloquean
+    _plant_click(page, "sansevieria")
+    assert page.locator(T % "planta-ceibo").is_disabled()
+    assert not page.locator(T % "planta-lithops").is_disabled()      # mismo tipo: reemplaza
+    page.context.close()
+
+
+@pytest.mark.spec("PLA-006")
+def test_una_planta_por_tipo_en_la_web(browser, base_url):
+    page = open_app(browser, base_url)
+    page.wait_for_function("window.__eden.plantBuilds >= 1", timeout=120_000)
+    for g in ("suculentas", "cactus", "colgantes", "follaje", "arboles_nativos", "arbustos_nativos"):
+        assert page.locator(T % ("grupo-" + g)).count() == 1, g
+    _plant_click(page, "haworthia")                  # reemplaza a la echeveria
+    assert page.evaluate("window.__eden.plants") == ["haworthia"]
+    assert page.locator(T % "planta-echeveria").get_attribute("aria-pressed") == "false"
+    _plant_click(page, "ceibo")
+    _plant_click(page, "jacaranda")                  # reemplaza al ceibo
+    assert page.evaluate("window.__eden.plants") == ["haworthia", "jacaranda"]
+    assert [g["id"] for g in page.evaluate("window.__eden.viewer.plantGroups")] == ["haworthia", "jacaranda"]
+    page.context.close()
+
+
+@pytest.mark.spec("PLA-008")
+def test_tipo_de_tierra(browser, base_url):
+    page = open_app(browser, base_url)
+    page.wait_for_function("window.__eden.plantBuilds >= 1", timeout=120_000)
+    opciones = page.locator(T % "sel-tierra" + " option").count()
+    assert opciones == 7                             # automática + 6 tipos
+    # automática: para la echeveria (riego seco) sugiere piedra volcánica
+    assert page.evaluate("window.__eden.coberturaUsada") == "volcanica"
+    assert "volcánica" in page.locator(T % "tierra-desc").inner_text().lower()
+    n = page.evaluate("window.__eden.plantBuilds")
+    page.locator(T % "sel-tierra").select_option("corteza")
+    page.wait_for_function("(n) => window.__eden.plantBuilds > n", arg=n, timeout=120_000)
+    assert page.evaluate("window.__eden.coberturaUsada") == "corteza"
+    names = page.evaluate("window.__edenViewer.plants.children.flatMap(g => g.children.map(m => m.name))")
+    assert "corteza_pino" in names and "volcanica" not in names
+    page.context.close()
+
+
+@pytest.mark.spec("VIS-004")
+def test_escenarios(browser, base_url):
+    page = open_app(browser, base_url)
+    v = page.evaluate("window.__eden.viewer")
+    assert v["groundVisible"] is (not v["lowPower"])    # en bajo consumo no hay sombras
+    bg0 = page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage")
+    for k, pieza in (("oficina", "escritorio"), ("jardin", "pasto"), ("taller", "banco")):
+        page.locator(T % ("escena-" + k)).click(no_wait_after=True)
+        v = page.evaluate("window.__eden.viewer")
+        assert v["scene"] == k and pieza in v["sceneMeshes"], (k, v["sceneMeshes"])
+        assert v["groundVisible"] is False
+        assert page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage") != bg0
+        assert page.evaluate("window.__edenViewer.sceneGroup.scale.x") > 0.5
+    assert "impresora_3d" in page.evaluate("window.__eden.viewer.sceneMeshes")
+    page.locator(T % "escena-estudio").click(no_wait_after=True)
+    v = page.evaluate("window.__eden.viewer")
+    assert v["scene"] == "estudio" and v["sceneMeshes"] == []
+    page.context.close()
+
+
+@pytest.mark.spec("VIS-005")
+def test_plantas_nacen_y_se_mueven(browser, base_url):
+    page = open_app(browser, base_url)
+    page.wait_for_function("window.__eden.plantBuilds >= 1", timeout=120_000)
+    page.wait_for_function("window.__eden.viewer.growing === 0 && window.__eden.viewer.plantGroups.length === 1"
+                           " && window.__eden.viewer.plantGroups[0].scale === 1", timeout=60_000)
+    n = page.evaluate("window.__eden.plantBuilds")
+    page.locator(T % "planta-pothos").click(no_wait_after=True)
+    page.wait_for_function("(n) => window.__eden.plantBuilds > n", arg=n, timeout=120_000)
+    t0 = page.evaluate("window.__eden.viewer.animTime")
+    assert page.evaluate("window.__eden.viewer.born") == ["pothos"], "sólo nace la nueva"
+    g = {x["id"]: x for x in page.evaluate("window.__eden.viewer.plantGroups")}
+    assert g["echeveria"]["scale"] == 1, "la que ya estaba no vuelve a nacer"
+    page.wait_for_function("window.__eden.viewer.plantGroups.every(g => g.scale === 1)", timeout=60_000)
+    assert page.evaluate("window.__eden.viewer.animTime") - t0 < 4.5
+    # viento: el tiempo avanza y se puede apagar
+    w0 = page.evaluate("window.__eden.viewer.wind")
+    page.wait_for_timeout(1200)
+    assert page.evaluate("window.__eden.viewer.wind") > w0
+    page.locator(T % "chk-viento").uncheck(no_wait_after=True)
+    page.wait_for_timeout(1200)
+    assert page.evaluate("window.__eden.viewer.wind") == 0
+    page.context.close()
+
+
+@pytest.mark.spec("REN-003")
+def test_foto_1080x1350(browser, base_url):
+    page = open_app(browser, base_url)
+    page.locator(T % "escena-jardin").click(no_wait_after=True)
+    with page.expect_download() as dl:
+        page.locator(T % "btn-foto").click()
+    d = dl.value
+    assert d.suggested_filename.endswith("_jardin.png")
+    data = open(d.path(), "rb").read()
+    assert data[:8] == b"\x89PNG\r\n\x1a\n"
+    w, h = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    assert (w, h) == (1080, 1350)
+    assert len(data) > 50_000                        # no es una imagen vacía
     page.context.close()
 
 
@@ -208,10 +304,16 @@ def test_agua_animada(browser, base_url):
         return page.evaluate("""() => { const W = window.__edenViewer.water;
             const a = W.geoms[0].attributes.position.array; return [W.t, a[3*40+2], a[3*700+2], W.level]; }""")
     t0, a0, b0, _ = sample()
-    page.wait_for_timeout(2500)
+    d0 = page.evaluate("window.__edenViewer.stats.drops")
+    page.wait_for_timeout(4000)
     t1, a1, b1, _ = sample()
     assert t1 > t0, "el tiempo del agua no avanza"
     assert (a1, b1) != (a0, b0), "la superficie no se mueve"
+    relieve = page.evaluate("""() => { const a = window.__edenViewer.water.geoms[0].attributes.position.array;
+        let lo = 1e9, hi = -1e9; for (let i = 2; i < a.length; i += 3) { lo = Math.min(lo, a[i]); hi = Math.max(hi, a[i]); }
+        return hi - lo; }""")
+    assert relieve >= 0.5, "ondas poco visibles: %.2f mm" % relieve
+    assert page.evaluate("window.__edenViewer.stats.drops") > d0, "no caen gotas"
     A = page.evaluate("window.__eden.summary.assembly")
     page.locator(T % "agua-min").click(no_wait_after=True)
     page.wait_for_function("(z) => Math.abs(window.__edenViewer.water.level - z) < 0.6",

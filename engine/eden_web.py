@@ -57,6 +57,11 @@ def info():
         "plantas_fuentes": eden_plantas.catalogo().get("fuentes", {}),
         "materiales": {k: {"rgb": v[0], "brillo": v[1]} for k, v in eden_plantas.MATERIALES.items()},
         "max_plantas": eden_plantas.MAX_PLANTAS,
+        "grupos": eden_plantas.catalogo().get("grupos", []),
+        "coberturas": [{"id": k, "nombre": v[0], "descripcion": v[1]}
+                       for k, v in eden_plantas.COBERTURAS.items()],
+        "flex": eden_plantas.FLEX,
+        "decor_mats": list(eden_plantas.DECOR_MATS),
     }
 
 
@@ -156,26 +161,33 @@ def build(opts):
 _ABERTURA = {}
 
 
-def plants(opts, ids, decor=True):
-    """Plantas (y tierra con piedritas) para la maceta de opts. Usa la boca de la
-    última maceta calculada con esos mismos parámetros (si no, la calcula)."""
+def plants(opts, ids, decor=True, cobertura=None):
+    """Plantas (y tierra con su cobertura) para la maceta de opts. Usa la boca de la
+    última maceta calculada con esos mismos parámetros (si no, la calcula).
+    Cada parte trae "planta" (índice, -1 = tierra/cobertura), "base" (punto donde nace,
+    para animarla) y "flex" (cuánto se mueve con el viento)."""
     p = params(opts)
     key = p["model_id"] + "|" + p["quality"]
     if key not in _ABERTURA:
         build(opts)
     ab = _ABERTURA.get(key)
-    ids = [i for i in dict.fromkeys(ids or []) if i in eden_plantas.GENERADORES]
+    ids = eden_plantas.limpiar_ids(ids)
+    cob = cobertura if cobertura in eden_plantas.COBERTURAS else eden_plantas.cobertura_sugerida(ids)
     parts = []
-    if ab and ids:
-        items = eden_plantas.build(ids, ab)
+
+    def add(mat, V, F, k, base, flex):
+        pos, idx = _pack(V, F)
+        parts.append({"name": mat, "positions": pos, "indices": idx, "vertices": len(V),
+                      "triangles": len(F), "planta": k, "base": list(base), "flex": flex})
+    if ab:
         if decor:
-            items = eden_plantas.decor(ab, ids) + items
-        for mat, V, F in items:
-            pos, idx = _pack(V, F)
-            parts.append({"name": mat, "positions": pos, "indices": idx,
-                          "vertices": len(V), "triangles": len(F)})
+            for mat, V, F in eden_plantas.decor(ab, ids, cobertura=cob):
+                add(mat, V, F, -1, (0.0, 0.0, ab["z_s"]), 0.0)
+        for k, pl in enumerate(eden_plantas.build_por_planta(ids, ab)):
+            for mat, V, F in pl["items"]:
+                add(mat, V, F, k, pl["base"], pl["flex"])
     return {"parts": parts, "compat": eden_plantas.compatibilidad(ids) if ids else [],
-            "ids": ids}
+            "ids": ids, "cobertura": cob}
 
 
 def build_json(opts_json):

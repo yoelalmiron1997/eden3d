@@ -11,11 +11,14 @@ specs:
     nivel: web
     estado: activa
   - id: VIS-002
-    titulo: Agua animada en el plato
-    descripcion: El agua del autorriego se mueve y se llena hasta el nivel elegido.
+    titulo: Agua animada con ondulaciones
+    descripcion: >
+      El agua del autorriego se mueve con ondas visibles, caen gotas que abren anillos
+      y se llena hasta el nivel elegido.
     criterio: >
-      La superficie del agua cambia con el tiempo y el nivel converge (±0,6 mm) al
-      nivel del motor: "mínimo para mojar" o "plato lleno".
+      La superficie del agua cambia con el tiempo, tiene un relieve de al menos 0,5 mm
+      entre cresta y valle, cada pocos segundos cae una gota (anillo) y el nivel
+      converge (±0,6 mm) al nivel del motor: "mínimo para mojar" o "plato lleno".
     prioridad: media
     nivel: web
     estado: activa
@@ -25,6 +28,31 @@ specs:
     criterio: >
       En modo de bajo consumo se apagan sombras y reflejos, se limitan los cuadros por
       segundo y la animación del agua sigue avanzando.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: VIS-004
+    titulo: Escenarios de oficina, jardín y taller
+    descripcion: >
+      Además del estudio, la maceta se puede ver sobre un escritorio de oficina, en un
+      jardín o sobre un banco de taller de trabajo (con impresora 3D).
+    criterio: >
+      Cada escenario agrega su ambiente (escritorio, pasto o banco de trabajo), oculta
+      el piso de sombra del estudio, cambia el fondo y se escala con la maceta; al
+      volver a Estudio se quita.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: VIS-005
+    titulo: Plantas que nacen y se mueven con el viento
+    descripcion: >
+      Al elegir una planta crece desde la tierra; todas se balancean con el viento
+      según qué tan flexibles son (un cactus casi no se mueve, una colgante sí).
+    criterio: >
+      El motor entrega cada planta por separado con su punto de nacimiento y su
+      flexibilidad; en la web una planta nueva arranca casi en escala 0 y llega a 1 en
+      menos de 4 s, las que ya estaban no vuelven a nacer y el tiempo del viento avanza
+      (se puede apagar).
     prioridad: media
     nivel: web
     estado: activa

@@ -22,7 +22,9 @@ specs:
   - id: REN-003
     titulo: Render de producto en la web
     descripcion: Generar la foto de producto (fondo + planta) directamente en la página.
-    criterio: Botón "Foto" que descarga un PNG 1080×1350 con la maceta sobre un fondo.
+    criterio: >
+      Botón "Foto" que descarga un PNG 1080×1350 con la maceta, las plantas y el
+      escenario elegido sobre un fondo.
     prioridad: baja
     nivel: web
-    estado: pendiente
+    estado: activa

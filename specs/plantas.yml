@@ -46,7 +46,44 @@ specs:
     criterio: >
       Al elegir plantas aparecen sus mallas en el visor, la ficha con pestañas por
       planta, el consejo de autorriego con los ml reales de la maceta y los avisos de
-      compatibilidad; no se pueden elegir más de 4.
+      compatibilidad; no se pueden elegir más de 4 (una por tipo).
     prioridad: alta
     nivel: web
+    estado: activa
+  - id: PLA-006
+    titulo: Una planta por tipo
+    descripcion: >
+      Las plantas se agrupan por tipo (suculentas, cactus, colgantes, follaje, árboles
+      nativos, arbustos y pastos nativos) y en una maceta va una sola de cada tipo.
+    criterio: >
+      Cada planta tiene un grupo conocido; si se elige otra del mismo grupo reemplaza
+      a la anterior (en el motor y en la web), y el total sigue siendo hasta 4.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PLA-007
+    titulo: Nativas argentinas
+    descripcion: >
+      Ceibo, jacarandá, ombú, yerba mate, cortadera, lapacho, espinillo/aromo, cardón y
+      arrayán, en 3D y con su ficha de cuidado en maceta (ejemplar joven o bonsái).
+    criterio: >
+      Las 9 están marcadas como nativas, tienen ficha completa, se generan sin
+      triángulos degenerados mostrando su rasgo (flor roja del ceibo, violeta del
+      jacarandá, rosa del lapacho, pompones amarillos del espinillo, plumeros de la
+      cortadera, corteza canela del arrayán) y la toxicidad cita su fuente.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PLA-008
+    titulo: Tipo de tierra
+    descripcion: >
+      Se elige la cobertura de la tierra: piedritas blancas, tierra negra, arcilla
+      expandida, corteza de pino, piedra volcánica o musgo; por defecto se sugiere
+      según el riego de las plantas.
+    criterio: >
+      Cada cobertura genera granos dentro de la boca, sin tapar el pie de las plantas;
+      son distintas entre sí; la sugerida es volcánica para plantas de riego seco y
+      musgo para las de riego húmedo; la web tiene el selector y lo aplica.
+    prioridad: media
+    nivel: motor
     estado: activa
