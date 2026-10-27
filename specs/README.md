@@ -70,3 +70,5 @@ Un test puede cubrir varias specs y una spec puede tener varios tests.
 | WEB | Página web | `web.yml` |
 | LIC | Licencia y autoría | `licencia.yml` |
 | QA | Proceso de calidad (gate y tablero) | `calidad.yml` |
+| PLA | Plantas y cuidados | `plantas.yml` |
+| VIS | Visor 3D (luz y agua) | `visor.yml` |

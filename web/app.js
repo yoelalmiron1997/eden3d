@@ -1,8 +1,9 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Viewer, LIGHTS } from "./viewer.js";
+import { renderCare, renderCompat } from "./care.js";
 
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const SLIDERS = [
   // clave, etiqueta, máx, paso
   ["tex_count", "Repeticiones", 80, 1],
@@ -15,7 +16,10 @@ const SLIDERS = [
 ];
 
 // estado visible para los tests e2e (window.__eden)
-const state = { ready: false, busy: false, info: null, summary: null, parts: [], builds: 0, errors: [] };
+const state = {
+  ready: false, busy: false, info: null, summary: null, parts: [], builds: 0, errors: [],
+  plants: [], plantBuilds: 0, careTab: null, light: "estudio",
+};
 window.__eden = state;
 
 // ------------------------------------------------------------------ worker
@@ -29,121 +33,22 @@ worker.onmessage = (ev) => {
   pending.delete(id);
   ok ? p.resolve(result) : p.reject(new Error(error));
 };
-function call(type, payload = {}, transfer = []) {
+function call(type, payload = {}) {
   const id = ++seq;
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
-    worker.postMessage({ id, type, ...payload }, transfer);
+    worker.postMessage({ id, type, ...payload });
   });
 }
 
-// ------------------------------------------------------------------ visor 3D
-const host = $("viewer");
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.localClippingEnabled = true;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-host.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(32, 1, 1, 5000);
-camera.position.set(-180, 160, 320);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.maxPolarAngle = Math.PI * 0.49;
-
-scene.add(new THREE.HemisphereLight(0xfff6e8, 0x8a7a66, 1.15));
-const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
-sun.position.set(220, 300, 120);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.bias = -0.0004;
-Object.assign(sun.shadow.camera, { left: -200, right: 200, top: 200, bottom: -200, near: 10, far: 900 });
-scene.add(sun);
-const fillLight = new THREE.DirectionalLight(0xdfe8ff, 0.5);
-fillLight.position.set(-250, 120, -100);
-scene.add(fillLight);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.ShadowMaterial({ opacity: 0.18 }));
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const clip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);   // corta la mitad delantera
-const model = new THREE.Group();
-model.rotation.x = -Math.PI / 2;            // el motor usa Z hacia arriba
-scene.add(model);
-
-const mats = {
-  MACETA: new THREE.MeshStandardMaterial({ color: 0xece9e2, roughness: 0.78, metalness: 0, side: THREE.DoubleSide }),
-  PLATO: new THREE.MeshStandardMaterial({ color: 0xdedad2, roughness: 0.8, metalness: 0, side: THREE.DoubleSide }),
-  AGUA: new THREE.MeshPhysicalMaterial({ color: 0x4aa3df, roughness: 0.1, transmission: 0, transparent: true, opacity: 0.5, depthWrite: false }),
-};
-
-function resize() {
-  const r = host.getBoundingClientRect();
-  const w = Math.max(10, r.width), h = Math.max(10, r.height);
-  renderer.setSize(w, h, false);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-}
-new ResizeObserver(resize).observe(host);
-resize();
-(function loop() {
-  controls.update();
-  renderer.render(scene, camera);
-  requestAnimationFrame(loop);
-})();
-
-function applyView() {
-  const cut = $("cut").checked;
-  for (const m of Object.values(mats)) {
-    m.clippingPlanes = cut ? [clip] : [];
-    m.needsUpdate = true;
-  }
-  model.children.forEach((o) => { if (o.name === "AGUA") o.visible = $("water").checked; });
-  mats.MACETA.color.set($("color").value);
-  mats.PLATO.color.set($("color").value).multiplyScalar(0.94);
-  state.cut = cut;
-}
-
-function showParts(parts, refit) {
-  model.clear();
-  let tris = 0;
-  for (const p of parts) {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(p.positions), 3));
-    g.setIndex(new THREE.BufferAttribute(new Uint32Array(p.indices), 1));
-    g.computeVertexNormals();
-    const name = p.name === "MACETA" || p.name === "AGUA" ? p.name : "PLATO";
-    const mesh = new THREE.Mesh(g, mats[name]);
-    mesh.name = name;
-    mesh.castShadow = name !== "AGUA";
-    mesh.receiveShadow = name !== "AGUA";
-    if (name === "AGUA") mesh.renderOrder = 2;
-    model.add(mesh);
-    tris += g.index.count / 3;
-  }
-  state.triangles = tris;
-  state.meshes = model.children.map((m) => m.name);
-  applyView();
-  if (refit) fit();
-}
-
-function fit() {
-  const box = new THREE.Box3().setFromObject(model);
-  if (box.isEmpty()) return;
-  const size = box.getSize(new THREE.Vector3());
-  const c = box.getCenter(new THREE.Vector3());
-  const r = Math.max(size.x, size.y, size.z) * 0.5;
-  const d = r / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.5;
-  const dir = new THREE.Vector3(-0.45, 0.5, 1).normalize();
-  camera.position.copy(c).addScaledVector(dir, d);
-  controls.target.copy(c);
-  controls.update();
-}
+const viewer = new Viewer($("viewer"));
+window.__edenViewer = viewer;
+Object.defineProperty(state, "viewer", { get: () => ({
+  meshes: viewer.meshNames(), triangles: viewer.triangles, plantTriangles: viewer.plantTriangles || 0,
+  waterTime: viewer.stats.waterTime, waterLevel: viewer.stats.waterLevel, frames: viewer.stats.frames,
+  light: viewer.lightKey, sunAz: viewer.sunAz, cut: viewer.cut,
+  sunIntensity: viewer.sun.intensity, lamp: viewer.lamp.intensity,
+}) });
 
 // ------------------------------------------------------------------ UI
 function opts() {
@@ -193,8 +98,9 @@ function showReport(s) {
   }
   facts.push(["Cálculo", fmt(s.seconds, " s"), "f-tiempo"]);
   $("facts").innerHTML = facts.map(([k, v, t]) => `<div><dt>${k}</dt><dd data-testid="${t}">${v}</dd></div>`).join("");
-  $("warnings").innerHTML = [...(s.errors || []).map((e) => `<li class="err">${e}</li>`),
-    ...(s.warnings || []).map((w) => `<li>${w}</li>`)].join("");
+  $("warnings").innerHTML = [...(s.errors || []).map((e) => `<li class="err">${esc(e)}</li>`),
+    ...(s.warnings || []).map((w) => `<li>${esc(w)}</li>`)].join("");
+  $("water-level").hidden = A.dish_inner_r0_mm === undefined;
 }
 
 let lastKey = "";
@@ -207,9 +113,16 @@ async function build(refit = false) {
     const r = await call("build", { opts: o });
     state.summary = r.summary;
     state.parts = r.parts.map((p) => ({ name: p.name, bytes: p.positions.byteLength }));
-    state.builds++;
     showReport(r.summary);
-    if (r.summary.valid) showParts(r.parts, refit || key.split('"overrides"')[0] !== lastKey.split('"overrides"')[0]);
+    if (r.summary.valid) {
+      viewer.showModel(r.parts, r.summary, refit || key.split('"overrides"')[0] !== lastKey.split('"overrides"')[0]);
+      viewer.setColor($("color").value);
+      viewer.setCut($("cut").checked);
+      viewer.setWater($("water").checked);
+    }
+    state.triangles = viewer.triangles;
+    state.meshes = viewer.meshNames();
+    state.builds++;
     setStatus(r.summary.valid ? `Listo · ${r.summary.seconds} s` : "El diseño no es válido con esta combinación", r.summary.valid ? "ok" : "err");
     lastKey = key;
   } catch (e) {
@@ -218,8 +131,68 @@ async function build(refit = false) {
   } finally {
     setBusy(false);
   }
+  if (state.summary?.valid) await updatePlants();
 }
 
+// ------------------------------------------------------------------ plantas
+let plantReq = 0;
+async function updatePlants() {
+  const ids = state.plants.slice();
+  const my = ++plantReq;
+  renderCarePanel([]);
+  if (!ids.length) { viewer.showPlants([]); state.plantBuilds++; state.compat = []; return; }
+  try {
+    const r = await call("plants", { opts: opts(), ids, decor: $("decor").checked });
+    if (my !== plantReq) return;                       // llegó una selección más nueva
+    viewer.showPlants(r.parts);
+    state.compat = r.compat;
+    renderCarePanel(r.compat);
+    state.plantBuilds++;
+  } catch (e) {
+    state.errors.push(String(e));
+    setStatus("Error en plantas: " + e.message, "err");
+  }
+}
+
+function plantChips() {
+  const max = state.info.max_plantas;
+  $("plant-list").innerHTML = state.info.plantas.map((p) => `
+    <button type="button" class="chip" data-id="${p.id}" data-testid="planta-${p.id}" aria-pressed="${state.plants.includes(p.id)}"
+      title="${esc(p.tipo)} · ${esc(p.dificultad)}">${esc(p.nombre)}<small>${esc(p.tipo.split(" ")[0])}</small></button>`).join("");
+  for (const b of $("plant-list").querySelectorAll(".chip")) {
+    b.disabled = !state.plants.includes(b.dataset.id) && state.plants.length >= max;
+  }
+}
+
+function togglePlant(id) {
+  const i = state.plants.indexOf(id);
+  if (i >= 0) state.plants.splice(i, 1);
+  else if (state.plants.length < state.info.max_plantas) state.plants.push(id);
+  if (!state.plants.includes(state.careTab)) state.careTab = state.plants[state.plants.length - 1] || null;
+  plantChips();
+  if (state.ready && !state.busy) updatePlants();
+}
+
+function renderCarePanel(compat) {
+  const sel = state.plants.map((id) => state.info.plantas.find((p) => p.id === id)).filter(Boolean);
+  $("care").hidden = !sel.length;
+  if (!sel.length) return;
+  if (!state.careTab || !state.plants.includes(state.careTab)) state.careTab = sel[0].id;
+  $("care-tabs").innerHTML = sel.length > 1 ? sel.map((f) => `<button type="button" role="tab" data-id="${f.id}"
+    data-testid="tab-${f.id}" aria-selected="${f.id === state.careTab}">${esc(f.nombre)}</button>`).join("") : "";
+  $("compat").innerHTML = renderCompat(compat || []);
+  const f = sel.find((x) => x.id === state.careTab) || sel[0];
+  const sw = ["screw_dish_sw", "screw_dish"].includes($("mode").value);
+  $("care-body").innerHTML = renderCare(f, state.summary?.assembly, sw);
+}
+
+// ------------------------------------------------------------------ luces
+function lightButtons() {
+  $("light-presets").innerHTML = Object.entries(LIGHTS).map(([k, L]) => `
+    <button type="button" role="radio" data-k="${k}" data-testid="luz-${k}" aria-pressed="${k === state.light}">${L.label}</button>`).join("");
+}
+
+// ------------------------------------------------------------------ descargas
 function save(name, buffer, mime) {
   const url = URL.createObjectURL(new Blob([buffer], { type: mime }));
   const a = Object.assign(document.createElement("a"), { href: url, download: name });
@@ -263,10 +236,12 @@ function buildSliders() {
 
 async function main() {
   buildSliders();
+  lightButtons();
   try {
     const boot = await call("init");
     const info = boot.info;
     state.info = info;
+    viewer.setPlantMaterials(info.materiales);
     fill($("design"), info.designs, (d) => d.code, (d) => `${d.code} · ${d.name}`);
     fill($("size"), info.sizes, (s) => s, (s) => s);
     fill($("mode"), info.modes, (m) => m.code, (m) => m.label);
@@ -278,6 +253,8 @@ async function main() {
       $(id).disabled = false;
       $(id).addEventListener("change", () => build(id !== "drain"));
     }
+    state.plants = ["echeveria"];
+    plantChips();
     state.ready = true;
     state.bootSeconds = boot.seconds;
     setStatus(`Motor listo en ${boot.seconds.toFixed(1)} s`, "ok");
@@ -296,7 +273,39 @@ $("reset").addEventListener("click", () => {
   for (const [k] of SLIDERS) { $("s-" + k).value = 0; $("o-" + k).textContent = "—"; }
   build();
 });
-for (const id of ["water", "cut", "color"]) $(id).addEventListener("change", applyView);
+$("plant-list").addEventListener("click", (ev) => {
+  const b = ev.target.closest(".chip");
+  if (b && !b.disabled) togglePlant(b.dataset.id);
+});
+$("care-tabs").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-id]");
+  if (!b) return;
+  state.careTab = b.dataset.id;
+  renderCarePanel(state.compat);
+});
+$("decor").addEventListener("change", () => updatePlants());
+$("light-presets").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-k]");
+  if (!b) return;
+  state.light = b.dataset.k;
+  viewer.setLight(state.light);
+  lightButtons();
+});
+$("sun-az").addEventListener("input", () => {
+  $("o-sun").textContent = $("sun-az").value + "°";
+  viewer.setLight(state.light, +$("sun-az").value);
+});
+$("water").addEventListener("change", () => viewer.setWater($("water").checked));
+$("water-level").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-v]");
+  if (!b) return;
+  for (const x of $("water-level").querySelectorAll("button")) x.setAttribute("aria-pressed", String(x === b));
+  $("water").checked = true;
+  viewer.setWater(true, b.dataset.v);
+});
+$("cut").addEventListener("change", () => viewer.setCut($("cut").checked));
+$("color").addEventListener("change", () => viewer.setColor($("color").value));
+$("mode").addEventListener("change", () => renderCarePanel(state.compat));
 $("hq").addEventListener("change", () => build());
 window.addEventListener("error", (e) => state.errors.push(String(e.message)));
 main();

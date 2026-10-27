@@ -1,0 +1,52 @@
+area: Plantas y cuidados
+prefijo: PLA
+specs:
+  - id: PLA-001
+    titulo: Catálogo de plantas conocidas en 3D
+    descripcion: La web ofrece las plantas más comunes de maceta, generadas en 3D.
+    criterio: >
+      Hay al menos 10 plantas (suculentas, cactus, colgantes y de follaje); cada una
+      genera mallas sin triángulos degenerados, con materiales conocidos, y las que no
+      son colgantes quedan dentro de 1,6 veces el radio de la boca de la maceta.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PLA-002
+    titulo: Una o varias plantas en la misma maceta
+    descripcion: Se pueden combinar hasta 4 plantas y se reparten en la boca de la maceta.
+    criterio: >
+      Para 1 a 4 plantas las huellas no se superponen y quedan dentro de la boca; con
+      más de 4 se usan sólo las primeras 4 y la compatibilidad avisa el límite.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PLA-003
+    titulo: Ficha de cuidado completa
+    descripcion: Cada planta trae información detallada para mantenerla viva.
+    criterio: >
+      Cada ficha tiene luz, riego por estación y cómo regar, consejo de autorriego con
+      los ml de la maceta ({min_ml}), sustrato, temperatura (mín < máx), humedad,
+      fertilizante, trasplante, reproducción, plagas, al menos 3 señales de problema
+      con causa y solución, y toxicidad para mascotas.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PLA-004
+    titulo: Aviso de combinaciones incompatibles
+    descripcion: Si se combinan plantas con distinto riego o luz, la web lo advierte.
+    criterio: >
+      Seco + húmedo/medio da aviso de riego; sol + luz media da alerta de luz;
+      plantas con los mismos grupos dan "Combinación compatible".
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: PLA-005
+    titulo: Elegir plantas en la web y ver sus cuidados
+    descripcion: El cliente elige plantas, las ve en la maceta y lee cómo cuidarlas.
+    criterio: >
+      Al elegir plantas aparecen sus mallas en el visor, la ficha con pestañas por
+      planta, el consejo de autorriego con los ml reales de la maceta y los avisos de
+      compatibilidad; no se pueden elegir más de 4.
+    prioridad: alta
+    nivel: web
+    estado: activa

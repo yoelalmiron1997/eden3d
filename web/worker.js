@@ -57,6 +57,26 @@ function build(opts) {
   }
 }
 
+function plants(opts, ids, decor) {
+  const res = api.plants(py.toPy(opts), py.toPy(ids), decor);
+  try {
+    const cp = res.get("compat");
+    const compat = cp.toJs({ dict_converter: Object.fromEntries });
+    cp.destroy();
+    const parts = [];
+    const pl = res.get("parts");
+    for (let i = 0; i < pl.length; i++) {
+      const p = pl.get(i);
+      parts.push({ name: p.get("name"), positions: bytesOf(p.get("positions")), indices: bytesOf(p.get("indices")) });
+      p.destroy();
+    }
+    pl.destroy();
+    return { parts, compat };
+  } finally {
+    res.destroy();
+  }
+}
+
 function exportFile(kind, opts, part) {
   const r = kind === "3mf" ? api.export_3mf(py.toPy(opts)) : api.export_stl(py.toPy(opts), part);
   try {
@@ -69,7 +89,7 @@ function exportFile(kind, opts, part) {
 const ready = init();
 
 self.onmessage = async (ev) => {
-  const { id, type, opts, part } = ev.data;
+  const { id, type, opts, part, ids, decor } = ev.data;
   try {
     const boot = await ready;
     if (type === "init") {
@@ -78,6 +98,9 @@ self.onmessage = async (ev) => {
       const r = build(opts);
       self.postMessage({ id, ok: true, result: r },
         r.parts.flatMap((p) => [p.positions, p.indices]));
+    } else if (type === "plants") {
+      const r = plants(opts, ids || [], decor !== false);
+      self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
     } else if (type === "3mf" || type === "stl") {
       const r = exportFile(type, opts, part);
       self.postMessage({ id, ok: true, result: r }, [r.data]);

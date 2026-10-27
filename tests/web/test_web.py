@@ -26,7 +26,10 @@ def test_el_visor_dibuja_la_maceta(app):
     assert st["meshes"] == ["MACETA", "PLATO", "AGUA"]
     assert st["triangles"] > 10_000
     assert app.first_model_seconds < 90, "primer modelo en %.0f s" % app.first_model_seconds
-    # el canvas no está vacío: hay píxeles opacos y con variación
+    # el canvas no está vacío: hay píxeles opacos y con variación (se espera a que
+    # el visor dibuje algunos cuadros; en equipos sin GPU va a pocos cuadros/s)
+    f0 = app.evaluate("window.__eden.viewer.frames")
+    app.wait_for_function("(f) => window.__eden.viewer.frames > f + 2", arg=f0, timeout=60_000)
     stats = app.evaluate("""() => {
         const c = document.querySelector('[data-testid=visor] canvas');
         const t = document.createElement('canvas'); t.width = 120; t.height = 90;
@@ -50,9 +53,9 @@ def test_reporte_del_autorriego(app):
 @pytest.mark.spec("WEB-007")
 def test_vista_de_corte(app):
     app.locator(T % "chk-corte").check()
-    assert app.evaluate("window.__eden.cut") is True
+    assert app.evaluate("window.__eden.viewer.cut") is True
     app.locator(T % "chk-corte").uncheck()
-    assert app.evaluate("window.__eden.cut") is False
+    assert app.evaluate("window.__eden.viewer.cut") is False
 
 
 @pytest.mark.spec("WEB-004", "LIC-002")
@@ -147,3 +150,73 @@ def test_tablero_de_calidad(browser, base_url, site_dir):
     finally:
         if not existed:
             os.remove(data_path)
+
+
+def _plant_click(page, pid):
+    n = page.evaluate("window.__eden.plantBuilds")
+    page.locator(T % ("planta-" + pid)).click(no_wait_after=True)
+    page.wait_for_function("(n) => window.__eden.plantBuilds > n", arg=n, timeout=120_000)
+
+
+@pytest.mark.spec("PLA-005")
+def test_plantas_y_cuidados(browser, base_url):
+    page = open_app(browser, base_url)
+    page.wait_for_function("window.__eden.plantBuilds >= 1", timeout=120_000)
+    # por defecto: echeveria, con ficha y consejo de autorriego con los ml reales
+    assert page.evaluate("window.__eden.plants") == ["echeveria"]
+    assert page.evaluate("window.__eden.viewer.plantTriangles") > 1000
+    assert page.locator(T % "cuidados").is_visible()
+    ml = page.evaluate("Math.round(window.__eden.summary.assembly.water_min_wet_ml)")
+    assert ("%d ml" % ml) in page.locator(T % "ficha-autorriego").inner_text()
+    assert page.locator(T % "ficha-senales" + " tbody tr").count() >= 3
+    # combinar: potus + cactus -> pestañas y avisos de compatibilidad
+    _plant_click(page, "pothos")
+    _plant_click(page, "cereus")
+    assert page.locator("#care-tabs button").count() == 3
+    compat = page.locator(T % "compatibilidad").inner_text()
+    assert "Riego distinto" in compat and "Luz distinta" in compat
+    page.locator(T % "tab-pothos").click()
+    assert page.locator(T % "ficha-pothos").is_visible()
+    # tope de 4
+    _plant_click(page, "aloe")
+    assert page.locator(T % "planta-lithops").is_disabled()
+    page.context.close()
+
+
+@pytest.mark.spec("VIS-001")
+def test_iluminacion(browser, base_url):
+    page = open_app(browser, base_url)
+    bg0 = page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage")
+    page.locator(T % "luz-noche").click(no_wait_after=True)
+    v = page.evaluate("window.__eden.viewer")
+    assert v["light"] == "noche" and v["lamp"] > 0
+    assert page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage") != bg0
+    page.locator(T % "luz-atardecer").click(no_wait_after=True)
+    assert page.evaluate("window.__eden.viewer.sunIntensity") > 3
+    page.evaluate("""() => { const s = document.querySelector('[data-testid=sl-sol]');
+        s.value = 200; s.dispatchEvent(new Event('input')); }""")
+    assert page.evaluate("window.__eden.viewer.sunAz") == 200
+    page.context.close()
+
+
+@pytest.mark.spec("VIS-002", "VIS-003")
+def test_agua_animada(browser, base_url):
+    page = open_app(browser, base_url)
+    page.evaluate("window.__edenViewer.setLowPower()")          # VIS-003: modo bajo consumo
+    assert page.evaluate("window.__edenViewer.renderer.shadowMap.enabled") is False
+    def sample():
+        return page.evaluate("""() => { const W = window.__edenViewer.water;
+            const a = W.geoms[0].attributes.position.array; return [W.t, a[3*40+2], a[3*700+2], W.level]; }""")
+    t0, a0, b0, _ = sample()
+    page.wait_for_timeout(2500)
+    t1, a1, b1, _ = sample()
+    assert t1 > t0, "el tiempo del agua no avanza"
+    assert (a1, b1) != (a0, b0), "la superficie no se mueve"
+    A = page.evaluate("window.__eden.summary.assembly")
+    page.locator(T % "agua-min").click(no_wait_after=True)
+    page.wait_for_function("(z) => Math.abs(window.__edenViewer.water.level - z) < 0.6",
+                           arg=A["water_min_wet_level_mm"], timeout=60_000)
+    page.locator(T % "agua-max").click(no_wait_after=True)
+    page.wait_for_function("(z) => Math.abs(window.__edenViewer.water.level - z) < 0.6",
+                           arg=A["water_level_max_mm"], timeout=60_000)
+    page.context.close()

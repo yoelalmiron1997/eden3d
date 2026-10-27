@@ -66,11 +66,29 @@
         <button type="button" class="link" id="reset" data-testid="btn-reset">Volver al patrón del diseño</button>
       </fieldset>
 
+      <fieldset>
+        <legend>Plantas <span class="hint">elegí hasta 4</span></legend>
+        <div id="plant-list" class="chips" data-testid="plantas" role="group" aria-label="Plantas"></div>
+        <label class="check"><input type="checkbox" id="decor" data-testid="chk-piedras" checked> Tierra y piedritas</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Iluminación</legend>
+        <div class="seg" id="light-presets" role="radiogroup" aria-label="Iluminación" data-testid="luces"></div>
+        <label class="slider"><span>Dirección del sol</span>
+          <input type="range" id="sun-az" data-testid="sl-sol" min="0" max="360" step="1" value="35">
+          <output id="o-sun">35°</output></label>
+      </fieldset>
+
       <fieldset class="view-opts">
         <legend>Vista</legend>
-        <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua del autorriego</label>
+        <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua animada</label>
         <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
         <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> Detalle alto</label>
+        <div class="seg small" id="water-level" role="radiogroup" aria-label="Nivel de agua">
+          <button type="button" data-v="min" data-testid="agua-min">Mínimo para mojar</button>
+          <button type="button" data-v="max" data-testid="agua-max" aria-pressed="true">Plato lleno</button>
+        </div>
       </fieldset>
 
       <div class="actions">
@@ -83,6 +101,7 @@
       </div>
     </section>
 
+    <div class="column">
     <section class="stage" aria-label="Vista 3D">
       <div id="viewer" class="viewer" data-testid="visor"></div>
       <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
@@ -92,6 +111,20 @@
         <ul id="warnings" class="warnings"></ul>
       </article>
     </section>
+
+    <section class="care" id="care" data-testid="cuidados" aria-labelledby="care-title" hidden>
+      <div class="care-h">
+        <h2 id="care-title">Cuidados de tus plantas</h2>
+        <div class="tabs" id="care-tabs" role="tablist"></div>
+      </div>
+      <ul id="compat" class="compat" data-testid="compatibilidad"></ul>
+      <div id="care-body" class="care-body" role="tabpanel"></div>
+      <p class="muted small">Recomendaciones generales para interior en clima templado (Argentina). Toxicidad según
+        <a href="https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants" target="_blank" rel="noopener">ASPCA</a>
+        y <a href="https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/" target="_blank" rel="noopener">Clemson University</a>:
+        ante cualquier ingesta, consultá a tu veterinario.</p>
+    </section>
+    </div>
   </main>
 
   <footer class="foot">

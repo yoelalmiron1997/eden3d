@@ -1,0 +1,30 @@
+area: Visor 3D
+prefijo: VIS
+specs:
+  - id: VIS-001
+    titulo: Iluminación ajustable
+    descripcion: Presets de luz (estudio, mañana, atardecer, noche) y dirección del sol.
+    criterio: >
+      Cada preset cambia la luz principal (color/intensidad o lámpara) y el fondo del
+      visor; el control de dirección mueve el sol.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: VIS-002
+    titulo: Agua animada en el plato
+    descripcion: El agua del autorriego se mueve y se llena hasta el nivel elegido.
+    criterio: >
+      La superficie del agua cambia con el tiempo y el nivel converge (±0,6 mm) al
+      nivel del motor: "mínimo para mojar" o "plato lleno".
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: VIS-003
+    titulo: Funciona en equipos sin placa de video
+    descripcion: En equipos lentos el visor baja la calidad en vez de congelar la página.
+    criterio: >
+      En modo de bajo consumo se apagan sombras y reflejos, se limitan los cuadros por
+      segundo y la animación del agua sigue avanzando.
+    prioridad: media
+    nivel: web
+    estado: activa

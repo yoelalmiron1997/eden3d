@@ -174,8 +174,9 @@ def _pebble(cx, cy, cz, a, b, c, rot, rnd, nu=22, nv=12):
     return V, F
 
 
-def pebbles(r_in, z_s, keep_r=0.0, seed=7):
-    """Piedritas sobre la tierra (Poisson simple). keep_r: zona libre central (planta)."""
+def pebbles(r_in, z_s, keep_r=0.0, seed=7, avoid=()):
+    """Piedritas sobre la tierra (Poisson simple). keep_r: zona libre central (planta);
+    avoid: [(x, y, r)] otras zonas libres (varias plantas)."""
     rnd = random.Random(seed)
     placed = []
     out = {"piedra": ([], []), "arcilla": ([], [])}
@@ -188,6 +189,8 @@ def pebbles(r_in, z_s, keep_r=0.0, seed=7):
         if rr + size * 0.8 > r_in - 0.8 or rr < keep_r:
             continue
         x, y = rr * math.cos(th), rr * math.sin(th)
+        if any(math.hypot(x - ax, y - ay) < ar for ax, ay, ar in avoid):
+            continue
         if any(math.hypot(x - px, y - py) < (size + ps) * 0.78 for px, py, ps in placed):
             continue
         placed.append((x, y, size))

@@ -1,0 +1,646 @@
+{
+ "_ayuda": "Fichas de cuidado de las plantas del configurador. {min_ml} y {max_ml} se reemplazan por los ml del plato de autorriego del diseño elegido. grupo_riego: seco | medio | humedo. grupo_luz: sol | brillante | media. autorriego.nivel: recomendado | con-cuidado | no-recomendado.",
+ "fuentes": {
+  "toxicidad": "https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants",
+  "toxicidad_2": "https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/"
+ },
+ "plantas": [
+  {
+   "id": "echeveria",
+   "nombre": "Echeveria",
+   "otros_nombres": [
+    "Rosa de piedra",
+    "Rosa del desierto"
+   ],
+   "cientifico": "Echeveria spp. (Crassulaceae)",
+   "tipo": "Suculenta",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "resumen": "Roseta compacta de hojas carnosas, de origen mexicano. Guarda agua en las hojas: se muere mucho más seguido por exceso de riego que por falta.",
+   "luz": "Mucha luz: sol directo de mañana o luz muy brillante todo el día. Con poca luz se estira (etiolación) y pierde la forma de roseta y el color.",
+   "riego": {
+    "primavera_verano": "Cada 7 a 15 días, sólo cuando la tierra esté completamente seca.",
+    "otono_invierno": "Cada 3 a 4 semanas o menos; en interior fresco casi nada.",
+    "como": "Riego profundo hasta que drene y después dejar secar del todo. Evitá que quede agua entre las hojas de la roseta."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "No dejes el plato lleno de forma permanente. Poné {min_ml} ml (lo justo para mojar la base) cuando la tierra esté seca y dejá que se consuma; no repongas hasta que la tierra vuelva a secarse. En invierno, plato vacío."
+   },
+   "sustrato": "Mezcla para suculentas muy drenante: 50 % tierra para cactus y 50 % perlita, piedra pómez o arena gruesa.",
+   "temperatura": {
+    "min": 5,
+    "max": 35,
+    "nota": "Protegela de heladas; por debajo de 0 °C se dañan las hojas."
+   },
+   "humedad": "Baja. Ambientes secos y ventilados.",
+   "fertilizante": "Fertilizante para cactus diluido a la mitad, una vez por mes en primavera y verano. Nada en invierno.",
+   "trasplante": "Cada 2 o 3 años en primavera, cuando la roseta ocupa toda la boca de la maceta.",
+   "propagacion": "Muy fácil por hojas: desprendé una hoja entera, dejala secar 2 o 3 días y apoyala sobre sustrato seco.",
+   "plagas": "Cochinilla algodonosa (pelusa blanca entre las hojas) y pulgones en los tallos florales.",
+   "senales": [
+    {
+     "sintoma": "Hojas blandas, translúcidas o negras en la base",
+     "causa": "Exceso de riego, raíz podrida",
+     "solucion": "Suspendé el riego, sacala de la maceta, cortá lo podrido y replantá en sustrato seco."
+    },
+    {
+     "sintoma": "Roseta abierta y tallo estirado",
+     "causa": "Falta de luz",
+     "solucion": "Pasala gradualmente a un lugar con más sol."
+    },
+    {
+     "sintoma": "Hojas arrugadas y finas",
+     "causa": "Falta de agua",
+     "solucion": "Un riego profundo; se recupera en días."
+    },
+    {
+     "sintoma": "Manchas marrones secas",
+     "causa": "Quemadura por sol fuerte de golpe",
+     "solucion": "Aclimatala de a poco al sol directo."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "Considerada no tóxica para perros y gatos (ASPCA)."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "haworthia",
+   "nombre": "Haworthia cebra",
+   "otros_nombres": [
+    "Planta cebra",
+    "Haworthiopsis"
+   ],
+   "cientifico": "Haworthiopsis attenuata / fasciata (Asphodelaceae)",
+   "tipo": "Suculenta",
+   "dificultad": "Muy fácil",
+   "colgante": false,
+   "resumen": "Roseta pequeña de hojas duras y puntiagudas con bandas blancas. Es de las suculentas que mejor viven en interior.",
+   "luz": "Luz brillante indirecta. Tolera media sombra mejor que otras suculentas; el sol fuerte de la tarde la enrojece o la quema.",
+   "riego": {
+    "primavera_verano": "Cada 10 a 15 días, con la tierra seca.",
+    "otono_invierno": "Cada 3 a 4 semanas.",
+    "como": "Mojá la tierra, no la roseta. Dejá secar entre riegos."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Usá el plato como reserva corta: {min_ml} ml cuando la tierra esté seca, y esperá a que el plato quede vacío y la tierra seca antes de volver a cargar. Nunca lo mantengas lleno ({max_ml} ml)."
+   },
+   "sustrato": "Sustrato para cactus con 40 a 50 % de perlita o pómez.",
+   "temperatura": {
+    "min": 5,
+    "max": 32,
+    "nota": "Ideal entre 18 y 27 °C."
+   },
+   "humedad": "Baja a media.",
+   "fertilizante": "Una o dos veces en primavera-verano con fertilizante para cactus diluido.",
+   "trasplante": "Cada 2 o 3 años; le gusta estar algo apretada.",
+   "propagacion": "Por hijuelos que salen de la base: separalos con raíz al trasplantar.",
+   "plagas": "Cochinilla algodonosa en la base de las hojas.",
+   "senales": [
+    {
+     "sintoma": "Hojas blandas y marrones desde la base",
+     "causa": "Exceso de agua",
+     "solucion": "Dejá secar y revisá raíces."
+    },
+    {
+     "sintoma": "Hojas rojizas o anaranjadas",
+     "causa": "Demasiado sol directo",
+     "solucion": "Pasala a luz indirecta."
+    },
+    {
+     "sintoma": "Puntas secas",
+     "causa": "Ambiente muy seco o sol fuerte",
+     "solucion": "Normal en hojas viejas; si avanza, menos sol."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "Considerada no tóxica para perros y gatos."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "brillante"
+  },
+  {
+   "id": "aloe",
+   "nombre": "Aloe vera",
+   "otros_nombres": [
+    "Sábila",
+    "Áloe"
+   ],
+   "cientifico": "Aloe vera (Asphodelaceae)",
+   "tipo": "Suculenta",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "resumen": "Hojas largas y carnosas con bordes dentados y gel interior. Crece rápido y da muchos hijuelos.",
+   "luz": "Sol directo o luz muy brillante (mínimo 6 horas). En interior, al lado de la ventana más luminosa.",
+   "riego": {
+    "primavera_verano": "Cada 10 a 20 días, con la tierra seca en profundidad.",
+    "otono_invierno": "Una vez por mes o menos.",
+    "como": "Riego abundante y espaciado. Las hojas finas o curvadas indican sed."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Cargá {min_ml} ml sólo cuando la tierra esté seca y dejá que el plato se vacíe por completo. Con el plato siempre lleno ({max_ml} ml) la raíz se pudre."
+   },
+   "sustrato": "Tierra para cactus con 30 a 50 % de perlita o arena gruesa.",
+   "temperatura": {
+    "min": 7,
+    "max": 35,
+    "nota": "No tolera heladas."
+   },
+   "humedad": "Baja.",
+   "fertilizante": "Una vez en primavera y otra a mitad de verano, fertilizante para cactus.",
+   "trasplante": "Cada 2 años o cuando los hijuelos llenan la maceta. Es pesada arriba: conviene una maceta estable.",
+   "propagacion": "Por hijuelos con raíz.",
+   "plagas": "Cochinilla y, en exterior, hongos por exceso de humedad.",
+   "senales": [
+    {
+     "sintoma": "Hojas caídas y blandas",
+     "causa": "Exceso de riego o poca luz",
+     "solucion": "Menos agua y más luz."
+    },
+    {
+     "sintoma": "Hojas marrones o rojizas",
+     "causa": "Sol fuerte de golpe o frío",
+     "solucion": "Aclimatala; protegela del frío."
+    },
+    {
+     "sintoma": "Hojas finas y curvadas hacia adentro",
+     "causa": "Falta de agua",
+     "solucion": "Un riego profundo."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Tóxica para perros y gatos (saponinas y antraquinonas): puede causar vómitos, letargo y diarrea si la comen."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "sansevieria",
+   "nombre": "Sansevieria",
+   "otros_nombres": [
+    "Lengua de suegra",
+    "Espada de San Jorge"
+   ],
+   "cientifico": "Dracaena trifasciata (antes Sansevieria trifasciata)",
+   "tipo": "Suculenta de follaje",
+   "dificultad": "Muy fácil",
+   "colgante": false,
+   "resumen": "Hojas verticales, rígidas, en forma de espada. Aguanta poca luz y olvidos de riego; es de las plantas más resistentes de interior.",
+   "luz": "Desde luz indirecta brillante hasta media sombra. Con más luz crece más rápido y con mejor color.",
+   "riego": {
+    "primavera_verano": "Cada 2 a 3 semanas, con la tierra seca.",
+    "otono_invierno": "Cada 4 a 6 semanas.",
+    "como": "No mojes el centro de la roseta: el agua estancada ahí pudre la base de las hojas."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Es de raíz sensible al encharcamiento. Usá el plato sólo como riego por abajo puntual: {min_ml} ml con la tierra seca y que se consuma. Nada de plato lleno permanente."
+   },
+   "sustrato": "Sustrato para cactus o universal con 30 % de perlita.",
+   "temperatura": {
+    "min": 10,
+    "max": 32,
+    "nota": "Sufre con frío y humedad juntos."
+   },
+   "humedad": "Indiferente.",
+   "fertilizante": "Una vez por mes en primavera-verano, fertilizante para plantas verdes diluido a la mitad.",
+   "trasplante": "Cada 2 o 3 años; los rizomas pueden deformar o romper macetas finas.",
+   "propagacion": "Por división de rizomas o esquejes de hoja.",
+   "plagas": "Poco frecuentes: cochinilla y ácaros en ambientes muy secos.",
+   "senales": [
+    {
+     "sintoma": "Hojas blandas que se doblan desde la base",
+     "causa": "Exceso de agua",
+     "solucion": "Suspendé el riego, revisá raíces y rizomas."
+    },
+    {
+     "sintoma": "Puntas marrones",
+     "causa": "Riego irregular o golpes",
+     "solucion": "Riego más regular; podés recortar la punta."
+    },
+    {
+     "sintoma": "Hojas que se abren y caen",
+     "causa": "Falta de luz",
+     "solucion": "Más luz."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Tóxica para perros y gatos (saponinas): vómitos, salivación, diarrea."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "media"
+  },
+  {
+   "id": "cereus",
+   "nombre": "Cactus columnar",
+   "otros_nombres": [
+    "Cereus",
+    "Cactus vela"
+   ],
+   "cientifico": "Cereus spp. (Cactaceae)",
+   "tipo": "Cactus",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "resumen": "Cactus de columna con costillas marcadas y espinas en las areolas. Crece hacia arriba y puede ramificar.",
+   "luz": "Sol directo, cuanto más mejor. En interior, la ventana más soleada; con poca luz se afina en la punta.",
+   "riego": {
+    "primavera_verano": "Cada 10 a 20 días, con la tierra totalmente seca.",
+    "otono_invierno": "Prácticamente nada: una vez por mes o menos. El reposo invernal en seco favorece la floración.",
+    "como": "Riego profundo y espaciado."
+   },
+   "autorriego": {
+    "nivel": "no-recomendado",
+    "consejo": "Para cactus, usá el plato vacío como plato de drenaje. Si querés regar por abajo, {min_ml} ml una vez y que se consuma; nunca lo dejes lleno."
+   },
+   "sustrato": "Sustrato para cactus con 50 % de material mineral (pómez, perlita, arena gruesa).",
+   "temperatura": {
+    "min": 5,
+    "max": 40,
+    "nota": "Seco tolera algo de frío; húmedo y frío se pudre."
+   },
+   "humedad": "Baja.",
+   "fertilizante": "Fertilizante para cactus 2 o 3 veces en primavera-verano.",
+   "trasplante": "Cada 2 o 3 años; manipulalo con papel de diario doblado o guantes gruesos.",
+   "propagacion": "Por esquejes de tallo: cortar, dejar cicatrizar una semana y plantar en seco.",
+   "plagas": "Cochinilla algodonosa y de escudo.",
+   "senales": [
+    {
+     "sintoma": "Base blanda o marrón",
+     "causa": "Pudrición por exceso de agua",
+     "solucion": "Cortá por encima de lo podrido y reenraizá el esqueje."
+    },
+    {
+     "sintoma": "Punta fina y pálida",
+     "causa": "Falta de luz",
+     "solucion": "Más sol (aclimatando)."
+    },
+    {
+     "sintoma": "Manchas amarillas o blancas",
+     "causa": "Quemadura de sol",
+     "solucion": "Aclimatá de a poco."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "No se considera tóxico, pero las espinas pueden lastimar a perros y gatos."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "mammillaria",
+   "nombre": "Mammillaria",
+   "otros_nombres": [
+    "Cactus bola",
+    "Cactus alfiletero"
+   ],
+   "cientifico": "Mammillaria spp. (Cactaceae)",
+   "tipo": "Cactus",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "resumen": "Cactus globoso cubierto de tubérculos con espinas finas. Da una corona de flores pequeñas en primavera.",
+   "luz": "Sol directo de mañana o mucha luz. Para florecer necesita luz fuerte y un invierno fresco y seco.",
+   "riego": {
+    "primavera_verano": "Cada 10 a 15 días con la tierra seca.",
+    "otono_invierno": "Sin riego o casi nada (reposo).",
+    "como": "Regá la tierra alrededor, no el cuerpo del cactus."
+   },
+   "autorriego": {
+    "nivel": "no-recomendado",
+    "consejo": "Usá el plato de autorriego como plato de drenaje, vacío. Si regás por abajo, {min_ml} ml puntuales y que se consuman."
+   },
+   "sustrato": "Muy mineral: 50 a 60 % pómez o perlita y el resto tierra para cactus.",
+   "temperatura": {
+    "min": 5,
+    "max": 38,
+    "nota": "Invierno entre 5 y 12 °C y seco para que florezca."
+   },
+   "humedad": "Baja.",
+   "fertilizante": "Fertilizante para cactus bajo en nitrógeno, 2 o 3 veces en la temporada de crecimiento.",
+   "trasplante": "Cada 2 o 3 años, en primavera, con la tierra seca.",
+   "propagacion": "Por hijuelos o semillas.",
+   "plagas": "Cochinilla de raíz y araña roja.",
+   "senales": [
+    {
+     "sintoma": "Cuerpo arrugado en verano",
+     "causa": "Falta de agua",
+     "solucion": "Riego profundo."
+    },
+    {
+     "sintoma": "Base blanda",
+     "causa": "Exceso de agua",
+     "solucion": "Cortar lo dañado y secar; sustrato nuevo."
+    },
+    {
+     "sintoma": "No florece",
+     "causa": "Poca luz o invierno cálido y con riego",
+     "solucion": "Reposo invernal fresco y seco."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "No se considera tóxico; cuidado con las espinas."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "opuntia",
+   "nombre": "Opuntia",
+   "otros_nombres": [
+    "Nopal",
+    "Tuna",
+    "Orejas de conejo"
+   ],
+   "cientifico": "Opuntia spp. (Cactaceae)",
+   "tipo": "Cactus",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "resumen": "Cactus de tallos planos (pencas) que se apilan. Las especies chicas como Opuntia microdasys son ideales para maceta.",
+   "luz": "Sol pleno. Con poca luz las pencas nuevas salen finas y deformes.",
+   "riego": {
+    "primavera_verano": "Cada 10 a 15 días con la tierra seca.",
+    "otono_invierno": "Casi nada.",
+    "como": "Riego espaciado y profundo."
+   },
+   "autorriego": {
+    "nivel": "no-recomendado",
+    "consejo": "Plato vacío como drenaje; si regás por abajo, {min_ml} ml una vez y que se consuman."
+   },
+   "sustrato": "Tierra para cactus con 40 % de material mineral.",
+   "temperatura": {
+    "min": 3,
+    "max": 40,
+    "nota": "Muchas especies toleran frío seco."
+   },
+   "humedad": "Baja.",
+   "fertilizante": "Fertilizante para cactus en primavera y verano.",
+   "trasplante": "Con guantes gruesos: los gloquidios (espinitas finas) se clavan en la piel y cuesta sacarlos.",
+   "propagacion": "Muy fácil por pencas: separar, dejar cicatrizar y apoyar en sustrato seco.",
+   "plagas": "Cochinilla (incluida la del carmín) en las pencas.",
+   "senales": [
+    {
+     "sintoma": "Pencas arrugadas",
+     "causa": "Falta de agua",
+     "solucion": "Riego profundo."
+    },
+    {
+     "sintoma": "Pencas blandas o negras",
+     "causa": "Exceso de agua",
+     "solucion": "Cortar y dejar secar."
+    },
+    {
+     "sintoma": "Pencas finas y alargadas",
+     "causa": "Poca luz",
+     "solucion": "Más sol."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "No tóxica, pero los gloquidios irritan piel, boca y ojos de mascotas y personas."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "crassula",
+   "nombre": "Árbol de jade",
+   "otros_nombres": [
+    "Planta del dinero",
+    "Crásula"
+   ],
+   "cientifico": "Crassula ovata (Crassulaceae)",
+   "tipo": "Suculenta arbustiva",
+   "dificultad": "Fácil",
+   "colgante": false,
+   "resumen": "Suculenta con tronco leñoso y hojas ovaladas carnosas; con los años toma forma de arbolito (estilo bonsái).",
+   "luz": "Mucha luz, con algo de sol directo. Con sol los bordes de las hojas se ponen rojizos.",
+   "riego": {
+    "primavera_verano": "Cada 10 a 15 días con la tierra seca.",
+    "otono_invierno": "Cada 3 a 4 semanas.",
+    "como": "Riego profundo y dejar secar. Si las hojas se arrugan, le falta agua."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Reserva corta: {min_ml} ml con la tierra seca y que se consuma. Evitá el plato lleno ({max_ml} ml) por más de un par de días."
+   },
+   "sustrato": "Tierra para cactus con 30 % de perlita.",
+   "temperatura": {
+    "min": 7,
+    "max": 35,
+    "nota": "No tolera heladas."
+   },
+   "humedad": "Baja a media.",
+   "fertilizante": "Una vez por mes en primavera-verano, diluido.",
+   "trasplante": "Cada 2 o 3 años; es pesada arriba, conviene una maceta de base ancha.",
+   "propagacion": "Muy fácil por esquejes de tallo o por hojas.",
+   "plagas": "Cochinilla algodonosa en las axilas de las hojas.",
+   "senales": [
+    {
+     "sintoma": "Caída de hojas sanas",
+     "causa": "Cambio brusco, frío o riego excesivo",
+     "solucion": "Estabilizá el lugar y el riego."
+    },
+    {
+     "sintoma": "Hojas arrugadas",
+     "causa": "Falta de agua",
+     "solucion": "Riego profundo."
+    },
+    {
+     "sintoma": "Tallos blandos",
+     "causa": "Pudrición por exceso de agua",
+     "solucion": "Cortar sano y reenraizar."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Tóxica para perros y gatos (ASPCA): vómitos, decaimiento e incoordinación."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  },
+  {
+   "id": "senecio",
+   "nombre": "Rosario",
+   "otros_nombres": [
+    "Collar de perlas",
+    "String of pearls"
+   ],
+   "cientifico": "Curio rowleyanus (antes Senecio rowleyanus)",
+   "tipo": "Suculenta colgante",
+   "dificultad": "Media",
+   "colgante": true,
+   "resumen": "Tallos colgantes con hojas en forma de perla. Queda espectacular cayendo por el borde de la maceta.",
+   "luz": "Luz brillante indirecta con algo de sol de mañana. El sol fuerte de la tarde la quema.",
+   "riego": {
+    "primavera_verano": "Cada 7 a 10 días, cuando los primeros centímetros estén secos.",
+    "otono_invierno": "Cada 2 a 3 semanas.",
+    "como": "Es más sensible a la pudrición que otras suculentas: nunca encharcar la corona (donde nacen los tallos)."
+   },
+   "autorriego": {
+    "nivel": "con-cuidado",
+    "consejo": "Le viene bien el riego por abajo porque no moja la corona: {min_ml} ml cuando la tierra superficial esté seca, y que se consuma antes de volver a cargar."
+   },
+   "sustrato": "Tierra para cactus con 30 % de perlita.",
+   "temperatura": {
+    "min": 7,
+    "max": 30,
+    "nota": "Sufre con calor extremo y humedad."
+   },
+   "humedad": "Baja a media.",
+   "fertilizante": "Una vez por mes en primavera-verano, diluido a la mitad.",
+   "trasplante": "Cada 2 años; maceta más ancha que profunda.",
+   "propagacion": "Por esquejes de tallo apoyados sobre la tierra.",
+   "plagas": "Pulgones y cochinilla.",
+   "senales": [
+    {
+     "sintoma": "Perlas arrugadas o chatas",
+     "causa": "Falta de agua",
+     "solucion": "Riego profundo."
+    },
+    {
+     "sintoma": "Corona marrón y tallos que se cortan",
+     "causa": "Exceso de agua",
+     "solucion": "Rescatá esquejes sanos y replantá."
+    },
+    {
+     "sintoma": "Tallos largos con perlas separadas",
+     "causa": "Falta de luz",
+     "solucion": "Más luz indirecta."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Tóxica para perros y gatos: puede causar vómitos, diarrea y decaimiento."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "brillante"
+  },
+  {
+   "id": "pothos",
+   "nombre": "Potus",
+   "otros_nombres": [
+    "Pothos",
+    "Poto"
+   ],
+   "cientifico": "Epipremnum aureum (Araceae)",
+   "tipo": "Follaje colgante",
+   "dificultad": "Muy fácil",
+   "colgante": true,
+   "resumen": "Trepadora o colgante de hojas acorazonadas. Crece rápido y avisa cuando tiene sed: las hojas se caen un poco.",
+   "luz": "Luz indirecta media a brillante. Tolera poca luz, pero pierde el variegado. El sol directo quema las hojas.",
+   "riego": {
+    "primavera_verano": "Cada 5 a 8 días, cuando los primeros 2 o 3 cm de tierra estén secos.",
+    "otono_invierno": "Cada 10 a 14 días.",
+    "como": "Riego parejo. Mejor un poco de sed que encharcamiento."
+   },
+   "autorriego": {
+    "nivel": "recomendado",
+    "consejo": "Es la que mejor aprovecha el autorriego: mantené el plato con {min_ml} a {max_ml} ml en primavera-verano y dejá que se seque un par de días entre recargas. En invierno, cargas más espaciadas."
+   },
+   "sustrato": "Universal con 20 a 30 % de perlita o fibra de coco.",
+   "temperatura": {
+    "min": 12,
+    "max": 32,
+    "nota": "Le afectan las corrientes frías."
+   },
+   "humedad": "Media a alta: agradece pulverizar en verano o ambientes con calefacción.",
+   "fertilizante": "Cada 15 a 30 días en primavera-verano con fertilizante para plantas verdes.",
+   "trasplante": "Cada 1 o 2 años en primavera.",
+   "propagacion": "Muy fácil por esquejes con nudo en agua o tierra.",
+   "plagas": "Cochinilla, ácaros (araña roja) y trips.",
+   "senales": [
+    {
+     "sintoma": "Hojas amarillas",
+     "causa": "Exceso de agua",
+     "solucion": "Espaciá los riegos y vaciá el plato unos días."
+    },
+    {
+     "sintoma": "Hojas caídas y blandas",
+     "causa": "Sed",
+     "solucion": "Regá: se recupera en horas."
+    },
+    {
+     "sintoma": "Hojas pequeñas y verde uniforme",
+     "causa": "Poca luz",
+     "solucion": "Más luz indirecta."
+    },
+    {
+     "sintoma": "Puntas marrones y secas",
+     "causa": "Ambiente seco o sales del agua",
+     "solucion": "Más humedad y lavado del sustrato."
+    }
+   ],
+   "mascotas": {
+    "toxica": true,
+    "detalle": "Tóxica para perros y gatos (oxalatos de calcio): irritación de boca, babeo, vómitos y dificultad para tragar."
+   },
+   "grupo_riego": "medio",
+   "grupo_luz": "media"
+  },
+  {
+   "id": "lithops",
+   "nombre": "Lithops",
+   "otros_nombres": [
+    "Piedras vivas"
+   ],
+   "cientifico": "Lithops spp. (Aizoaceae)",
+   "tipo": "Suculenta",
+   "dificultad": "Difícil",
+   "colgante": false,
+   "resumen": "Pares de hojas fusionadas que imitan piedras. Tienen un ciclo propio: en reposo no se riegan, aunque parezcan secas.",
+   "luz": "Mucha luz: varias horas de sol directo suave. Con poca luz se estiran y se pudren.",
+   "riego": {
+    "primavera_verano": "Primavera: casi nada. Verano: reposo por calor, sin riego. A fines del verano, cuando el cuerpo empieza a separarse para florecer, riegos muy espaciados.",
+    "otono_invierno": "Otoño: riegos espaciados durante la floración. Invierno y comienzo de primavera: sin riego mientras el par viejo se arruga y nace el nuevo.",
+    "como": "Sólo cuando el cuerpo se ve arrugado y la tierra está seca. Si dudás, no riegues."
+   },
+   "autorriego": {
+    "nivel": "no-recomendado",
+    "consejo": "No uses el autorriego: plato siempre vacío. Si regás por abajo, {min_ml} ml una sola vez en la temporada de riego y dejá secar del todo."
+   },
+   "sustrato": "Casi todo mineral: 70 a 80 % pómez, perlita o grava fina.",
+   "temperatura": {
+    "min": 5,
+    "max": 35,
+    "nota": "Con calor extremo entran en reposo: no regar."
+   },
+   "humedad": "Muy baja.",
+   "fertilizante": "Casi nada: una dosis muy diluida al año como mucho.",
+   "trasplante": "Cada 3 o 4 años; maceta profunda por su raíz pivotante.",
+   "propagacion": "Por semillas o división de cabezas.",
+   "plagas": "Poco frecuentes; el problema principal es la pudrición.",
+   "senales": [
+    {
+     "sintoma": "Par de hojas blando o reventado",
+     "causa": "Exceso de agua",
+     "solucion": "Suspendé el riego por completo."
+    },
+    {
+     "sintoma": "Cuerpo alargado y alto",
+     "causa": "Falta de luz",
+     "solucion": "Más sol."
+    },
+    {
+     "sintoma": "Hojas viejas arrugadas en invierno",
+     "causa": "Cambio normal de hojas",
+     "solucion": "No regar: el par nuevo se alimenta del viejo."
+    }
+   ],
+   "mascotas": {
+    "toxica": false,
+    "detalle": "Considerada no tóxica para perros y gatos."
+   },
+   "grupo_riego": "seco",
+   "grupo_luz": "sol"
+  }
+ ]
+}

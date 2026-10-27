@@ -22,6 +22,7 @@ import time
 
 import eden_catalog as ec
 import eden_core as core
+import eden_plantas
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CAT_PATH = os.path.join(HERE, "colecciones", "catalogo_eden3d.json")
@@ -52,6 +53,10 @@ def info():
         "sizes": [s for s in ("Mini", "S", "M", "L", "XL")],
         "overrides": list(OVERRIDE_KEYS),
         "license": LICENSE_NOTE,
+        "plantas": eden_plantas.catalogo()["plantas"],
+        "plantas_fuentes": eden_plantas.catalogo().get("fuentes", {}),
+        "materiales": {k: {"rgb": v[0], "brillo": v[1]} for k, v in eden_plantas.MATERIALES.items()},
+        "max_plantas": eden_plantas.MAX_PLANTAS,
     }
 
 
@@ -109,8 +114,12 @@ def build(opts):
     res = core.build_pot(p)
     rep = res["report"]
     parts = []
+    abertura = None
     if rep.get("valid"):
         for nm, V, F, dz in _placed(res):
+            if nm == "MACETA":
+                abertura = eden_plantas.abertura_de([(x, y, z + dz) for x, y, z in V])
+                _ABERTURA[p["model_id"] + "|" + p["quality"]] = abertura
             pos, idx = _pack(V, F, dz)
             parts.append({"name": nm, "positions": pos, "indices": idx,
                           "vertices": len(V), "triangles": len(F)})
@@ -122,7 +131,9 @@ def build(opts):
     A = rep.get("assembly") or {}
     keep = ("thread_turns", "thread_engagement_mm", "water_gap_under_pot_mm",
             "water_min_wet_ml", "water_reservoir_ml", "water_over_soil_mm", "tray_h_mm",
-            "dish_diameter_mm", "thread")
+            "dish_diameter_mm", "thread", "dish_inner_r0_mm", "dish_flare_deg", "dish_floor_mm",
+            "water_level_max_mm", "water_min_wet_level_mm", "pot_bottom_z_mm",
+            "pot_drop_on_seat_mm")
     summary = {
         "sku": p["model_id"],
         "valid": bool(rep.get("valid")),
@@ -137,8 +148,34 @@ def build(opts):
         "assembly": {k: A[k] for k in keep if k in A},
         "seconds": round(time.time() - t0, 2),
         "engine": core.ENGINE_VERSION,
+        "abertura": {k: round(v, 2) for k, v in abertura.items()} if abertura else None,
     }
     return {"summary": summary, "parts": parts}
+
+
+_ABERTURA = {}
+
+
+def plants(opts, ids, decor=True):
+    """Plantas (y tierra con piedritas) para la maceta de opts. Usa la boca de la
+    última maceta calculada con esos mismos parámetros (si no, la calcula)."""
+    p = params(opts)
+    key = p["model_id"] + "|" + p["quality"]
+    if key not in _ABERTURA:
+        build(opts)
+    ab = _ABERTURA.get(key)
+    ids = [i for i in dict.fromkeys(ids or []) if i in eden_plantas.GENERADORES]
+    parts = []
+    if ab and ids:
+        items = eden_plantas.build(ids, ab)
+        if decor:
+            items = eden_plantas.decor(ab, ids) + items
+        for mat, V, F in items:
+            pos, idx = _pack(V, F)
+            parts.append({"name": mat, "positions": pos, "indices": idx,
+                          "vertices": len(V), "triangles": len(F)})
+    return {"parts": parts, "compat": eden_plantas.compatibilidad(ids) if ids else [],
+            "ids": ids}
 
 
 def build_json(opts_json):
