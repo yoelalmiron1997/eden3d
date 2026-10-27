@@ -2,6 +2,7 @@
 # © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.
 """Tests de punta a punta de Eden3D Studio (GitHub Pages)."""
 import io
+import math
 import zipfile
 
 import pytest
@@ -224,7 +225,7 @@ def test_escenarios(browser, base_url):
     v = page.evaluate("window.__eden.viewer")
     assert v["groundVisible"] is (not v["lowPower"])    # en bajo consumo no hay sombras
     bg0 = page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage")
-    for k, pieza in (("oficina", "escritorio"), ("jardin", "pasto"), ("taller", "banco")):
+    for k, pieza in (("oficina", "escritorio"), ("taller", "banco")):
         page.locator(T % ("escena-" + k)).click(no_wait_after=True)
         v = page.evaluate("window.__eden.viewer")
         assert v["scene"] == k and pieza in v["sceneMeshes"], (k, v["sceneMeshes"])
@@ -232,6 +233,13 @@ def test_escenarios(browser, base_url):
         assert page.evaluate("getComputedStyle(document.querySelector('.stage')).backgroundImage") != bg0
         assert page.evaluate("window.__edenViewer.sceneGroup.scale.x") > 0.5
     assert "impresora_3d" in page.evaluate("window.__eden.viewer.sceneMeshes")
+    # jardín: foto 360° real como fondo y piso, cámara a la altura de la maceta
+    y0 = page.evaluate("window.__edenViewer.camera.position.y - window.__edenViewer.controls.target.y")
+    page.locator(T % "escena-jardin").click(no_wait_after=True)
+    page.wait_for_function("window.__eden.viewer.panoLoaded", timeout=60_000)
+    assert page.evaluate("window.__edenViewer.scene.getObjectByName('PANORAMA').material.map.image.width") >= 2048
+    y1 = page.evaluate("window.__edenViewer.camera.position.y - window.__edenViewer.controls.target.y")
+    assert y1 < y0 * 0.75, "en el jardín la cámara baja"
     page.locator(T % "escena-estudio").click(no_wait_after=True)
     v = page.evaluate("window.__eden.viewer")
     assert v["scene"] == "estudio" and v["sceneMeshes"] == []
@@ -314,6 +322,31 @@ def test_agua_animada(browser, base_url):
         return hi - lo; }""")
     assert relieve >= 0.5, "ondas poco visibles: %.2f mm" % relieve
     assert page.evaluate("window.__edenViewer.stats.drops") > d0, "no caen gotas"
+    # interactiva: con la maceta separada, tocar el agua hace caer una gota que salpica
+    page.evaluate("""() => { const s = document.querySelector('[data-testid=sl-separar]');
+        s.value = 100; s.dispatchEvent(new Event('input')); }""")
+    page.wait_for_timeout(600)
+    xy = page.evaluate("""() => { const v = window.__edenViewer, W = v.water;
+        const r = W.radiusAt(W.level) * 0.55;
+        // punto del agua del lado de la cámara
+        const cam = W.top.worldToLocal(v.camera.position.clone());
+        const a = Math.atan2(cam.y, cam.x);
+        const p = W.top.localToWorld(new v.camera.position.constructor(r * Math.cos(a), r * Math.sin(a), W.level));
+        p.project(v.camera);
+        const b = v.renderer.domElement.getBoundingClientRect();
+        return [b.left + (p.x + 1) / 2 * b.width, b.top + (1 - p.y) / 2 * b.height]; }""")
+    i0 = page.evaluate("window.__edenViewer.water.stats.impacts")
+    page.mouse.click(xy[0], xy[1])
+    assert page.evaluate("window.__eden.viewer.taps") == 1, "tocar el agua no tiró una gota"
+    page.wait_for_function("(n) => window.__edenViewer.water.stats.impacts > n", arg=i0, timeout=20_000)
+    assert page.evaluate("window.__edenViewer.water.stats.energy") > 0
+    # lluvia y olas
+    d1 = page.evaluate("window.__edenViewer.water.stats.drops")
+    page.locator(T % "chk-lluvia").check(no_wait_after=True)
+    page.wait_for_function("(n) => window.__edenViewer.water.stats.drops > n + 5", arg=d1, timeout=20_000)
+    page.locator(T % "chk-lluvia").uncheck(no_wait_after=True)
+    page.locator(T % "btn-olas").click(no_wait_after=True)
+    assert page.evaluate("window.__edenViewer.water.slosh") > 1.5
     A = page.evaluate("window.__eden.summary.assembly")
     page.locator(T % "agua-min").click(no_wait_after=True)
     page.wait_for_function("(z) => Math.abs(window.__edenViewer.water.level - z) < 0.6",
@@ -321,4 +354,51 @@ def test_agua_animada(browser, base_url):
     page.locator(T % "agua-max").click(no_wait_after=True)
     page.wait_for_function("(z) => Math.abs(window.__edenViewer.water.level - z) < 0.6",
                            arg=A["water_level_max_mm"], timeout=60_000)
+    page.context.close()
+
+
+@pytest.mark.spec("VIS-006")
+def test_separar_piezas(browser, base_url):
+    page = open_app(browser, base_url)
+    page.wait_for_function("window.__eden.plantBuilds >= 1", timeout=120_000)
+    def mover(v):
+        page.evaluate("""(v) => { const s = document.querySelector('[data-testid=sl-separar]');
+            s.value = v; s.dispatchEvent(new Event('input')); }""", v)
+    H = page.evaluate("""() => { const g = window.__edenViewer.model.getObjectByName('MACETA').geometry;
+        g.computeBoundingBox(); return g.boundingBox.max.z - g.boundingBox.min.z; }""")
+    mover(100)
+    v = page.evaluate("window.__eden.viewer")
+    assert v["explodeOffset"] > 0.8 * H
+    assert page.evaluate("window.__edenViewer.model.getObjectByName('MACETA').position.z") == v["explodeOffset"]
+    assert page.evaluate("window.__edenViewer.model.getObjectByName('PLATO').position.z") == 0
+    assert page.evaluate("window.__edenViewer.plants.position.y") == v["explodeOffset"]
+    mover(0)
+    assert page.evaluate("window.__eden.viewer.explodeOffset") == 0
+    page.context.close()
+
+
+@pytest.mark.spec("VIS-007")
+def test_modo_slicer(browser, base_url):
+    page = open_app(browser, base_url)
+    page.locator(T % "chk-slicer").check(no_wait_after=True)
+    s = page.evaluate("window.__eden.viewer.slicer")
+    assert s["on"] and s["part"] == "MACETA"
+    assert s["layers"] == math.ceil(s["height"] / 0.2 - 1e-6)
+    assert s["layer"] == s["layers"] and s["segments"] > 50
+    assert page.evaluate("window.__edenViewer.model.visible") is False
+    page.evaluate("""() => { const s = document.querySelector('[data-testid=sl-capa]');
+        s.value = 10; s.dispatchEvent(new Event('input')); }""")
+    s = page.evaluate("window.__eden.viewer.slicer")
+    assert s["layer"] == 10 and abs(s["z"] - 2.0) < 1e-6 and abs(s["clip"] - 2.0) < 0.01
+    assert s["segments"] > 50, "la capa 10 tiene contorno"
+    assert "10 / " in page.locator("#o-layer").inner_text()
+    page.locator(T % "slicer-plato").click(no_wait_after=True)
+    assert page.evaluate("window.__eden.viewer.slicer.part") == "PLATO"
+    page.evaluate("""() => { const s = document.querySelector('[data-testid=sl-capa]');
+        s.value = 1; s.dispatchEvent(new Event('input')); }""")
+    page.locator(T % "btn-capas").click(no_wait_after=True)
+    page.wait_for_function("window.__eden.viewer.slicer.layer > 5", timeout=30_000)
+    page.locator(T % "chk-slicer").uncheck(no_wait_after=True)
+    assert page.evaluate("window.__edenViewer.model.visible") is True
+    assert page.evaluate("window.__eden.viewer.slicer.on") is False
     page.context.close()

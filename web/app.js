@@ -53,6 +53,8 @@ Object.defineProperty(state, "viewer", { get: () => ({
   plantGroups: (viewer.plantGroups || []).map((g) => ({ id: g.userData.id, scale: g.scale.x,
     base: [g.position.x, g.position.y, g.position.z], meshes: g.children.length })),
   wind: viewer.windOn && viewer.wind ? viewer.wind.value : 0,
+  impacts: viewer.stats.impacts || 0, taps: viewer.stats.taps || 0, panoLoaded: !!viewer.stats.panoLoaded,
+  explode: viewer.explode, explodeOffset: viewer.stats.explodeOffset || 0, slicer: viewer.slicerInfo(),
 }) });
 
 // ------------------------------------------------------------------ UI
@@ -124,6 +126,7 @@ async function build(refit = false) {
       viewer.setColor($("color").value);
       viewer.setCut($("cut").checked);
       viewer.setWater($("water").checked);
+      slicerUi();
     }
     state.triangles = viewer.triangles;
     state.meshes = viewer.meshNames();
@@ -358,6 +361,41 @@ $("scenes").addEventListener("click", (ev) => {
 });
 $("wind").addEventListener("change", () => viewer.setWind($("wind").checked));
 $("photo").addEventListener("click", () => takePhoto());
+
+// ------------------------------------------------------------------ agua, piezas y slicer
+$("drop").addEventListener("click", () => viewer.randomDrop());
+$("waves").addEventListener("click", () => viewer.makeWaves());
+$("rain").addEventListener("change", () => viewer.setRain($("rain").checked));
+$("explode").addEventListener("input", () => {
+  $("o-explode").textContent = $("explode").value + " %";
+  viewer.setExplode(+$("explode").value / 100);
+});
+
+function slicerUi(info) {
+  info = info || viewer.slicerInfo();
+  $("slicer-ui").hidden = !info.on;
+  if (!info.on) return;
+  $("layer").max = info.layers;
+  $("layer").value = info.layer;
+  $("o-layer").textContent = `${info.layer} / ${info.layers}`;
+  $("slicer-info").textContent = `${info.z.toFixed(1)} mm de ${info.height.toFixed(1)} mm · capas de 0,2 mm`;
+  $("play-layers").textContent = info.playing ? "❚❚ Pausa" : "▶ Imprimir";
+  for (const b of $("slicer-part").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.p === info.part));
+  $("slicer-part").querySelector("[data-p=PLATO]").disabled = !viewer.meshNames().includes("PLATO");
+}
+viewer.onSlicer = slicerUi;
+$("slicer").addEventListener("change", () => slicerUi(viewer.setSlicer($("slicer").checked)));
+$("slicer-part").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-p]");
+  if (!b || b.disabled) return;
+  viewer.slicer.layer = 0;
+  slicerUi(viewer.setSlicer(true, b.dataset.p));
+});
+$("layer").addEventListener("input", () => { viewer.playSlicer(false); slicerUi(viewer.setLayer(+$("layer").value)); });
+$("play-layers").addEventListener("click", () => {
+  viewer.playSlicer(!viewer.slicer.playing);
+  slicerUi();
+});
 $("light-presets").addEventListener("click", (ev) => {
   const b = ev.target.closest("button[data-k]");
   if (!b) return;

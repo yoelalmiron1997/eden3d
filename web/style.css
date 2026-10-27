@@ -175,3 +175,8 @@ button.link { background: none; border: 0; color: var(--green); padding: 0; min-
 .chip.nativa[aria-pressed="true"] { border-style: solid; }
 .check.end { align-self: end; min-height: 38px; }
 p.hint.small { margin: 2px 0 0; font-size: 12px; line-height: 1.4; }
+
+.row3 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: center; }
+#slicer-ui { display: grid; gap: 8px; margin-top: 6px; }
+#slicer-ui[hidden] { display: none; }
+#slicer-info { margin: 0; align-self: center; }

@@ -101,6 +101,36 @@
           <button type="button" data-v="min" data-testid="agua-min">Mínimo para mojar</button>
           <button type="button" data-v="max" data-testid="agua-max" aria-pressed="true">Plato lleno</button>
         </div>
+        <label class="slider"><span>Separar piezas</span>
+          <input type="range" id="explode" data-testid="sl-separar" min="0" max="100" step="1" value="0">
+          <output id="o-explode">0 %</output></label>
+      </fieldset>
+
+      <fieldset id="water-fx">
+        <legend>Agua <span class="hint">tocá el agua para tirar una gota</span></legend>
+        <div class="row3">
+          <button type="button" id="drop" data-testid="btn-gota">Gota</button>
+          <button type="button" id="waves" data-testid="btn-olas">Hacer olas</button>
+          <label class="check"><input type="checkbox" id="rain" data-testid="chk-lluvia"> Lluvia</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Modo slicer <span class="hint">capa por capa, como en la impresora</span></legend>
+        <label class="check"><input type="checkbox" id="slicer" data-testid="chk-slicer"> Ver capas</label>
+        <div id="slicer-ui" hidden>
+          <div class="seg small" id="slicer-part" role="radiogroup" aria-label="Pieza">
+            <button type="button" data-p="MACETA" data-testid="slicer-maceta" aria-pressed="true">Maceta</button>
+            <button type="button" data-p="PLATO" data-testid="slicer-plato">Plato</button>
+          </div>
+          <label class="slider"><span>Capa</span>
+            <input type="range" id="layer" data-testid="sl-capa" min="1" max="1" step="1" value="1">
+            <output id="o-layer">—</output></label>
+          <div class="row2">
+            <button type="button" id="play-layers" data-testid="btn-capas">▶ Imprimir</button>
+            <p class="hint small" id="slicer-info" data-testid="slicer-info"></p>
+          </div>
+        </div>
       </fieldset>
 
       <div class="actions">

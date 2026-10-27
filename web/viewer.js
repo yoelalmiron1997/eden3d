@@ -1,8 +1,11 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
-// Visor 3D: escena, iluminación con presets, agua animada y plantas.
+// Visor 3D: escena, iluminación, escenarios, agua interactiva, plantas, piezas separadas y modo slicer.
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { GroundedSkybox } from "three/addons/objects/GroundedSkybox.js";
+import { Water } from "./water.js";
+import { LAYER_MM, slicerMaterial, sliceSegments, buildPlate } from "./slicer.js";
 
 export const LIGHTS = {
   estudio: { label: "Estudio", env: 0.85, sun: [0xfff4e6, 2.4], alt: 52, hemi: [0xfff6e8, 0x8a7a66, 0.55],
@@ -32,7 +35,7 @@ export class Viewer {
     this.envTex = pm.fromScene(new RoomEnvironment(), 0.04).texture;
     this.scene.environment = this.envTex;
 
-    this.camera = new THREE.PerspectiveCamera(32, 1, 1, 5000);
+    this.camera = new THREE.PerspectiveCamera(32, 1, 2, 120000);
     this.camera.position.set(-180, 160, 320);
     this.controls = new OrbitControls(this.camera, r.domElement);
     this.controls.enableDamping = true;
@@ -55,6 +58,19 @@ export class Viewer {
     this.ground.rotation.x = -Math.PI / 2;
     this.ground.receiveShadow = true;
     this.scene.add(this.ground);
+    // sombra de contacto suave (también en equipos sin sombras dinámicas)
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 128;
+    const cx = cv.getContext("2d");
+    const gr = cx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.28)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+    cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+    this.contact = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({
+      map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false, toneMapped: false }));
+    this.contact.rotation.x = -Math.PI / 2;
+    this.contact.renderOrder = 1;
+    this.contact.name = "SOMBRA_CONTACTO";
+    this.scene.add(this.contact);
 
     this.clip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0);
     this.model = new THREE.Group();          // maceta y plato (Z del motor hacia arriba)
@@ -80,6 +96,11 @@ export class Viewer {
     this.windOn = true;
     this.sceneKey = "estudio";
     this.clock = new THREE.Clock();
+    this.explode = 0;
+    this.pmrem = pm;
+    this.slicer = { on: false, part: "MACETA", layer: 0, layers: 0, playing: false,
+      uniforms: { uCut: { value: 1e6 }, uLayer: { value: LAYER_MM } } };
+    this.setupPointer();
 
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
@@ -98,6 +119,7 @@ export class Viewer {
       this.controls.update();
       this.tickWater(dt);
       this.tickPlants(dt);
+      this.tickSlicer(dt);
       this.renderer.render(this.scene, this.camera);
       this.stats.frames++;
       // el costo real se ve en el intervalo entre cuadros (la GPU trabaja después)
@@ -154,7 +176,7 @@ export class Viewer {
 
   placeSun() {
     const L = LIGHTS[this.lightKey];
-    const az = THREE.MathUtils.degToRad(this.sunAz), alt = THREE.MathUtils.degToRad(L.alt);
+    const az = THREE.MathUtils.degToRad(this.sunAz), alt = THREE.MathUtils.degToRad(this.altOverride ?? L.alt);
     const d = 420;
     const c = this.center || new THREE.Vector3(0, 60, 0);
     this.sun.position.set(c.x + d * Math.cos(alt) * Math.sin(az), c.y + d * Math.sin(alt), c.z + d * Math.cos(alt) * Math.cos(az));
@@ -196,8 +218,13 @@ export class Viewer {
     }
     this.buildWater(summary && summary.assembly);
     this.triangles = tris;
+    this.applyExplode();
+    if (this.slicer.on) { this.slicer.layer = 0; this.enterSlicer(); }
     const box = new THREE.Box3().setFromObject(this.model);
     this.center = box.getCenter(new THREE.Vector3());
+    const sz = box.getSize(new THREE.Vector3());
+    this.contact.scale.set(sz.x * 1.45, sz.z * 1.45, 1);
+    this.contact.position.set(this.center.x, box.min.y + 0.3, this.center.z);
     this.placeSun();
     this.fitScene();
     if (refit) { this.fit(box); this.needFit = true; this.fitH = 0; }
@@ -207,130 +234,221 @@ export class Viewer {
     return this.model.children.map((m) => m.name);
   }
 
-  fit(box) {
+  fit(box, dir) {
     box = box || new THREE.Box3().setFromObject(this.model);
     if (box.isEmpty()) return;
     const size = box.getSize(new THREE.Vector3());
     const c = box.getCenter(new THREE.Vector3());
     const r = Math.max(size.x, size.y * 1.15, size.z) * 0.5;
-    const d = (r / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2))) * 1.4;
-    const dir = new THREE.Vector3(-0.45, 0.5, 1).normalize();
+    const d = (r / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2))) * (this.viewDist || 1.4);
+    dir = (dir || this.viewDir || new THREE.Vector3(-0.45, 0.5, 1)).clone().normalize();
     this.camera.position.copy(c).addScaledVector(dir, d);
     this.controls.target.copy(c).add(new THREE.Vector3(0, size.y * 0.08, 0));
     this.controls.update();
   }
 
-  // ------------------------------------------------------------ agua animada
+  // ------------------------------------------------------------ agua interactiva
   buildWater(A) {
-    if (this.water) { this.model.remove(this.water.group); this.water.geoms.forEach((g) => g.dispose()); }
+    if (this.water) { this.model.remove(this.water.group); this.water.dispose(); }
     this.water = null;
     if (!A || A.dish_inner_r0_mm === undefined) return;
-    const NR = 30, NS = 112;
-    const top = new THREE.BufferGeometry();
-    const pos = new Float32Array((NR * NS + 1) * 3);
-    const idx = [];
-    for (let s = 0; s < NS; s++) {
-      idx.push(0, 1 + s, 1 + ((s + 1) % NS));
-      for (let r = 0; r < NR - 1; r++) {
-        const a = 1 + r * NS + s, b = 1 + r * NS + ((s + 1) % NS), c = a + NS, d = b + NS;
-        idx.push(a, c, b, b, c, d);
-      }
-    }
-    top.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    top.setIndex(idx);
-    const side = new THREE.BufferGeometry();
-    const spos = new Float32Array(NS * 2 * 3);
-    const sidx = [];
-    for (let s = 0; s < NS; s++) {
-      const a = s, b = (s + 1) % NS;
-      sidx.push(a, b, NS + b, a, NS + b, NS + a);
-    }
-    side.setAttribute("position", new THREE.BufferAttribute(spos, 3));
-    side.setIndex(sidx);
-    const group = new THREE.Group();
-    const mTop = new THREE.Mesh(top, this.mats.AGUA), mSide = new THREE.Mesh(side, this.mats.AGUA);
-    mTop.renderOrder = mSide.renderOrder = 3;
-    group.add(mTop, mSide);
-    group.name = "AGUA";
-    this.model.add(group);
-    const floor = A.dish_floor_mm + 0.8;
-    this.water = {
-      group, geoms: [top, side], NR, NS, A, t: 0,
-      floor, levelMin: A.water_min_wet_level_mm, levelMax: A.water_level_max_mm,
-      target: this.waterTarget === "min" ? A.water_min_wet_level_mm : A.water_level_max_mm,
-      level: floor,
-    };
-    group.visible = this.waterOn;
+    this.water = new Water(this.mats.AGUA, A, this.waterTarget);
+    this.water.rain = !!this.rain;
+    this.model.add(this.water.group);
+    this.water.group.visible = this.waterOn && !this.slicer.on;
   }
 
   setWater(on, which) {
     this.waterOn = on;
     if (which) this.waterTarget = which;
-    if (!this.water) return;
-    this.water.group.visible = on;
-    this.water.target = this.waterTarget === "min" ? this.water.levelMin : this.water.levelMax;
-    if (on) this.water.level = Math.min(this.water.level, this.water.floor + 0.2);  // se vuelve a llenar
+    const W = this.water;
+    if (!W) return;
+    W.group.visible = on && !this.slicer.on;
+    W.target = this.waterTarget === "min" ? W.levelMin : W.levelMax;
+    if (on) W.level = Math.min(W.level, W.floor + 0.2);     // se vuelve a llenar
   }
 
   tickWater(dt) {
     const W = this.water;
     if (!W || !W.group.visible) return;
-    W.t += dt;
+    W.tick(dt, true);
     this.stats.waterTime = W.t;
-    // llenado suave hasta el nivel elegido
-    W.level += (W.target - W.level) * Math.min(1, dt * 1.6);
     this.stats.waterLevel = W.level;
-    const A = W.A, tan = Math.tan(THREE.MathUtils.degToRad(A.dish_flare_deg || 6));
-    const R = A.dish_inner_r0_mm - 0.15 + (W.level - A.dish_floor_mm) * tan;
-    const t = W.t;
-    const top = W.geoms[0].attributes.position.array;
-    const amp = 0.55;
-    // gotas: cada ~2,5 s cae una en un punto al azar y abre un anillo que se expande
-    W.drops = W.drops || [];
-    W.nextDrop = W.nextDrop ?? 0.4;
-    if (t >= W.nextDrop) {
-      const a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * R * 0.75;
-      W.drops.push({ x: d * Math.cos(a), y: d * Math.sin(a), t0: t });
-      W.nextDrop = t + 1.6 + Math.random() * 1.8;
-      this.stats.drops = (this.stats.drops || 0) + 1;
-    }
-    W.drops = W.drops.filter((d) => t - d.t0 < 3.2);
-    const ring = (x, y) => {
-      let z = 0;
-      for (const d of W.drops) {
-        const age = t - d.t0, front = age * 22;                 // 22 mm/s
-        const dist = Math.hypot(x - d.x, y - d.y) - front;
-        z += 1.1 * Math.exp(-age * 1.15) * Math.exp(-(dist * dist) / 18) * Math.cos(dist * 0.9);
-      }
-      return z;
+    this.stats.drops = W.stats.drops;
+    this.stats.impacts = W.stats.impacts;
+  }
+
+  dropAt(x, y, size) { if (this.water) this.water.dropAt(x, y, size); }
+  randomDrop() { if (this.water) this.water.randomDrop(1.8); }
+  makeWaves() { if (this.water) this.water.makeWaves(); }
+  setRain(on) { this.rain = on; if (this.water) this.water.rain = on; }
+
+  // Tocar el agua deja caer una gota; pasar el mouse por encima deja una estela.
+  setupPointer() {
+    const el = this.renderer.domElement;
+    this.ray = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    let down = null, lastHover = 0;
+    const hit = (ev) => {
+      const W = this.water;
+      if (!W || !W.group.visible) return null;
+      const b = el.getBoundingClientRect();
+      ndc.set(((ev.clientX - b.left) / b.width) * 2 - 1, -((ev.clientY - b.top) / b.height) * 2 + 1);
+      this.ray.setFromCamera(ndc, this.camera);
+      const h = this.ray.intersectObject(W.top, false)[0];
+      return h ? W.top.worldToLocal(h.point.clone()) : null;
     };
-    top[0] = 0; top[1] = 0; top[2] = W.level + amp * 0.6 * Math.sin(t * 2.1) + ring(0, 0);
-    for (let r = 0; r < W.NR; r++) {
-      const rr = (R * (r + 1)) / W.NR;
-      for (let s = 0; s < W.NS; s++) {
-        const a = (s / W.NS) * Math.PI * 2;
-        const x = rr * Math.cos(a), y = rr * Math.sin(a);
-        // ondas concéntricas + oleaje cruzado + anillos de gotas (amortiguado en el borde)
-        const edge = 1 - Math.pow(rr / R, 8);
-        const z = W.level + edge * (amp * (0.5 * Math.sin(rr * 0.5 - t * 2.6) +
-          0.3 * Math.sin(x * 0.23 + t * 1.4) * Math.cos(y * 0.19 - t * 1.2) +
-          0.2 * Math.sin((x + y) * 0.6 - t * 3.3)) + ring(x, y));
-        const i = (1 + r * W.NS + s) * 3;
-        top[i] = x; top[i + 1] = y; top[i + 2] = z;
-      }
+    this.waterHit = hit;
+    el.addEventListener("pointerdown", (ev) => { down = { x: ev.clientX, y: ev.clientY, t: performance.now() }; });
+    el.addEventListener("pointerup", (ev) => {
+      if (!down) return;
+      const tap = Math.hypot(ev.clientX - down.x, ev.clientY - down.y) < 6 && performance.now() - down.t < 450;
+      down = null;
+      if (!tap) return;
+      const p = hit(ev);
+      if (p) { this.water.dropAt(p.x, p.y, 2.0); this.stats.taps = (this.stats.taps || 0) + 1; }
+    });
+    el.addEventListener("pointermove", (ev) => {
+      if (ev.buttons || ev.pointerType === "touch") return;
+      const now = performance.now();
+      if (now - lastHover < 40) return;
+      lastHover = now;
+      const p = hit(ev);
+      if (p) this.water.impulse(p.x, p.y, 0.35, 1.8);
+    });
+  }
+
+  // ------------------------------------------------------------ piezas separadas
+  // k de 0 (armada) a 1: la maceta (con tierra y plantas) sube y deja ver el plato y el agua.
+  setExplode(k) {
+    this.explode = Math.max(0, Math.min(1, k));
+    this.applyExplode();
+  }
+
+  explodeOffset() {
+    const pot = this.model.getObjectByName("MACETA");
+    if (!pot || !this.model.getObjectByName("PLATO")) return 0;
+    pot.geometry.computeBoundingBox();
+    const bb = pot.geometry.boundingBox;
+    return this.explode * (bb.max.z - bb.min.z) * 0.95;
+  }
+
+  applyExplode() {
+    if (this.slicer.on) return;
+    const off = this.explodeOffset();
+    const pot = this.model.getObjectByName("MACETA");
+    if (pot) pot.position.z = off;
+    this.plants.position.y = off;
+    this.stats.explodeOffset = off;
+  }
+
+  // ------------------------------------------------------------ modo slicer
+  setSlicer(on, part) {
+    const S = this.slicer;
+    if (part) S.part = part;
+    if (S.on && !on) this.exitSlicer();
+    S.on = on;
+    if (on) this.enterSlicer();
+    return this.slicerInfo();
+  }
+
+  enterSlicer() {
+    const S = this.slicer;
+    this.exitSlicer(true);
+    const src = this.model.getObjectByName(S.part) || this.model.getObjectByName("MACETA");
+    if (!src) return;
+    S.part = src.name;
+    const geo = src.geometry;
+    geo.computeBoundingBox();
+    const bb = geo.boundingBox;
+    S.height = bb.max.z - bb.min.z;
+    S.layers = Math.ceil(S.height / LAYER_MM - 1e-6);
+    S.layer = S.layer > 0 ? Math.min(S.layer, S.layers) : S.layers;
+    // la pieza sola, apoyada en la cama, centrada
+    const g = (S.group = new THREE.Group());
+    g.rotation.x = -Math.PI / 2;
+    g.name = "SLICER";
+    const color = this.mats[S.part === "PLATO" ? "PLATO" : "MACETA"].color.clone();
+    S.mat = slicerMaterial(color, S.uniforms);
+    S.mat.clippingPlanes = [S.plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0)];
+    const mesh = new THREE.Mesh(geo, S.mat);
+    mesh.position.set(-(bb.min.x + bb.max.x) / 2, -(bb.min.y + bb.max.y) / 2, -bb.min.z);
+    mesh.castShadow = mesh.receiveShadow = true;
+    mesh.name = "PIEZA_" + S.part;
+    S.mesh = mesh;
+    S.segs = new Float32Array(geo.index.count * 2);
+    const lg = new THREE.BufferGeometry();
+    lg.setAttribute("position", new THREE.BufferAttribute(S.segs, 3));
+    S.lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0xff7a1a, depthTest: false }));
+    S.lines.renderOrder = 10;
+    S.lines.frustumCulled = false;
+    S.lines.position.copy(mesh.position);
+    S.lines.name = "CONTORNO_CAPA";
+    g.add(buildPlate(), mesh, S.lines);
+    this.scene.add(g);
+    // se esconde lo demás
+    S.hidden = [this.model, this.plants, this.sceneGroup, this.pano, this.contact].filter((o) => o && o.visible);
+    for (const o of S.hidden) o.visible = false;
+    this.setLayer(S.layer);
+    this.fit(new THREE.Box3().setFromObject(mesh), new THREE.Vector3(-0.45, 0.62, 1));
+  }
+
+  exitSlicer(silent) {
+    const S = this.slicer;
+    if (S.group) {
+      this.scene.remove(S.group);
+      S.lines.geometry.dispose();
+      S.mat.dispose();
+      S.group = null;
     }
-    W.geoms[0].attributes.position.needsUpdate = true;
-    W.geoms[0].computeVertexNormals();               // reflejos que se mueven con las ondas
-    const side = W.geoms[1].attributes.position.array;
-    const R0 = A.dish_inner_r0_mm - 0.15 + (W.floor - A.dish_floor_mm) * tan;
-    for (let s = 0; s < W.NS; s++) {
-      const a = (s / W.NS) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
-      side.set([R0 * c, R0 * sn, W.floor], s * 3);
-      const k = (1 + (W.NR - 1) * W.NS + s) * 3;
-      side.set([top[k], top[k + 1], top[k + 2]], (W.NS + s) * 3);
+    for (const o of S.hidden || []) o.visible = true;
+    S.hidden = [];
+    S.playing = false;
+    if (!silent) {
+      if (this.water) this.water.group.visible = this.waterOn;
+      this.fit(new THREE.Box3().setFromObject(this.model).union(new THREE.Box3().setFromObject(this.plants)));
     }
-    W.geoms[1].attributes.position.needsUpdate = true;
-    W.geoms[1].computeVertexNormals();
+  }
+
+  setLayer(n) {
+    const S = this.slicer;
+    if (!S.group) return this.slicerInfo();
+    S.layer = Math.max(1, Math.min(S.layers, Math.round(n)));
+    const zc = S.layer * LAYER_MM;
+    S.uniforms.uCut.value = zc + (S.mesh.geometry.boundingBox.min.z);  // en coordenadas de la malla
+    // plano de corte en el mundo: y <= zc (la cama está en y = 0)
+    S.plane.constant = zc + 1e-3;
+    const bbz = S.mesh.geometry.boundingBox;
+    const zMesh = Math.min(zc - LAYER_MM * 0.5, S.height - 0.05) + bbz.min.z;
+    const nv = sliceSegments(S.mesh.geometry, zMesh, S.segs);
+    S.lines.geometry.setDrawRange(0, nv);
+    S.lines.geometry.attributes.position.needsUpdate = true;
+    S.segments = nv / 2;
+    return this.slicerInfo();
+  }
+
+  playSlicer(on) {
+    const S = this.slicer;
+    S.playing = on;
+    if (on && S.layer >= S.layers) this.setLayer(1);
+  }
+
+  tickSlicer(dt) {
+    const S = this.slicer;
+    if (!S.on || !S.playing) return;
+    S.playAcc = (S.playAcc || 0) + dt * Math.max(25, S.layers / 8);    // toda la pieza en ~8 s
+    const step = Math.floor(S.playAcc);
+    if (!step) return;
+    S.playAcc -= step;
+    this.setLayer(S.layer + step);
+    if (S.layer >= S.layers) S.playing = false;
+    if (this.onSlicer) this.onSlicer(this.slicerInfo());
+  }
+
+  slicerInfo() {
+    const S = this.slicer;
+    return { on: S.on, part: S.part, layer: S.layer, layers: S.layers, z: +(S.layer * LAYER_MM).toFixed(2),
+      height: S.height || 0, segments: S.segments || 0, playing: S.playing, clip: S.plane ? S.plane.constant : null };
   }
 
   // ------------------------------------------------------------ plantas
@@ -445,6 +563,12 @@ export class Viewer {
     this.sceneGroup = null;
     const S = SCENES[this.sceneKey];
     this.ground.visible = !S.build && !this.lowPower;
+    // en el jardín la cámara baja (a la altura de la maceta) para ver el fondo
+    const prevDir = this.viewDir;
+    this.viewDir = S.viewDir ? new THREE.Vector3(...S.viewDir) : null;
+    this.viewDist = S.viewDist || null;
+    if (this.viewDir || prevDir) this.fit(new THREE.Box3().setFromObject(this.model).union(new THREE.Box3().setFromObject(this.plants)));
+    this.setPano(S.pano);
     if (S.build) {
       this.sceneGroup = S.build(THREE);
       this.sceneGroup.name = "ESCENARIO";
@@ -456,6 +580,45 @@ export class Viewer {
     this.host.parentElement.style.background = bg;
     this.host.parentElement.style.setProperty("--stage", bg);
     if (S.light) this.setLight(S.light);
+  }
+
+  // Panorama real como fondo + piso (GroundedSkybox) y como luz ambiente.
+  setPano(P) {
+    if (this.pano) { this.scene.remove(this.pano); this.pano.geometry.dispose(); this.pano = null; }
+    this.altOverride = null;
+    this.scene.environment = this.lowPower ? null : this.envTex;
+    this.stats.panoLoaded = false;
+    if (!P) return;
+    const rot = THREE.MathUtils.degToRad(P.rot || 0);
+    // dirección del sol en la foto (u de la equirectangular) -> azimut del visor
+    const ph = 2 * Math.PI * P.u;
+    this.sunAz = (THREE.MathUtils.radToDeg(Math.atan2(-Math.cos(ph), Math.sin(ph))) + (P.rot || 0) + 360) % 360;
+    this.altOverride = P.elev;
+    const done = (tex) => {
+      if (SCENES[this.sceneKey].pano !== P) return;
+      const sky = new GroundedSkybox(tex, P.height, P.radius, 96);
+      sky.material.toneMapped = false;            // la foto ya viene con su tono
+      sky.position.set(this.camera.position.x, P.height - 0.01, this.camera.position.z);
+      sky.rotation.y = rot;
+      sky.name = "PANORAMA";
+      sky.visible = !this.slicer.on;
+      this.pano = sky;
+      this.scene.add(sky);
+      if (!this.lowPower) {
+        P.env = P.env || this.pmrem.fromEquirectangular(tex).texture;
+        this.scene.environment = P.env;
+        this.scene.environmentRotation.y = rot;
+      }
+      this.stats.panoLoaded = true;
+      this.placeSun();
+    };
+    if (P.tex) done(P.tex);
+    else new THREE.TextureLoader().load(P.url, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      P.tex = tex;
+      done(tex);
+    });
   }
 
   // los escenarios están modelados para una maceta de ~150 mm; se escalan con la maceta
@@ -583,52 +746,6 @@ function buildOficina(THREE) {
   return g;
 }
 
-function buildJardin(THREE) {
-  const g = new THREE.Group();
-  const pasto = canvasTex(THREE, 256, 256, (c, w, h) => {
-    c.fillStyle = "#5f8a3a"; c.fillRect(0, 0, w, h);
-    for (let i = 0; i < 2600; i++) {
-      c.fillStyle = ["#4f7a2e", "#76a046", "#6b9440", "#87b052"][i % 4];
-      c.fillRect(Math.random() * w, Math.random() * h, 1.5, 3 + Math.random() * 5);
-    }
-  }, [10, 10]);
-  const suelo = new THREE.Mesh(new THREE.CircleGeometry(2200, 64), std(THREE, 0xffffff, 0.95, { map: pasto }));
-  suelo.rotation.x = -Math.PI / 2;
-  suelo.position.y = -18;
-  suelo.name = "pasto";
-  g.add(suelo);
-  // laja de piedra bajo la maceta
-  const laja = cyl(THREE, std(THREE, 0xb9b2a6, 0.9), 150, 158, 18, 0, -9, 0, 11, "laja");
-  laja.rotation.y = 0.3;
-  g.add(laja);
-  // cerco de madera y cerco vivo
-  const tabla = std(THREE, 0xffffff, 0.8, { map: woodTex(THREE, "#9b7653", "#5a3e26", [1, 1]) });
-  for (let i = -12; i <= 12; i++) g.add(box(THREE, tabla, 92, 620 + (i % 2) * 30, 18, i * 100, 300, -900, i ? undefined : "cerco"));
-  g.add(box(THREE, tabla, 2500, 30, 24, 0, 160, -885), box(THREE, tabla, 2500, 30, 24, 0, 470, -885));
-  const verde = std(THREE, 0x3f6e2c, 0.95);
-  for (let i = 0; i < 26; i++) {
-    const s = new THREE.Mesh(new THREE.IcosahedronGeometry(110 + Math.random() * 60, 1), verde);
-    s.position.set(-1300 + i * 104, 70 + Math.random() * 60, -760 + Math.random() * 40);
-    if (!i) s.name = "cerco_vivo";
-    g.add(s);
-  }
-  // flores en el pasto
-  const colores = [0xf4d35e, 0xee964b, 0xf95738, 0xffffff, 0xb388eb];
-  const tallo = std(THREE, 0x4c7a34, 0.8);
-  for (let i = 0; i < 46; i++) {
-    const a = Math.random() * Math.PI * 2, d = 330 + Math.random() * 700;
-    const x = Math.cos(a) * d, z = Math.sin(a) * d - 120;
-    if (z > 250) continue;
-    const h = 22 + Math.random() * 40;
-    g.add(cyl(THREE, tallo, 1.1, 1.1, h, x, -18 + h / 2, z, 5));
-    const f = new THREE.Mesh(new THREE.SphereGeometry(5 + Math.random() * 3, 10, 8), std(THREE, colores[i % 5], 0.6));
-    f.position.set(x, -18 + h, z);
-    if (!i) f.name = "flores";
-    g.add(f);
-  }
-  return g;
-}
-
 function buildTaller(THREE) {
   const g = new THREE.Group();
   const madera = std(THREE, 0xffffff, 0.7, { map: woodTex(THREE, "#b88a58", "#6e4c2a", [2, 1]) });
@@ -677,8 +794,11 @@ export const SCENES = {
   estudio: { label: "Estudio" },
   oficina: { label: "Oficina", build: buildOficina, light: "manana",
     stage: "linear-gradient(180deg, #ece7de 0%, #ddd5c8 100%)", sky: ["#ece7de", "#d8cfc1"] },
-  jardin: { label: "Jardín", build: buildJardin, light: "manana",
-    stage: "linear-gradient(180deg, #a9d3f2 0%, #dcefff 55%, #cfe6c0 100%)", sky: ["#8fc6ee", "#e4f2ff"] },
+  // foto 360° real (Poly Haven, CC0) proyectada sobre el piso: la maceta apoya en el camino de piedras
+  jardin: { label: "Jardín", light: "manana", stage: "linear-gradient(180deg, #8fc6ee 0%, #cfe6c0 100%)",
+    sky: ["#8fc6ee", "#e4f2ff"],
+    viewDir: [-0.45, 0.24, 1], viewDist: 1.9,
+    pano: { url: "assets/escenarios/jardin_chino.jpg", u: 0.6006, elev: 30.4, height: 1500, radius: 24000, rot: 140 } },
   taller: { label: "Taller de trabajo", build: buildTaller, light: "estudio",
     stage: "linear-gradient(180deg, #d9cdbb 0%, #b9a88f 100%)", sky: ["#d9cdbb", "#b3a186"] },
 };

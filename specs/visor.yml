@@ -11,14 +11,16 @@ specs:
     nivel: web
     estado: activa
   - id: VIS-002
-    titulo: Agua animada con ondulaciones
+    titulo: Agua con olas, interactiva y con gotas
     descripcion: >
-      El agua del autorriego se mueve con ondas visibles, caen gotas que abren anillos
-      y se llena hasta el nivel elegido.
+      El agua del autorriego tiene olas y vaivén, y se puede tocar: al tocarla cae una
+      gota que salpica y abre ondas que rebotan en el borde del plato; hay botón de
+      gota, de "hacer olas" y lluvia. Se llena hasta el nivel elegido.
     criterio: >
-      La superficie del agua cambia con el tiempo, tiene un relieve de al menos 0,5 mm
-      entre cresta y valle, cada pocos segundos cae una gota (anillo) y el nivel
-      converge (±0,6 mm) al nivel del motor: "mínimo para mojar" o "plato lleno".
+      La superficie cambia con el tiempo con un relieve de al menos 0,5 mm; tocar el
+      agua en el visor hace caer una gota que impacta (salpicadura y onda simulada);
+      la lluvia agrega gotas seguidas; "hacer olas" aumenta el vaivén; el nivel
+      converge (±0,6 mm) al "mínimo para mojar" o al "plato lleno" del motor.
     prioridad: media
     nivel: web
     estado: activa
@@ -35,11 +37,13 @@ specs:
     titulo: Escenarios de oficina, jardín y taller
     descripcion: >
       Además del estudio, la maceta se puede ver sobre un escritorio de oficina, en un
-      jardín o sobre un banco de taller de trabajo (con impresora 3D).
+      jardín real (foto 360° de Poly Haven, CC0, proyectada en el piso) o sobre un
+      banco de taller de trabajo (con impresora 3D).
     criterio: >
-      Cada escenario agrega su ambiente (escritorio, pasto o banco de trabajo), oculta
-      el piso de sombra del estudio, cambia el fondo y se escala con la maceta; al
-      volver a Estudio se quita.
+      Oficina y taller agregan su ambiente (escritorio o banco de trabajo), ocultan el
+      piso de sombra del estudio y se escalan con la maceta; el jardín carga la foto
+      360° como fondo, piso y luz ambiente, con la cámara baja para ver el jardín; al
+      volver a Estudio se quita todo.
     prioridad: media
     nivel: web
     estado: activa
@@ -53,6 +57,31 @@ specs:
       flexibilidad; en la web una planta nueva arranca casi en escala 0 y llega a 1 en
       menos de 4 s, las que ya estaban no vuelven a nacer y el tiempo del viento avanza
       (se puede apagar).
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: VIS-006
+    titulo: Separar las piezas
+    descripcion: >
+      Un control separa la maceta (con su tierra y plantas) del plato para ver cómo
+      encajan, la rosca y el agua del autorriego.
+    criterio: >
+      Al 100 % la maceta sube casi su altura completa junto con las plantas, el plato
+      no se mueve y el agua queda a la vista; al 0 % vuelve a estar armada.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: VIS-007
+    titulo: Modo slicer (capa por capa)
+    descripcion: >
+      Vista como la de un programa de laminado: la pieza sola sobre la cama de la
+      impresora, cortada en la capa elegida, con la capa actual resaltada y su
+      contorno; se puede reproducir la impresión capa por capa.
+    criterio: >
+      Con capas de 0,2 mm la cantidad de capas es la altura de la pieza / 0,2; al
+      elegir la capa n el corte queda a n × 0,2 mm, hay contorno de esa capa, se puede
+      elegir maceta o plato, "Imprimir" avanza las capas solo y al salir vuelve la
+      vista normal.
     prioridad: media
     nivel: web
     estado: activa

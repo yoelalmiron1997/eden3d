@@ -7,7 +7,8 @@ propias licencias:
 | Componente | Versión | Licencia | Fuente |
 |---|---|---|---|
 | Pyodide (Python en WebAssembly) | 0.27.7 | Mozilla Public License 2.0 | https://github.com/pyodide/pyodide |
-| three.js (visor 3D) y OrbitControls | 0.170.0 | MIT | https://github.com/mrdoob/three.js |
+| three.js (visor 3D), OrbitControls, RoomEnvironment y GroundedSkybox | 0.170.0 | MIT | https://github.com/mrdoob/three.js |
+| Foto 360° "Chinese Garden" (escenario Jardín, `assets/escenarios/jardin_chino.jpg`) | 2k | CC0 1.0 (dominio público) | Poly Haven — https://polyhaven.com/a/chinese_garden |
 
 Para los tests y la integración continua se usan, sin distribuirse con la web:
 pytest (MIT), Playwright (Apache 2.0), trimesh (MIT), manifold3d (Apache 2.0),

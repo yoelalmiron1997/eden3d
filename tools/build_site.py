@@ -63,6 +63,9 @@ def build(out, node_modules):
         if os.path.isfile(os.path.join(node_modules, "three", "build", "three.core.js")) else None
     shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "controls",
                               "OrbitControls.js"), os.path.join(vt, "addons", "controls"))
+    os.makedirs(os.path.join(vt, "addons", "objects"), exist_ok=True)
+    shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "objects",
+                              "GroundedSkybox.js"), os.path.join(vt, "addons", "objects"))
     os.makedirs(os.path.join(vt, "addons", "environments"), exist_ok=True)
     shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "environments",
                               "RoomEnvironment.js"), os.path.join(vt, "addons", "environments"))
