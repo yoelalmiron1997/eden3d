@@ -141,7 +141,7 @@ export function buildPrintHead() {
   const sink = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 24, 20), alu);
   sink.rotation.x = Math.PI / 2;
   sink.position.z = 30;
-  const shroud = new THREE.Mesh(new THREE.BoxGeometry(42, 34, 46), negro);
+  const shroud = new THREE.Mesh(new THREE.BoxGeometry(34, 28, 38), negro);
   shroud.position.set(0, -6, 34);
   const fan = new THREE.Mesh(new THREE.CylinderGeometry(13, 13, 2, 24), new THREE.MeshStandardMaterial({ color: 0x3a3d42 }));
   fan.position.set(0, -24, 34);
@@ -150,7 +150,8 @@ export function buildPrintHead() {
   head.add(nozzle, hex, block, sink, shroud, fan, glow);
   head.userData.glow = glow;
   head.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-  const bar = new THREE.Mesh(new THREE.BoxGeometry(320, 18, 18), negro);
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(260, 12, 12),
+    new THREE.MeshStandardMaterial({ color: 0x9aa1a8, metalness: 0.7, roughness: 0.4 }));
   bar.name = "EJE_X";
   return { head, bar };
 }

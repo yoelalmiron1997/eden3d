@@ -448,6 +448,7 @@ viewer.onFrame = () => {
     let el = labelsEl.querySelector(`[data-k="${L.key}"]`);
     if (!el) { el = document.createElement("span"); el.dataset.k = L.key; labelsEl.appendChild(el); }
     el.textContent = L.text;
+    el.classList.toggle("left", !!L.left);
     el.style.left = (L.x * 100).toFixed(2) + "%";
     el.style.top = (L.y * 100).toFixed(2) + "%";
     el.style.opacity = String(Math.min(1, (viewer.explode - 0.05) * 3));

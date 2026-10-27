@@ -383,18 +383,22 @@ export class Viewer {
     const out = [];
     const v = new THREE.Vector3();
     const bb = new THREE.Box3();
-    const add = (obj, text, key) => {
+    // cada etiqueta al costado de su pieza; el agua a la izquierda para no pisar al plato
+    const add = (obj, text, key, left = false) => {
       if (!obj || !obj.visible) return;
       bb.setFromObject(obj);
       if (bb.isEmpty()) return;
-      v.set(bb.max.x, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2).project(this.camera);
-      out.push({ key, text, x: (v.x + 1) / 2, y: (1 - v.y) / 2 });
+      const c = bb.getCenter(new THREE.Vector3());
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+      const r = bb.getSize(new THREE.Vector3()).length() * 0.42;
+      v.copy(c).addScaledVector(right, left ? -r : r).project(this.camera);
+      out.push({ key, text, x: (v.x + 1) / 2, y: (1 - v.y) / 2, left });
     };
     const pls = (this.plants.children || []).filter((g) => g.userData.k >= 0);
     pls.forEach((g, i) => add(g, names[g.userData.id] || "Planta", "planta-" + i));
     add(this.plants.children.find((g) => g.userData.k < 0), names.tierra || "Tierra", "tierra");
     add(this.model.getObjectByName("MACETA"), "Maceta", "maceta");
-    if (this.water && this.water.group.visible) add(this.water.top, "Agua de reserva", "agua");
+    if (this.water && this.water.group.visible) add(this.water.top, "Agua de reserva", "agua", true);
     add(this.model.getObjectByName("PLATO"), "Plato con rosca", "plato");
     return out;
   }

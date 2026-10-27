@@ -231,3 +231,5 @@ fieldset.sec.closed > :not(legend) { display: none !important; }
   .report .minor, .report .warnings { display: none; }
   .report { padding: 10px 12px; }
 }
+.labels span.left { transform: translate(calc(-100% - 10px), -50%); }
+.labels span.left::before { left: auto; right: -12px; }
