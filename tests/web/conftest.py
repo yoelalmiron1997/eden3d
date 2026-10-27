@@ -65,5 +65,24 @@ def app(browser, base_url):
     t0 = time.time()
     page = open_app(browser, base_url)
     page.first_model_seconds = time.time() - t0
+    _SESSION_CONTEXTS.add(page.context)
     yield page
     page.context.close()
+
+
+_SESSION_CONTEXTS = set()
+
+
+@pytest.fixture(autouse=True)
+def _cerrar_paginas(request):
+    """Si un test falla antes de cerrar su página, se cierra igual: una página con el
+    visor andando en WebGL por software frena a todos los tests que siguen."""
+    yield
+    if "browser" not in request.fixturenames:
+        return
+    browser = request.getfixturevalue("browser")
+    if "app" in request.fixturenames:
+        _SESSION_CONTEXTS.add(request.getfixturevalue("app").context)
+    for ctx in list(browser.contexts):
+        if ctx not in _SESSION_CONTEXTS:
+            ctx.close()
