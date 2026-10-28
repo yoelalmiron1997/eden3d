@@ -58,7 +58,8 @@ def test_descarga_3mf(sopa_app):
     assert d.suggested_filename.startswith("Sopa-") and d.suggested_filename.endswith(".3mf")
     with zipfile.ZipFile(io.BytesIO(open(d.path(), "rb").read())) as z:
         model = z.read("3D/3dmodel.model").decode("utf-8")
-    assert model.count("<object ") == pg.evaluate("window.__sopa.summary.piezas") + 1
+    s = pg.evaluate("window.__sopa.summary")
+    assert model.count("<object ") == s["piezas"] + 1 + s["marcadores"]
 
 
 @pytest.mark.spec("SOP-008")
@@ -74,3 +75,23 @@ def test_tarjeta_en_el_inicio(browser, base_url):
     assert pg.locator(T % "popup-sopa").is_visible()
     assert pg.locator(T % "abrir-sopa").get_attribute("href") == "sopa.html"
     ctx.close()
+
+
+@pytest.mark.spec("SOP-010")
+def test_marcar_palabras(sopa_app):
+    pg = sopa_app
+    pg.locator(T % "chk-solucion").uncheck()
+    vw = pg.evaluate("window.__sopa.viewer")
+    n = len(pg.evaluate("window.__sopa.summary.ubicadas"))
+    assert vw["marcadores"] == n and vw["marcadoresVisibles"] == []
+    primera = pg.locator(T % "lista-palabras" + " button").first
+    palabra = primera.get_attribute("data-palabra")
+    primera.click()
+    assert pg.evaluate("window.__sopa.viewer.marcadoresVisibles") == [palabra]
+    assert primera.get_attribute("aria-pressed") == "true"
+    primera.click()
+    assert pg.evaluate("window.__sopa.viewer.marcadoresVisibles") == []
+    pg.locator(T % "chk-solucion").check()
+    assert len(pg.evaluate("window.__sopa.viewer.marcadoresVisibles")) == n
+    pg.locator(T % "chk-solucion").uncheck()
+    assert not pg.console_errors, pg.console_errors

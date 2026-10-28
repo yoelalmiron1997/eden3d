@@ -95,8 +95,12 @@ dulce de leche</textarea>
           <input type="range" id="relieve" data-testid="sl-relieve" min="0.6" max="3" step="0.1" value="1.2">
           <output id="o-relieve">1,2 mm</output></label>
         <label class="check"><input type="checkbox" id="lista" data-testid="chk-lista" checked> Placa con la lista de palabras</label>
-        <p class="hint small">La holgura es el juego de cada encastre. Para letras de otro color, cambiá el filamento
-          a la altura de la base.</p>
+        <label class="check"><input type="checkbox" id="marcadores" data-testid="chk-marcadores" checked> Marcadores: un anillo por palabra que encastra en sus letras</label>
+        <label class="slider"><span>Ajuste</span>
+          <input type="range" id="ajuste" data-testid="sl-ajuste" min="0" max="0.4" step="0.05" value="0.15">
+          <output id="o-ajuste">0,15 mm</output></label>
+        <p class="hint small">La holgura es el juego de las piezas; el ajuste, el del marcador sobre las letras
+          (menos ajuste = agarra más fuerte). Para letras de otro color, cambiá el filamento a la altura de la base.</p>
       </fieldset>
 
       <fieldset class="sec" data-sec="vista" data-closed-mobile>
@@ -123,7 +127,7 @@ dulce de leche</textarea>
             </select>
           </label>
         </div>
-        <label class="check"><input type="checkbox" id="solucion" data-testid="chk-solucion"> Mostrar la solución</label>
+        <label class="check"><input type="checkbox" id="solucion" data-testid="chk-solucion"> Mostrar la solución (con los marcadores puestos)</label>
         <label class="slider"><span>Separar</span>
           <input type="range" id="separar" data-testid="sl-separar" min="0" max="100" step="1" value="0">
           <output id="o-separar">0 %</output></label>
@@ -158,6 +162,7 @@ dulce de leche</textarea>
       </div>
       <div class="sopa-wrap"><table id="tabla" class="sopa-tabla" data-testid="tabla"></table></div>
       <ul id="lista-palabras" class="sopa-palabras" data-testid="lista-palabras"></ul>
+      <p class="hint small" id="hint-marcar">Tocá una palabra cuando la encuentres: se pone su marcador en el tablero.</p>
     </section>
     </div>
   </main>

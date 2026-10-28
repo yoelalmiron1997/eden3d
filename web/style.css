@@ -369,3 +369,4 @@ html.es-admin .solo-admin { display: revert !important; }
 .sopa-palabras { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 10px 0 0; }
 .sopa-palabras button { min-height: 30px; padding: 4px 10px; font-size: 13px; border-radius: 99px; }
 .sopa-palabras li.falta { padding: 4px 10px; font-size: 13px; color: #b3261e; text-decoration: line-through; }
+.sopa-palabras button[aria-pressed="true"] { background: #e8562a; border-color: #e8562a; color: #fff; text-decoration: line-through; }
