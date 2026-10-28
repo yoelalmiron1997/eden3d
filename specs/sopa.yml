@@ -1,0 +1,79 @@
+area: Sopa de letras 3D
+prefijo: SOP
+specs:
+  - id: SOP-001
+    titulo: Todas las palabras se pueden encontrar
+    descripcion: Cada palabra ubicada se lee en la grilla en su dirección; las que no entran se avisan.
+    criterio: >
+      Para varias listas y semillas, cada palabra ubicada se lee letra por letra en la
+      grilla; las direcciones respetan la dificultad (fácil → ↓, media + diagonales,
+      difícil también al revés) y las que no entran aparecen en "faltan" y en los avisos.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: SOP-002
+    titulo: Las palabras se limpian bien
+    descripcion: Se aceptan acentos, espacios y la Ñ como los escribe la gente.
+    criterio: >
+      "ñandú" queda ÑANDU, "dulce de leche" queda DULCEDELECHE, las repetidas y las de
+      una letra se descartan, y con la misma semilla sale siempre la misma sopa.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: SOP-003
+    titulo: Las piezas encastran y ninguna letra queda cortada
+    descripcion: >
+      El tablero se corta entre celdas en piezas de rompecabezas; las lengüetas van
+      entre letras y tienen la holgura pedida.
+    criterio: >
+      Las piezas no se superponen y entre vecinas queda la holgura (±0,05 mm); cada
+      letra está entera dentro de su pieza; cada borde interno tiene al menos una
+      lengüeta y la cabeza de la lengüeta es más ancha que su cuello (traba).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: SOP-004
+    titulo: Las piezas entran en la cama de la impresora
+    descripcion: El corte automático respeta el tamaño de la cama.
+    criterio: >
+      Con camas de 180 a 350 mm y grillas de 10 a 20, cada pieza (y la placa con la
+      lista) mide menos que la cama; como mínimo hay 2 × 2 piezas.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: SOP-005
+    titulo: Mallas cerradas y descargas con licencia
+    descripcion: Cada pieza es imprimible y los archivos llevan nombre y licencia.
+    criterio: >
+      La placa y las letras de cada pieza son mallas cerradas con volumen positivo;
+      export_3mf trae un objeto por pieza con Copyright y LicenseTerms; export_stl es
+      un STL binario válido; ambos con el nombre Sopa-FxC-DIFICULTAD.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: SOP-006
+    titulo: La sopa se arma rápido
+    descripcion: Cambiar palabras u opciones no hace esperar.
+    criterio: En CPython, una sopa de 20 × 20 con 25 palabras se arma en menos de 3 s.
+    prioridad: media
+    nivel: rendimiento
+    estado: activa
+  - id: SOP-007
+    titulo: La página arma la sopa con tus palabras
+    descripcion: sopa.html carga el motor, muestra las piezas en 3D y la sopa en 2D.
+    criterio: >
+      El estado dice "Listo", el visor tiene placas y letras de 4 o más piezas, la tabla
+      2D tiene la grilla, cambiar las palabras recalcula, "Ver solución" resalta las
+      palabras, se pueden separar las piezas y no hay errores de consola.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: SOP-008
+    titulo: Descarga desde la web y tarjeta en el inicio
+    descripcion: Se baja el 3MF desde la página y la herramienta aparece en el inicio.
+    criterio: >
+      El botón 3MF descarga Sopa-*.3mf con una pieza por objeto; en el inicio la tarjeta
+      tool-sopa tiene imagen y abre el pop-up con el link a sopa.html.
+    prioridad: alta
+    nivel: web
+    estado: activa

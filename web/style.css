@@ -357,3 +357,15 @@ html.es-admin .solo-admin { display: revert !important; }
 .file-row[hidden] { display: none; }
 .file-row input[type=file] { font: inherit; font-size: 13px; color: var(--ink); max-width: 100%; }
 #stl-msg.err { color: #b3261e; }
+
+/* ---- sopa de letras 3D ---- */
+.panel textarea { font: inherit; font-size: 14px; width: 100%; padding: 8px 10px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); resize: vertical; }
+.sopa-wrap { overflow-x: auto; }
+.sopa-tabla { border-collapse: collapse; margin: 6px auto; font: 700 15px/1 ui-monospace, Consolas, monospace; }
+.sopa-tabla td { width: 1.7em; height: 1.7em; text-align: center; color: var(--ink); border-radius: 4px; }
+.sopa-tabla.sol td.w { background: #f6c7b4; color: #7a2410; }
+.sopa-tabla td.h { background: var(--green-2); color: #fff; }
+.sopa-palabras { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 10px 0 0; }
+.sopa-palabras button { min-height: 30px; padding: 4px 10px; font-size: 13px; border-radius: 99px; }
+.sopa-palabras li.falta { padding: 4px 10px; font-size: 13px; color: #b3261e; text-decoration: line-through; }

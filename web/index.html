@@ -55,6 +55,19 @@
           <span>Elegí el modelo de mate y el motor le hace el hueco exacto para tu vaso de polímero o adaptador.</span>
         </span>
       </button>
+      <button type="button" class="tool-card" data-testid="tool-sopa" aria-haspopup="dialog" data-modal="sopa-modal">
+        <span class="tool-art photo">
+          <img src="assets/herramientas/sopa_v_450.jpg" srcset="assets/herramientas/sopa_v_450.jpg 450w, assets/herramientas/sopa_v.jpg 900w"
+            sizes="340px" alt="Sopa de letras impresa en 3D, en piezas de rompecabezas que encastran, con letras rojas en relieve"
+            width="450" height="563" data-testid="tool-imagen-sopa">
+          <span class="art-title" aria-hidden="true">Sopa de <b>letras 3D</b><small>en piezas que encastran</small></span>
+        </span>
+        <span class="tool-body">
+          <span class="tool-tag">Nueva</span>
+          <strong>Sopa de letras 3D</strong>
+          <span>Escribí tus palabras y bajá la sopa para imprimir, cortada en piezas que encastran como un rompecabezas.</span>
+        </span>
+      </button>
     </section>
   </main>
 
@@ -95,6 +108,27 @@
       </ul>
       <div class="tm-actions">
         <a class="btn primary" href="mate.html" data-testid="abrir-mate">Abrir el mate con hueco</a>
+        <button type="button" class="btn" data-close>Ahora no</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal" id="sopa-modal" data-testid="popup-sopa" aria-labelledby="sm-title">
+    <div class="modal-box wide">
+      <div class="modal-hero"><img src="assets/herramientas/sopa.jpg" alt="" width="1200" height="900"></div>
+      <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
+      <span class="tool-tag">Herramienta 3</span>
+      <h2 id="sm-title">Sopa de letras 3D</h2>
+      <p>Escribí tus palabras: el motor arma la sopa, la corta en piezas que encastran para que entre en tu impresora y la bajás lista para imprimir.</p>
+      <ul class="tm-list">
+        <li>Tus palabras, con Ñ, en fácil, media o difícil (diagonales y al revés)</li>
+        <li>Piezas de rompecabezas que encastran, con holgura ajustable</li>
+        <li>Se corta solo según el tamaño de tu cama</li>
+        <li>Placa con la lista de palabras y vista de la solución</li>
+        <li>Descarga en 3MF o STL</li>
+      </ul>
+      <div class="tm-actions">
+        <a class="btn primary" href="sopa.html" data-testid="abrir-sopa">Abrir la sopa de letras</a>
         <button type="button" class="btn" data-close>Ahora no</button>
       </div>
     </div>

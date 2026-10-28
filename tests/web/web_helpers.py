@@ -49,3 +49,23 @@ def open_mate(browser, base_url, viewport=(1360, 900)):
 def wait_mate(page, before):
     page.wait_for_function("(n) => window.__mate.builds > n && !window.__mate.busy", arg=before,
                            timeout=READY_MS)
+
+
+def open_sopa(browser, base_url, viewport=(1360, 900)):
+    """Abre sopa.html (Sopa de letras 3D) y espera la primera sopa."""
+    ctx = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]},
+                              accept_downloads=True)
+    ctx.add_init_script("window.__EDEN_AUTH_MOCK = %s;" % json.dumps({"role": "sin-cuentas"}))
+    page = ctx.new_page()
+    page.console_errors = []
+    page.on("console", lambda m: page.console_errors.append(m.text) if m.type == "error" else None)
+    page.on("pageerror", lambda e: page.console_errors.append(str(e)))
+    page.goto(base_url + "sopa.html")
+    page.wait_for_function("window.__sopa && window.__sopa.builds >= 1 && !window.__sopa.busy",
+                           timeout=READY_MS)
+    return page
+
+
+def wait_sopa(page, before):
+    page.wait_for_function("(n) => window.__sopa.builds > n && !window.__sopa.busy", arg=before,
+                           timeout=READY_MS)
