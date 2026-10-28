@@ -96,18 +96,20 @@ def build(opts):
                     pos_, idx = _pack(V, F, dx, dy)
                     parts.append({"name": grupo, "pieza": pz["nombre"], "positions": pos_,
                                   "indices": idx, "triangles": len(F)})
-        for mk in res.get("marcadores", []):            # puestos sobre su palabra
-            pos_, idx = _pack(*mk["malla"])
-            parts.append({"name": "MARCADOR", "pieza": mk["nombre"], "palabra": mk["palabra"],
-                          "positions": pos_, "indices": idx, "triangles": len(mk["malla"][1])})
+        if res.get("bloque"):                    # un bloque modelo: la web lo copia en cada letra
+            pos_, idx = _pack(*res["bloque"])
+            parts.append({"name": "BLOQUE", "pieza": "BLOQUE", "positions": pos_, "indices": idx,
+                          "triangles": len(res["bloque"][1])})
     rep["seconds"] = round(time.time() - t0, 2)
     rep["grid"] = sopa["grid"]
     rep["ubicadas"] = sopa["ubicadas"]
     rep["faltan"] = sopa["faltan"]
     rep["piezas_mm"] = {pz["nombre"]: pz["medidas_mm"] for pz in res["piezas"]}
-    rep["lista_marcadores"] = [{"nombre": mk["nombre"], "palabra": mk["palabra"],
-                                "pared_mm": mk["pared_mm"], "largo_mm": mk["largo_mm"]}
-                               for mk in res.get("marcadores", [])]
+    p = res["params"]
+    for u in rep["ubicadas"]:                    # dónde va cada bloque de la palabra (mm)
+        u["centros"] = [list(sc.centro_celda(sopa, p, u["fila"] + u["df"] * i, u["col"] + u["dc"] * i))
+                        for i in range(len(u["palabra"]))]
+    rep["base_mm"] = p["base"]
     return {"summary": rep, "parts": parts}
 
 
@@ -116,16 +118,9 @@ def _layout(res):
     cama = res["params"]["cama"]
     out, x, y, fila_h = [], 0.0, 0.0, 0.0
     objetos = [(pz["nombre"], sc.unir(pz["placa"], pz["letras"])) for pz in res["piezas"]]
-    base = res["params"]["base"]
-    for mk in res.get("marcadores", []):
-        # acostado a lo largo de X y apoyado en la cama
-        (ax, ay), (bx, by) = mk["A"], mk["B"]
-        ang = math.atan2(by - ay, bx - ax)
-        ca, sa = math.cos(-ang), math.sin(-ang)
-        Vm, Fm = mk["malla"]
-        objetos.append(("%s_%s" % (mk["nombre"], mk["palabra"]),
-                        ([(ca * (x - ax) - sa * (y - ay), sa * (x - ax) + ca * (y - ay), z - base)
-                          for x, y, z in Vm], Fm)))
+    if res.get("bloque"):
+        for i in range(res["report"]["bloques"]):
+            objetos.append(("BLOQUE_%02d" % (i + 1), res["bloque"]))
     for nombre, (V, F) in objetos:
         xs = [v[0] for v in V]
         ys = [v[1] for v in V]

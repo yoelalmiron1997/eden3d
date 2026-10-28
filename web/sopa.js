@@ -38,15 +38,17 @@ viewer.viewDir = new THREE.Vector3(0.1, 1.6, 1);
 viewer.viewDist = 0.95;
 viewer.mats.LETRAS = new THREE.MeshStandardMaterial({ color: 0x2d4a2a, roughness: 0.7, metalness: 0, side: THREE.DoubleSide });
 viewer.mats.SOLUCION = new THREE.MeshStandardMaterial({ color: 0x2d4a2a, roughness: 0.6, metalness: 0, side: THREE.DoubleSide });
-viewer.mats.MARCADOR = new THREE.MeshStandardMaterial({ color: 0xe8562a, roughness: 0.45, metalness: 0, side: THREE.DoubleSide });
+viewer.mats.BLOQUE = new THREE.MeshStandardMaterial({ color: 0xe8562a, roughness: 0.45, metalness: 0, side: THREE.DoubleSide });
+const bloques = new THREE.Group();          // copias del bloque puestas sobre las letras
+bloques.name = "BLOQUES";
 window.__sopaViewer = viewer;
 Object.defineProperty(state, "viewer", { get: () => ({
   meshes: viewer.meshNames(), triangles: viewer.triangles, frames: viewer.stats.frames,
   piezas: [...new Set(viewer.model.children.map((m) => m.userData.pieza).filter(Boolean))],
   separacion: piezaOffsetMax(), scene: viewer.sceneKey,
   solucion: "#" + viewer.mats.SOLUCION.color.getHexString(),
-  marcadores: viewer.model.children.filter((m) => m.name === "MARCADOR").length,
-  marcadoresVisibles: viewer.model.children.filter((m) => m.name === "MARCADOR" && m.visible).map((m) => m.userData.palabra),
+  bloquesPuestos: bloques.visible ? bloques.children.length : 0,
+  palabrasMarcadas: bloques.visible ? [...new Set(bloques.children.flatMap((b) => b.userData.palabras))] : [],
 }) });
 
 // ------------------------------------------------------------------ opciones
@@ -61,7 +63,7 @@ function opts() {
   const pz = +$("piezas").value;
   const o = { palabras: palabras(), dificultad: $("dificultad").value, semilla: state.semilla,
     filas: n, cols: n, cama: +$("cama").value, piezas_x: pz, piezas_y: pz, lista: $("lista").checked,
-    marcadores: $("marcadores").checked };
+    bloques: $("bloques").checked };
   for (const k of Object.keys(SL)) o[k] = +$(k).value;
   return o;
 }
@@ -94,7 +96,7 @@ function showReport(s) {
     ["Tablero", `${Math.round(s.tablero_mm[0])} × ${Math.round(s.tablero_mm[1])} mm`, "f-tablero"],
     ["Piezas", `${s.piezas} (${s.piezas_x} × ${s.piezas_y}) · ${s.lenguetas} encastres`, "f-piezas"],
     ["Letra", `${num(s.letra_mm)} mm · celda ${num(s.celda_mm, 0)} mm`, "f-letra", "minor"],
-    ...(s.marcadores ? [["Marcadores", `${s.marcadores} · pared ${num(s.pared_marcador_mm)} mm · ajuste ${num(s.ajuste_mm, 2)} mm`, "f-marcadores"]] : []),
+    ...(s.bloques ? [["Bloques para marcar", `${s.bloques} iguales (uno por letra) · ${num(s.bloque_mm[0])} × ${num(s.bloque_mm[1])} mm · ajuste ${num(s.ajuste_mm, 2)} mm`, "f-bloques"]] : []),
     ["Cambio de color", `a ${num(s.cambio_color_mm)} mm`, "f-color", "minor"],
     ["Peso", `${s.peso_g} g PLA (100 %)`, "f-peso"],
     ["Cálculo", `${s.seconds} s`, "f-tiempo", "minor"],
@@ -120,15 +122,32 @@ function render2d(s) {
   verSolucion(state.solucion);
 }
 
-function marcadoresVisibles() {
-  for (const m of viewer.model.children) {
-    if (m.name !== "MARCADOR") continue;
-    m.visible = state.separar === 0 && (state.solucion || state.encontradas.has(m.userData.palabra));
+// los bloques se ponen sobre cada letra de las palabras marcadas (o de todas, con la solución)
+function ponerBloques() {
+  bloques.clear();
+  const modelo = viewer.model.getObjectByName("BLOQUE");
+  if (modelo) modelo.visible = false;
+  if (modelo && !viewer.model.children.includes(bloques)) viewer.model.add(bloques);
+  bloques.visible = state.separar === 0;
+  if (!modelo || !state.summary?.valid) return;
+  const enCelda = new Map();
+  for (const u of state.summary.ubicadas || []) {
+    if (!(state.solucion || state.encontradas.has(u.palabra))) continue;
+    for (const [x, y] of u.centros) {
+      const k = `${x},${y}`;
+      if (enCelda.has(k)) { enCelda.get(k).userData.palabras.push(u.palabra); continue; }
+      const b = new THREE.Mesh(modelo.geometry, viewer.mats.BLOQUE);
+      b.position.set(x, y, state.summary.base_mm || 0);   // apoyado sobre la base
+      b.castShadow = true;
+      b.userData.palabras = [u.palabra];
+      enCelda.set(k, b);
+      bloques.add(b);
+    }
   }
 }
 
 function marcar(palabra) {
-  if (state.separar > 0) {                    // para ver el marcador, el tablero tiene que estar armado
+  if (state.separar > 0) {                    // para ver los bloques, el tablero tiene que estar armado
     $("separar").value = 0;
     $("o-separar").textContent = "0 %";
     separar(0);
@@ -138,7 +157,7 @@ function marcar(palabra) {
   for (const b of $("lista-palabras").querySelectorAll("button[data-palabra]")) {
     b.setAttribute("aria-pressed", String(state.encontradas.has(b.dataset.palabra)));
   }
-  marcadoresVisibles();
+  ponerBloques();
 }
 
 function verSolucion(on) {
@@ -147,7 +166,7 @@ function verSolucion(on) {
   $("solucion").checked = on;
   $("ver-sol").textContent = on ? "Ocultar solución" : "Ver solución";
   viewer.mats.SOLUCION.color.set(on ? "#e8562a" : $("color-letras").value);
-  marcadoresVisibles();
+  ponerBloques();
 }
 
 function resaltar(i) {
@@ -170,7 +189,7 @@ function separar(k) {
   const box = new THREE.Box3();
   for (const o of viewer.model.children) {
     const p = o.userData.pieza;
-    if (!p || p === "LISTA") continue;
+    if (!p || p === "LISTA" || p === "BLOQUE") continue;
     o.geometry.computeBoundingBox();
     (centros[p] = centros[p] || new THREE.Box3()).union(o.geometry.boundingBox);
     box.union(o.geometry.boundingBox);
@@ -178,11 +197,11 @@ function separar(k) {
   const c0 = box.getCenter(new THREE.Vector3());
   for (const o of viewer.model.children) {
     const p = o.userData.pieza;
-    if (!p || !centros[p]) { o.position.set(0, 0, 0); continue; }   // lista y marcadores
+    if (!p || !centros[p]) { o.position.set(0, 0, 0); continue; }   // lista y bloques
     const c = centros[p].getCenter(new THREE.Vector3()).sub(c0);
     o.position.set(c.x * k * 0.35, c.y * k * 0.35, 0);
   }
-  marcadoresVisibles();
+  ponerBloques();
 }
 
 // ------------------------------------------------------------------ cálculo
@@ -200,11 +219,7 @@ async function build(refit = false) {
     render2d(r.summary);
     if (r.summary.valid) {
       viewer.showModel(r.parts, null, refit);
-      const palabraDe = Object.fromEntries((r.summary.lista_marcadores || []).map((m) => [m.nombre, m.palabra]));
-      viewer.model.children.forEach((m, i) => {
-        m.userData.pieza = r.parts[i]?.pieza;
-        if (m.name === "MARCADOR") { m.userData.palabra = palabraDe[m.userData.pieza]; m.castShadow = true; }
-      });
+      viewer.model.children.forEach((m, i) => { m.userData.pieza = r.parts[i]?.pieza; });
       const vigentes = new Set((r.summary.ubicadas || []).map((u) => u.palabra));
       for (const w of [...state.encontradas]) if (!vigentes.has(w)) state.encontradas.delete(w);
       viewer.setColor($("color").value);
@@ -322,7 +337,7 @@ $("palabras").addEventListener("input", () => {
   clearTimeout(tPal);
   tPal = setTimeout(() => build(true), 900);
 });
-for (const id of ["dificultad", "grilla", "cama", "piezas", "lista", "marcadores"]) $(id).addEventListener("change", () => build(true));
+for (const id of ["dificultad", "grilla", "cama", "piezas", "lista", "bloques"]) $(id).addEventListener("change", () => build(true));
 for (const k of Object.keys(SL)) {
   $(k).addEventListener("input", () => { $("o-" + k).textContent = sliderText(k); });
   $(k).addEventListener("change", () => build(k === "celda"));
