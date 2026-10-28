@@ -92,7 +92,22 @@ def params(opts):
     q = opts.get("quality") or "preview"
     if q not in ("preview", "normal"):
         q = "preview"
-    return ec.design_params(cat, d, size, mode, drain, q, _clean_overrides(opts.get("overrides")))
+    p = ec.design_params(cat, d, size, mode, drain, q, _clean_overrides(opts.get("overrides")))
+    if opts.get("brand") is not None:                 # marca personalizada ("" = sin marca)
+        import eden_font
+        t, err = eden_font.check(opts.get("brand"))
+        if err:
+            raise ValueError(err)
+        p["brand"] = t
+    return p
+
+
+def check_brand(text):
+    """Para la web: valida el texto de la marca antes de calcular."""
+    import eden_font
+    t, err = eden_font.check(text)
+    return {"text": t, "error": err, "max_len": eden_font.MAX_LEN,
+            "chars": "".join(sorted(eden_font.GLYPHS))}
 
 
 def _placed(res):
@@ -111,6 +126,20 @@ def _pack(V, F, dz=0.0):
     pos = array.array("f", [c for x, y, z in V for c in (x, y, z + dz)])
     idx = array.array("I", [i for f in F for i in f])
     return pos.tobytes(), idx.tobytes()
+
+
+def mesh_check(F):
+    """Malla cerrada y bien orientada, sin dependencias: cada arista dirigida tiene que
+    aparecer una sola vez y su opuesta también (como pide un laminador)."""
+    seen = set()
+    dup = 0
+    for a, b, c in F:
+        for e in ((a, b), (b, c), (c, a)):
+            if e in seen:
+                dup += 1
+            seen.add(e)
+    open_edges = sum(1 for (a, b) in seen if (b, a) not in seen)
+    return {"closed": dup == 0 and open_edges == 0, "open_edges": open_edges, "bad_edges": dup}
 
 
 def build(opts):
@@ -154,7 +183,14 @@ def build(opts):
         "seconds": round(time.time() - t0, 2),
         "engine": core.ENGINE_VERSION,
         "abertura": {k: round(v, 2) for k, v in abertura.items()} if abertura else None,
+        "brand": {"text": p.get("brand", ""),
+                  "pieces": dict([("MACETA", (rep.get("brand") or {}).get("cap_h_mm"))] +
+                                 [(pt["name"], (pt["report"].get("brand") or {}).get("cap_h_mm"))
+                                  for pt in res.get("parts") or []])},
     }
+    if opts.get("check") and rep.get("valid"):          # cobertura del administrador
+        summary["mesh_check"] = dict([("MACETA", mesh_check(res["faces"]))] +
+                                     [(pt["name"], mesh_check(pt["faces"])) for pt in res.get("parts") or []])
     return {"summary": summary, "parts": parts}
 
 

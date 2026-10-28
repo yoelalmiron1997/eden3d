@@ -95,7 +95,7 @@ function exportFile(kind, opts, part) {
 const ready = init();
 
 self.onmessage = async (ev) => {
-  const { id, type, opts, part, ids, decor, cobertura } = ev.data;
+  const { id, type, opts, part, ids, decor, cobertura, text } = ev.data;
   try {
     const boot = await ready;
     if (type === "init") {
@@ -110,6 +110,11 @@ self.onmessage = async (ev) => {
     } else if (type === "3mf" || type === "stl") {
       const r = exportFile(type, opts, part);
       self.postMessage({ id, ok: true, result: r }, [r.data]);
+    } else if (type === "brand") {
+      const r = api.check_brand(text || "");
+      const out = r.toJs({ dict_converter: Object.fromEntries });
+      r.destroy();
+      self.postMessage({ id, ok: true, result: out });
     } else if (type === "selftest") {
       self.postMessage({ id, ok: true, result: JSON.parse(api.selftest_json()) });
     }

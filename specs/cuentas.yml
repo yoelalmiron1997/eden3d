@@ -1,0 +1,50 @@
+area: Cuentas, roles y administración
+prefijo: CUE
+specs:
+  - id: CUE-001
+    titulo: Ingresar con cuenta (Supabase)
+    descripcion: >
+      La web tiene login con email y contraseña (Supabase): crear cuenta, ingresar,
+      recuperar la contraseña y salir. Cada cuenta tiene un rol: usuario, pro (paquete
+      extra) o admin. Sin Supabase configurado la web sigue andando sin cuentas.
+    criterio: >
+      Con cuentas configuradas aparece "Ingresar"; al ingresar se ve el email y el rol
+      y "Salir" vuelve a visitante; la URL y la clave pública salen de las variables del
+      repositorio al armar la web; sin configurar no hay botón y se descarga libre.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: CUE-002
+    titulo: Descargas para cuentas registradas
+    descripcion: Con cuentas activas, para bajar los archivos de impresión hay que ingresar.
+    criterio: >
+      Un visitante que toca 3MF o STL ve la ventana de ingreso y no se descarga nada;
+      un usuario descarga normalmente.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: CUE-003
+    titulo: Reglas de la base (nadie se da un rol solo)
+    descripcion: >
+      Los roles los protege la base de datos (RLS), no la página: cada cuenta nueva es
+      'usuario', cada uno ve sólo su perfil y sólo un admin cambia roles.
+    criterio: >
+      supabase/esquema.sql activa RLS en perfiles, crea el perfil 'usuario' al
+      registrarse, permite UPDATE sólo con es_admin(), impide que un admin se quite el
+      rol, y los roles coinciden con los de la web; el repositorio no guarda claves.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: CUE-004
+    titulo: Panel de administrador
+    descripcion: >
+      admin.html, sólo para administradores: lista de cuentas con su rol (usuario, pro,
+      admin) para dar o sacar el paquete Pro, y cobertura de la marca de agua en cada
+      maceta con un texto a elección.
+    criterio: >
+      Un no-admin ve "Sólo administradores"; el admin ve las cuentas y puede cambiar el
+      rol de otra (no el propio); la cobertura arma cada maceta con el texto, revisa que
+      las mallas queden cerradas, muestra dónde entra la marca y baja un CSV.
+    prioridad: alta
+    nivel: web
+    estado: activa

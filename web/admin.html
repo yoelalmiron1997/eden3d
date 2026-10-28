@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administración · TecnoBear</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin">
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear">
+      <img src="assets/tecnobear.svg" alt="" width="34" height="34"><span class="brand-sub tb">TecnoBear</span>
+      <span class="role role-admin">Admin</span>
+    </a>
+    <nav class="nav">
+      <a href="macetas.html">Generador</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <section id="denied" class="card" data-testid="admin-denegado" hidden>
+      <h1>Sólo administradores</h1>
+      <p id="denied-msg" class="muted">Ingresá con una cuenta de administrador.</p>
+    </section>
+
+    <div id="panel" hidden>
+      <div class="tabs big" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-tab="usuarios" data-testid="tab-usuarios">Usuarios</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="cobertura" data-testid="tab-cobertura">Cobertura</button>
+      </div>
+
+      <section class="card" data-pane="usuarios" data-testid="admin-usuarios">
+        <h2>Usuarios y paquetes</h2>
+        <p class="muted small"><b>Usuario</b>: descarga con la marca Eden3D. <b>Pro</b> (paquete extra): cambia el texto
+          de la marca de agua. <b>Admin</b>: todo, más este panel.</p>
+        <div class="table-wrap">
+          <table class="grid-table">
+            <thead><tr><th>Email</th><th>Rol</th><th>Alta</th></tr></thead>
+            <tbody id="users"></tbody>
+          </table>
+        </div>
+        <p id="users-msg" class="small muted" role="status"></p>
+      </section>
+
+      <section class="card" data-pane="cobertura" data-testid="admin-cobertura" hidden>
+        <h2>Cobertura de la marca en cada maceta</h2>
+        <p class="muted small">Arma cada diseño con el texto elegido y revisa que las piezas queden cerradas
+          (sin agujeros en la malla) y dónde entra la marca. Corre en tu navegador.</p>
+        <div class="cov-form">
+          <label>Texto de la marca <input type="text" id="cov-text" maxlength="20" value="TecnoBear" data-testid="cov-texto"></label>
+          <fieldset class="cov-sizes"><legend>Tamaños</legend><div id="cov-sizes"></div></fieldset>
+          <label>Diseños <select id="cov-designs" data-testid="cov-disenos"><option value="">Todos</option></select></label>
+          <div class="cov-actions">
+            <button type="button" class="primary" id="cov-run" data-testid="cov-correr" disabled>Probar</button>
+            <button type="button" id="cov-stop" disabled>Parar</button>
+            <button type="button" id="cov-csv" data-testid="cov-csv" disabled>Bajar CSV</button>
+          </div>
+        </div>
+        <div class="cov-progress"><progress id="cov-bar" max="1" value="0"></progress><span id="cov-status" data-testid="cov-estado">Cargando el motor…</span></div>
+        <div class="table-wrap">
+          <table class="grid-table" data-testid="cov-tabla">
+            <thead><tr><th>Diseño</th><th>Tamaño</th><th>Resultado</th><th>Malla</th><th>Marca maceta</th><th>Marca plato</th><th>Avisos</th><th>s</th></tr></thead>
+            <tbody id="cov-rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

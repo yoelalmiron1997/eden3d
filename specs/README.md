@@ -72,3 +72,5 @@ Un test puede cubrir varias specs y una spec puede tener varios tests.
 | QA | Proceso de calidad (gate y tablero) | `calidad.yml` |
 | PLA | Plantas y cuidados | `plantas.yml` |
 | VIS | Visor 3D (luz y agua) | `visor.yml` |
+| MAR | Marca de agua personalizada | `marca.yml` |
+| CUE | Cuentas, roles y administración | `cuentas.yml` |

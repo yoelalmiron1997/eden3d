@@ -470,3 +470,143 @@ def test_celular_simple(browser, base_url):
     page.locator(T % "ficha-mas" + " summary").click()
     assert page.locator(T % "ficha-senales").is_visible()
     page.context.close()
+
+
+# ---------------------------------------------------------------- regresión y cuentas
+@pytest.mark.spec("WEB-011")
+def test_cambio_de_modelo_mientras_calcula(browser, base_url):
+    page = open_app(browser, base_url)
+    page.wait_for_function("window.__eden.plantBuilds >= 1 && !window.__eden.busy", timeout=120_000)
+    n = page.evaluate("window.__eden.builds")
+    page.locator(T % "sel-tamano").select_option("M")           # empieza a calcular
+    page.wait_for_function("window.__eden.busy", timeout=10_000)
+    page.locator(T % "sel-diseno").select_option("TORSION")     # cambio en medio del cálculo
+    page.wait_for_function("(n) => window.__eden.builds >= n + 2 && !window.__eden.busy", arg=n, timeout=240_000)
+    assert page.evaluate("window.__eden.summary.sku").startswith("Eden3D-TORSION-M-")
+    assert page.locator(T % "sku").inner_text().startswith("Eden3D-TORSION-M-")
+    p0 = page.evaluate("window.__eden.plantBuilds")
+    page.wait_for_function("(p) => window.__eden.plantBuilds > p - 1 && !window.__eden.busy", arg=p0, timeout=120_000)
+    page.wait_for_timeout(500)
+    zs = page.evaluate("window.__eden.summary.abertura.z_s")
+    tierra = page.evaluate("window.__edenViewer.plants.children.find(g => g.userData.k < 0).userData.base[2]")
+    assert abs(tierra - zs) < 0.05, "la tierra es de otra maceta"
+
+
+@pytest.mark.spec("WEB-012")
+def test_home_tecnobear(browser, base_url):
+    page = open_app(browser, base_url, path="")
+    assert page.locator(T % "home-titulo").inner_text() == "Herramientas de TecnoBear"
+    pop = page.locator(T % "popup-macetas")
+    pop.wait_for(state="visible", timeout=10_000)              # primera visita: se abre solo
+    assert "Generador de macetas" in pop.inner_text()
+    pop.locator("[data-close]").last.click()
+    assert not pop.is_visible()
+    page.reload()
+    page.wait_for_timeout(1200)
+    assert not pop.is_visible(), "en la segunda visita no se abre solo"
+    page.locator(T % "tool-macetas").click()
+    assert pop.is_visible()
+    page.locator(T % "abrir-macetas").click()
+    page.wait_for_url("**/macetas.html")
+    page.context.close()
+
+
+@pytest.mark.spec("CUE-001")
+def test_ingresar_y_salir(browser, base_url):
+    page = open_app(browser, base_url, role="visitante")
+    page.evaluate("window.__EDEN_AUTH_MOCK.loginRole = 'pro'")
+    page.locator(T % "btn-ingresar").click()
+    dlg = page.locator(T % "login")
+    assert dlg.is_visible()
+    page.locator(T % "login-email").fill("ana@eden3d.test")
+    page.locator(T % "login-pass").fill("secreto123")
+    page.locator(T % "login-ok").click()
+    page.wait_for_function("window.__eden.auth.role === 'pro'", timeout=10_000)
+    assert not dlg.is_visible()
+    assert page.locator(T % "rol").inner_text() == "Pro"
+    page.locator(T % "btn-salir").click()
+    page.wait_for_function("window.__eden.auth.role === 'visitante'", timeout=10_000)
+    assert page.locator(T % "btn-ingresar").is_visible()
+    page.context.close()
+
+
+@pytest.mark.spec("CUE-001")
+def test_sin_cuentas_configuradas_descarga_libre(app):
+    a = app.evaluate("window.__eden.auth")
+    assert a["configured"] is False and a["perms"]["download"] is True
+    assert app.locator("#account").inner_text().strip() == ""
+
+
+@pytest.mark.spec("CUE-002")
+def test_visitante_tiene_que_ingresar_para_descargar(browser, base_url):
+    page = open_app(browser, base_url, role="visitante")
+    downloads = []
+    page.on("download", lambda d: downloads.append(d))
+    page.locator(T % "btn-stl").click()
+    assert page.locator(T % "login").is_visible()
+    assert "descargar" in page.locator("#login-why").inner_text()
+    page.wait_for_timeout(800)
+    assert not downloads
+    page.context.close()
+    page = open_app(browser, base_url, role="usuario")
+    with page.expect_download(timeout=180_000) as dl:
+        page.locator(T % "btn-stl").click()
+    assert dl.value.suggested_filename.endswith("_MACETA.stl")
+    page.context.close()
+
+
+@pytest.mark.spec("MAR-003")
+def test_marca_solo_para_pro(browser, base_url):
+    page = open_app(browser, base_url, role="usuario")
+    assert page.locator(T % "marca-texto").is_disabled()
+    assert page.locator(T % "marca-candado").is_visible()
+    page.context.close()
+
+    page = open_app(browser, base_url, role="pro")
+    assert not page.locator(T % "marca-texto").is_disabled()
+    assert not page.locator(T % "marca-candado").is_visible()
+    n = page.evaluate("window.__eden.builds")
+    page.locator(T % "marca-texto").fill("Hola €")
+    page.locator(T % "marca-aplicar").click()
+    page.wait_for_function("document.querySelector('[data-testid=marca-msg]').textContent.includes('€')", timeout=10_000)
+    assert page.evaluate("window.__eden.builds") == n, "un texto inválido no recalcula"
+    page.locator(T % "marca-texto").fill("TecnoBear")
+    page.locator(T % "marca-aplicar").click()
+    page.wait_for_function("(n) => window.__eden.builds > n && !window.__eden.busy", arg=n, timeout=180_000)
+    b = page.evaluate("window.__eden.summary.brand")
+    assert b["text"] == "TecnoBear" and any(b["pieces"].values())
+    assert "TecnoBear" in page.locator(T % "marca-msg").inner_text()
+    page.locator(T % "btn-salir").click()                       # sin cuenta vuelve a Eden3D
+    page.wait_for_function("window.__eden.summary.brand.text === 'Eden3D' && !window.__eden.busy", timeout=180_000)
+    assert page.locator(T % "marca-texto").input_value() == "Eden3D"
+    page.context.close()
+
+
+@pytest.mark.spec("CUE-004")
+def test_panel_admin(browser, base_url):
+    page = open_app(browser, base_url, role="usuario", path="admin.html")
+    page.locator(T % "admin-denegado").wait_for(state="visible", timeout=10_000)
+    page.context.close()
+
+    users = [{"id": "mock", "email": "admin@eden3d.test", "rol": "admin", "creado": "2026-10-01T10:00:00Z"},
+             {"id": "u2", "email": "ana@eden3d.test", "rol": "usuario", "creado": "2026-10-20T10:00:00Z"}]
+    page = open_app(browser, base_url, role="admin", path="admin.html", users=users)
+    page.locator(T % "admin-usuarios").wait_for(state="visible", timeout=10_000)
+    assert page.locator('[data-testid="rol-admin@eden3d.test"]').is_disabled(), "no se cambia el propio rol"
+    page.locator('[data-testid="rol-ana@eden3d.test"]').select_option("pro")
+    page.wait_for_function("document.getElementById('users-msg').textContent.includes('ahora es Pro')")
+    # cobertura de la marca: un diseño, tamaño S
+    page.locator(T % "tab-cobertura").click()
+    page.wait_for_function("window.__edenAdmin.engineReady", timeout=180_000)
+    page.locator(T % "cov-texto").fill("Ñandú 2026")
+    page.locator(T % "cov-disenos").select_option("ROMBO")
+    page.locator(T % "cov-correr").click()
+    page.wait_for_function("document.querySelector('[data-testid=cov-estado]').textContent.includes('macetas OK')",
+                           timeout=240_000)
+    rows = page.evaluate("window.__edenAdmin.cov.rows")
+    assert len(rows) == 1 and rows[0]["ok"] and rows[0]["closed"], rows
+    assert rows[0]["plato"] >= 3.5
+    with page.expect_download() as dl:
+        page.locator(T % "cov-csv").click()
+    assert dl.value.suggested_filename == "cobertura_marca_Ñandú_2026.csv"
+    page.context.close()

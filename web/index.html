@@ -3,181 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Eden3D Studio</title>
-  <meta name="description" content="Configurador de macetas paramétricas Eden3D: elegí diseño, tamaño, autorriego y drenaje, y miralo en 3D.">
-  <meta name="copyright" content="© Eden3D — Yoel Almirón. Todos los derechos reservados.">
-  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <title>Herramientas de TecnoBear</title>
+  <meta name="description" content="Herramientas gratis de TecnoBear para la comunidad: diseño e impresión 3D desde el navegador.">
+  <meta name="copyright" content="© TecnoBear — Yoel Almirón. Todos los derechos reservados.">
+  <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
-  <script type="importmap">
-    { "imports": { "three": "./vendor/three/three.module.js",
-                   "three/addons/": "./vendor/three/addons/" } }
-  </script>
 </head>
-<body>
+<body class="home">
   <header class="top">
-    <a class="brand" href="./" aria-label="Eden3D Studio, inicio">
-      <span class="pill">Eden3D</span><span class="brand-sub">Studio</span>
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear">
+      <img src="assets/tecnobear.svg" alt="" width="34" height="34"><span class="brand-sub tb">TecnoBear</span>
     </a>
     <nav class="nav">
-      <a href="calidad/" data-testid="link-calidad">Calidad</a>
-      <a href="calidad/#matriz" data-testid="link-specs">Specs</a>
+      <a href="calidad/" class="hide-sm">Calidad</a>
+      <span id="account" class="account"></span>
     </nav>
   </header>
 
-  <main class="layout">
-    <section class="panel" aria-label="Configuración">
-      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
-
-      <fieldset class="sec" data-sec="diseno">
-        <legend>Maceta</legend>
-        <label>Modelo
-          <select id="design" data-testid="sel-diseno" disabled></select>
-        </label>
-        <div class="row2">
-          <label>Tamaño
-            <select id="size" data-testid="sel-tamano" disabled></select>
-          </label>
-          <label>Color
-            <select id="color" data-testid="sel-color">
-              <option value="#ece9e2">Blanco</option>
-              <option value="#c47052">Terracota</option>
-              <option value="#84a078">Salvia</option>
-              <option value="#e8aab2">Rosa</option>
-              <option value="#80b0de">Celeste</option>
-              <option value="#ecc45c">Amarillo</option>
-              <option value="#2c2c2c">Negro</option>
-              <option value="#d6c4a6">Arena</option>
-            </select>
-          </label>
-        </div>
-        <div class="row2">
-          <label>Plato
-            <select id="mode" data-testid="sel-modo" disabled></select>
-          </label>
-          <label>Drenaje
-            <select id="drain" data-testid="sel-drenaje" disabled></select>
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset class="sec" data-sec="patron" data-closed>
-        <legend>Patrón</legend>
-        <div id="sliders" class="sliders"></div>
-        <button type="button" class="link" id="reset" data-testid="btn-reset">Restablecer</button>
-      </fieldset>
-
-      <fieldset class="sec" data-sec="plantas">
-        <legend>Plantas <span class="hint">una por tipo</span></legend>
-        <div id="plant-list" class="plant-groups" data-testid="plantas" role="group" aria-label="Plantas"></div>
-        <div class="row2">
-          <label>Tierra
-            <select id="cobertura" data-testid="sel-tierra"></select>
-          </label>
-          <label class="check end"><input type="checkbox" id="decor" data-testid="chk-piedras" checked> Ver tierra</label>
-        </div>
-        <p class="hint small" id="cob-desc" data-testid="tierra-desc"></p>
-      </fieldset>
-
-      <fieldset class="sec" data-sec="ambiente" data-closed-mobile>
-        <legend>Ambiente</legend>
-        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
-        <div class="seg seg4" id="light-presets" role="radiogroup" aria-label="Luz" data-testid="luces"></div>
-        <label class="slider"><span>Sol</span>
-          <input type="range" id="sun-az" data-testid="sl-sol" min="0" max="360" step="1" value="35">
-          <output id="o-sun">35°</output></label>
-      </fieldset>
-
-      <fieldset class="sec" data-sec="vista" data-closed-mobile>
-        <legend>Vista</legend>
-        <div class="checks">
-          <label class="check"><input type="checkbox" id="water" data-testid="chk-agua" checked> Agua</label>
-          <label class="check"><input type="checkbox" id="wind" data-testid="chk-viento" checked> Viento</label>
-          <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
-          <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> HD</label>
-        </div>
-        <div class="seg small" id="water-level" role="radiogroup" aria-label="Nivel de agua">
-          <button type="button" data-v="min" data-testid="agua-min">Agua mínima</button>
-          <button type="button" data-v="max" data-testid="agua-max" aria-pressed="true">Plato lleno</button>
-        </div>
-        <div class="row-play">
-          <label class="slider"><span>Separar</span>
-            <input type="range" id="explode" data-testid="sl-separar" min="0" max="100" step="1" value="0">
-            <output id="o-explode">0 %</output></label>
-          <button type="button" id="explode-loop" data-testid="btn-despiece" aria-pressed="false">▶ Animar</button>
-        </div>
-        <div class="row3" id="water-fx">
-          <button type="button" id="drop" data-testid="btn-gota">Gota</button>
-          <button type="button" id="waves" data-testid="btn-olas">Olas</button>
-          <label class="check"><input type="checkbox" id="rain" data-testid="chk-lluvia"> Lluvia</label>
-        </div>
-        <p class="hint small">Tocá el agua para tirar una gota.</p>
-      </fieldset>
-
-      <fieldset class="sec" data-sec="impresion" data-closed-mobile>
-        <legend>Impresión 3D</legend>
-        <label class="check"><input type="checkbox" id="slicer" data-testid="chk-slicer"> Ver capas</label>
-        <div id="slicer-ui" hidden>
-          <div class="seg small" id="slicer-part" role="radiogroup" aria-label="Pieza">
-            <button type="button" data-p="MACETA" data-testid="slicer-maceta" aria-pressed="true">Maceta</button>
-            <button type="button" data-p="PLATO" data-testid="slicer-plato">Plato</button>
-          </div>
-          <label class="slider"><span>Capa</span>
-            <input type="range" id="layer" data-testid="sl-capa" min="1" max="1" step="1" value="1">
-            <output id="o-layer">—</output></label>
-          <div class="row2">
-            <button type="button" id="play-layers" data-testid="btn-capas">▶ Imprimir</button>
-            <p class="hint small" id="slicer-info" data-testid="slicer-info"></p>
-          </div>
-        </div>
-      </fieldset>
-
-      <div class="actions">
-        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
-        <div class="row2">
-          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
-          <button type="button" id="pdf" data-testid="btn-pdf" disabled>Guía PDF</button>
-        </div>
-        <div class="row3 even">
-          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL maceta</button>
-          <button type="button" id="dlstlp" data-testid="btn-stl-plato" disabled>STL plato</button>
-          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
-        </div>
-      </div>
+  <main class="home-main">
+    <section class="hero">
+      <h1 data-testid="home-titulo">Herramientas de TecnoBear</h1>
+      <p>Herramientas gratis para la comunidad de YouTube. Corren en tu navegador: no hay nada que instalar.</p>
     </section>
 
-    <div class="column">
-    <section class="stage" aria-label="Vista 3D">
-      <div id="viewer" class="viewer" data-testid="visor"></div>
-      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
-      <article class="report" data-testid="reporte" aria-live="polite">
-        <h2 id="sku" data-testid="sku">—</h2>
-        <dl id="facts"></dl>
-        <ul id="warnings" class="warnings"></ul>
-      </article>
+    <section class="tools" aria-label="Herramientas">
+      <button type="button" class="tool-card" data-testid="tool-macetas" aria-haspopup="dialog">
+        <span class="tool-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90">
+            <ellipse cx="60" cy="82" rx="38" ry="5" fill="rgba(0,0,0,.12)"/>
+            <path d="M22 70h76l-4 10H26z" fill="#d9d2c4"/>
+            <path d="M30 34h60l-6 38H36z" fill="#f2ede4"/>
+            <path d="M36 40l8 30M48 38l8 34M60 38l8 34M72 38l8 34M84 40l-4 22M44 38l-8 26M56 38l-8 34M68 38l-8 34M80 38l-8 34"
+              stroke="#cfc6b6" stroke-width="2"/>
+            <path d="M28 30h64v6H28z" fill="#e6dfd2"/>
+            <path d="M60 30c-3-10-12-14-20-12 4 6 12 10 20 12zm0 0c3-11 12-16 21-14-4 7-12 12-21 14zm0 0c-1-11 2-20 8-24 2 9-2 18-8 24z" fill="#5d8c4f"/>
+          </svg>
+        </span>
+        <span class="tool-body">
+          <span class="tool-tag">Nueva</span>
+          <strong>Generador de macetas</strong>
+          <span>Diseñá macetas con autorriego para imprimir en 3D, con plantas y su guía de cuidados.</span>
+        </span>
+      </button>
     </section>
-
-    <section class="care" id="care" data-testid="cuidados" aria-labelledby="care-title" hidden>
-      <div class="care-h">
-        <h2 id="care-title">Cuidados</h2>
-        <div class="tabs" id="care-tabs" role="tablist"></div>
-      </div>
-      <ul id="compat" class="compat" data-testid="compatibilidad"></ul>
-      <div id="care-body" class="care-body" role="tabpanel"></div>
-      <p class="muted small">Consejos generales para clima templado. Toxicidad según
-        <a href="https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants" target="_blank" rel="noopener">ASPCA</a>,
-        <a href="https://hgic.clemson.edu/factsheet/houseplants-that-are-poisonous-to-pets/" target="_blank" rel="noopener">Clemson</a>
-        y <a href="https://ucanr.edu/sites/PlantSafely/ToxicPlantList/Jacaranda_mimosifolia" target="_blank" rel="noopener">UC ANR</a>.
-        Ante una ingesta, consultá al veterinario.</p>
-    </section>
-    </div>
   </main>
 
+  <dialog class="modal" id="tool-modal" data-testid="popup-macetas" aria-labelledby="tm-title">
+    <div class="modal-box wide">
+      <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
+      <span class="tool-tag">Herramienta 1</span>
+      <h2 id="tm-title">Generador de macetas</h2>
+      <p>Elegí un diseño, el tamaño y el plato con autorriego. Lo ves en 3D y bajás el archivo listo para imprimir.</p>
+      <ul class="tm-list">
+        <li>17 diseños, del tamaño Mini al XL</li>
+        <li>Plato con autorriego a rosca y agua que se ve en 3D</li>
+        <li>20 plantas, nativas argentinas incluidas, con su guía de cuidados</li>
+        <li>Vista capa por capa, como en la impresora</li>
+        <li>Descarga en 3MF o STL y guía de uso en PDF</li>
+      </ul>
+      <div class="tm-actions">
+        <a class="btn primary" href="macetas.html" data-testid="abrir-macetas">Abrir el generador</a>
+        <button type="button" class="btn" data-close>Ahora no</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="foot">
-    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
-      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
-    <p class="muted">Motor <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+    <p>© 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados. <a href="licencia.html">Licencia</a>.</p>
   </footer>
 
-  <script type="module" src="app.js"></script>
+  <script type="module">
+    import { mountAccount } from "./auth-ui.js";
+    mountAccount(document.getElementById("account"));
+    const dlg = document.getElementById("tool-modal");
+    const open = () => dlg.showModal();
+    document.querySelector("[data-testid=tool-macetas]").addEventListener("click", open);
+    dlg.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => dlg.close()));
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    // la primera visita muestra la herramienta en un pop-up
+    let visto = false;
+    try { visto = localStorage.getItem("tb-popup-macetas") === "1"; localStorage.setItem("tb-popup-macetas", "1"); } catch (e) {}
+    if (!visto) setTimeout(open, 500);
+  </script>
 </body>
 </html>

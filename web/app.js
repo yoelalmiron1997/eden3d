@@ -2,6 +2,8 @@
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { renderCare, renderCompat } from "./care.js";
 import { makeGuide } from "./guia.js";
+import { mountAccount, openLogin } from "./auth-ui.js";
+import { onAuth } from "./auth.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -20,6 +22,7 @@ const SLIDERS = [
 const state = {
   ready: false, busy: false, info: null, summary: null, parts: [], builds: 0, errors: [],
   plants: [], plantBuilds: 0, careTab: null, light: "estudio", scene: "estudio", cobertura: null,
+  auth: null, brand: null,
 };
 window.__eden = state;
 
@@ -67,10 +70,13 @@ function opts() {
     const v = parseFloat($("s-" + k).value);
     if (v > 0) overrides[k] = v;
   }
-  return {
+  const o = {
     design: $("design").value, size: $("size").value, mode: $("mode").value,
     drain: $("drain").value, quality: $("hq").checked ? "normal" : "preview", overrides,
   };
+  // marca personalizada: sólo con permiso (Pro o admin); si no, la del motor (Eden3D)
+  if (state.brand !== null && state.auth?.perms.brand) o.brand = state.brand;
+  return o;
 }
 
 function setStatus(text, kind = "") {
@@ -111,11 +117,16 @@ function showReport(s) {
   $("warnings").innerHTML = [...(s.errors || []).map((e) => `<li class="err">${esc(e)}</li>`),
     ...(s.warnings || []).map((w) => `<li>${esc(w)}</li>`)].join("");
   $("water-level").hidden = A.dish_inner_r0_mm === undefined;
+  brandReport(s);
 }
 
 let lastKey = "";
+// Si se cambia algo mientras calcula, se vuelve a calcular al terminar (antes se
+// perdía el cambio y las plantas quedaban armadas para otro modelo).
+let pendingBuild = null;
 async function build(refit = false) {
-  if (!state.ready || state.busy) return;
+  if (!state.ready) return;
+  if (state.busy) { pendingBuild = { refit: refit || (pendingBuild && pendingBuild.refit) }; return; }
   const o = opts();
   const key = JSON.stringify(o);
   setBusy(true, "Calculando la maceta…");
@@ -134,6 +145,7 @@ async function build(refit = false) {
     state.triangles = viewer.triangles;
     state.meshes = viewer.meshNames();
     state.builds++;
+    if (r.summary.valid) state.builtOpts = o;
     setStatus(r.summary.valid ? `Listo · ${r.summary.seconds} s` : "El diseño no es válido con esta combinación", r.summary.valid ? "ok" : "err");
     lastKey = key;
   } catch (e) {
@@ -142,8 +154,16 @@ async function build(refit = false) {
   } finally {
     setBusy(false);
   }
+  if (pendingBuild) {                                  // hubo cambios durante el cálculo
+    const p = pendingBuild;
+    pendingBuild = null;
+    return build(p.refit);
+  }
   if (state.summary?.valid) await updatePlants();
 }
+
+// las plantas, la tierra y las descargas usan el modelo que está en pantalla
+const builtOpts = () => state.builtOpts || opts();
 
 // ------------------------------------------------------------------ plantas
 let plantReq = 0;
@@ -153,12 +173,12 @@ async function updatePlants() {
   renderCarePanel([]);
   try {
     if (!ids.length) {                                 // sin plantas igual se ve la tierra
-      const r = $("decor").checked ? await call("plants", { opts: opts(), ids: [], decor: true, cobertura: state.cobertura }) : { parts: [] };
+      const r = $("decor").checked ? await call("plants", { opts: builtOpts(), ids: [], decor: true, cobertura: state.cobertura }) : { parts: [] };
       if (my !== plantReq) return;
       viewer.showPlants(r.parts, []);
       state.plantBuilds++; state.compat = []; return;
     }
-    const r = await call("plants", { opts: opts(), ids, decor: $("decor").checked, cobertura: state.cobertura });
+    const r = await call("plants", { opts: builtOpts(), ids, decor: $("decor").checked, cobertura: state.cobertura });
     if (my !== plantReq) return;                       // llegó una selección más nueva
     viewer.showPlants(r.parts, r.ids);
     state.compat = r.compat;
@@ -266,6 +286,10 @@ function save(name, buffer, mime) {
 
 async function download(kind, part) {
   if (!state.ready || state.busy) return;
+  if (!state.auth?.perms.download) {
+    openLogin("Ingresá o creá tu cuenta gratis para descargar los archivos para imprimir.");
+    return;
+  }
   setBusy(true, kind === "3mf" ? "Armando el 3MF (calidad de impresión)…" : "Armando el STL…");
   try {
     const r = await call(kind, { opts: opts(), part });
@@ -337,6 +361,7 @@ async function main() {
     plantChips();
     coberturas();
     state.ready = true;
+    brandUi();
     state.bootSeconds = boot.seconds;
     setStatus(`Motor listo en ${boot.seconds.toFixed(1)} s`, "ok");
     await build(true);
@@ -381,6 +406,60 @@ $("scenes").addEventListener("click", (ev) => {
 });
 $("wind").addEventListener("change", () => viewer.setWind($("wind").checked));
 $("photo").addEventListener("click", () => takePhoto());
+
+// ------------------------------------------------------------------ cuenta y marca de agua
+const PIEZA = { MACETA: "maceta" };
+function brandReport(s) {
+  const b = s.brand;
+  if (!b) return;
+  const ok = Object.entries(b.pieces || {}).filter(([, h]) => h);
+  const nombres = (list) => list.map(([n]) => PIEZA[n] || "plato").join(" y ");
+  let txt;
+  if (!b.text) txt = "Sin marca.";
+  else if (!ok.length) txt = `"${b.text}" no entra en la base: probá un texto más corto.`;
+  else if (ok.length < Object.keys(b.pieces).length) txt = `"${b.text}" va en el ${nombres(ok)}: en la maceta lo tapa el drenaje.`;
+  else txt = `"${b.text}" grabada en ${nombres(ok)}.`;
+  $("brand-msg").textContent = txt;
+  state.brandReport = { text: b.text, pieces: b.pieces };
+}
+
+function brandUi() {
+  const can = !!state.auth?.perms.brand;
+  $("brand").disabled = !can || !state.ready;
+  $("brand-apply").disabled = !can || !state.ready;
+  $("brand-lock").hidden = can;
+  $("brand-lock").title = "Cambiar la marca es parte del paquete Pro";
+  if (!can) {
+    $("brand").value = "Eden3D";
+    if (!state.auth?.user && state.auth?.configured) $("brand-msg").textContent = "Con el paquete Pro grabás tu propio texto.";
+  }
+}
+
+async function applyBrand() {
+  if (!state.auth?.perms.brand) return;
+  const r = await call("brand", { text: $("brand").value });
+  if (r.error) {
+    $("brand-msg").textContent = r.error;
+    $("brand-msg").classList.add("err");
+    return;
+  }
+  $("brand-msg").classList.remove("err");
+  $("brand").value = r.text;
+  state.brand = r.text;
+  build();
+}
+$("brand-apply").addEventListener("click", () => applyBrand());
+$("brand").addEventListener("keydown", (e) => { if (e.key === "Enter") applyBrand(); });
+
+mountAccount($("account"));
+onAuth((a) => {
+  const before = state.auth;
+  state.auth = a;
+  brandUi();
+  // si perdió el permiso (salió de la cuenta) se vuelve a la marca de Eden3D
+  if (state.brand !== null && !a.perms.brand) { state.brand = null; build(); }
+  else if (before && before.role !== a.role && state.ready) build();
+});
 
 // guía de uso en PDF
 async function guidePdf() {

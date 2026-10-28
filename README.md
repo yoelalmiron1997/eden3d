@@ -1,4 +1,4 @@
-# Eden3D Studio
+# Herramientas de TecnoBear · Eden3D Studio
 
 [![Calidad y GitHub Pages](https://github.com/yoelalmiron1997/eden3d/actions/workflows/calidad.yml/badge.svg)](https://github.com/yoelalmiron1997/eden3d/actions/workflows/calidad.yml)
 
@@ -33,7 +33,15 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
 * Panel con textos cortos y secciones plegables, pensado para el celular.
 * **Foto** de producto 1080×1350 (formato Instagram) con un clic.
 
-* **Web:** https://yoelalmiron1997.github.io/eden3d/
+* **Cuentas y roles** (Supabase): usuario, **Pro** (paquete extra: cambia el texto de
+  la marca de agua) y **admin** (panel `admin.html` con roles y cobertura de la marca
+  en cada maceta). Configuración: [docs/SUPABASE.md](docs/SUPABASE.md).
+* **Marca de agua personalizada**: texto libre (letras, números, acentos, ñ y signos)
+  grabado en la base; un test arma los 17 diseños con textos de prueba y verifica que
+  ninguna pieza se rompa.
+
+* **Web (home de herramientas):** https://yoelalmiron1997.github.io/eden3d/
+* **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
 
 > © 2026 Eden3D — Yoel Almirón. **Todos los derechos reservados.** El repositorio es

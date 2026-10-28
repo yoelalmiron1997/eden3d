@@ -67,6 +67,16 @@ def build(out, node_modules):
     shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "environments",
                               "RoomEnvironment.js"), os.path.join(vt, "addons", "environments"))
     shutil.copy2(os.path.join(node_modules, "three", "LICENSE"), os.path.join(vt, "LICENSE"))
+    vs = os.path.join(out, "vendor", "supabase")
+    os.makedirs(vs, exist_ok=True)
+    shutil.copy2(os.path.join(node_modules, "@supabase", "supabase-js", "dist", "umd", "supabase.js"), vs)
+    shutil.copy2(os.path.join(node_modules, "@supabase", "supabase-js", "LICENSE"), os.path.join(vs, "LICENSE"))
+    # login: la URL y la clave pública de Supabase salen de las variables del repo
+    url, key = os.environ.get("SUPABASE_URL", "").strip(), os.environ.get("SUPABASE_ANON_KEY", "").strip()
+    if url and key:
+        with open(os.path.join(out, "config.js"), "w", encoding="utf-8") as fh:
+            fh.write("// generado por tools/build_site.py desde las variables del repositorio\n"
+                     "export const SUPABASE = %s;\n" % json.dumps({"url": url, "anonKey": key}))
     vj = os.path.join(out, "vendor", "jspdf")
     os.makedirs(vj, exist_ok=True)
     shutil.copy2(os.path.join(node_modules, "jspdf", "dist", "jspdf.umd.min.js"), vj)

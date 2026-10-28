@@ -93,3 +93,27 @@ specs:
     prioridad: media
     nivel: web
     estado: activa
+  - id: WEB-011
+    titulo: Cambiar de modelo mientras calcula
+    descripcion: >
+      Si se cambia el diseño o el tamaño mientras se calcula, no se pierde el cambio:
+      antes quedaba la maceta vieja en pantalla y la tierra y la planta de la nueva
+      (flotando sobre el borde).
+    criterio: >
+      Tras cambiar tamaño y diseño seguidos, el SKU en pantalla es el del último elegido
+      y la tierra está a la altura de la boca de esa maceta.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: WEB-012
+    titulo: Home "Herramientas de TecnoBear"
+    descripcion: >
+      La portada presenta las herramientas de TecnoBear para la comunidad de YouTube;
+      por ahora, el generador de macetas, que se presenta en un pop-up.
+    criterio: >
+      La portada dice "Herramientas de TecnoBear" y tiene la tarjeta del generador de
+      macetas; en la primera visita se abre el pop-up (después, al tocar la tarjeta) y
+      "Abrir el generador" lleva a macetas.html.
+    prioridad: media
+    nivel: web
+    estado: activa

@@ -9,6 +9,7 @@
     "serve": "python -m http.server 8000 --directory _site"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "2.58.0",
     "jspdf": "4.2.1",
     "pyodide": "0.27.7",
     "three": "0.170.0"

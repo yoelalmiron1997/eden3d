@@ -44,6 +44,10 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Armar la web
+        env:
+          # login con Supabase (Settings → Secrets and variables → Actions → Variables)
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: python tools/build_site.py --out _site
 
       - name: Tests del motor
