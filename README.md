@@ -59,7 +59,26 @@ inserto** (`web/mate.html`, motor `engine/mate_core.py`).
 * Componente de Grasshopper: `grasshopper/gh_mate_hueco.py` (mismo motor con
   booleanas de Rhino y mates propios en Brep/Mesh).
 
+### Sopa de letras 3D
+
+Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que encastran**
+(`web/sopa.html`, motor `engine/sopa_core.py`).
+
+* Escribís las palabras (con Ñ, acentos y espacios: se limpian solas) y la dificultad:
+  fácil (→ ↓), media (+ diagonales) o difícil (también al revés). "Otra mezcla" cambia
+  la semilla; con la misma semilla sale siempre la misma sopa.
+* Tablero con **letras en relieve** (fuente de trazos de `eden_font`) y placa opcional
+  con la **lista de palabras**.
+* Se corta en **piezas de rompecabezas** según la cama de la impresora (mínimo 2 × 2):
+  los cortes van entre celdas (ninguna letra queda partida) y las **lengüetas** van en
+  la franja libre entre filas de letras, una cada ~3 celdas y alternando el lado, con
+  **holgura** ajustable (cada lado se corre la mitad).
+* Vista 3D con piezas separables y la **solución** resaltada; vista 2D de la sopa.
+  Descarga en 3MF (una pieza por objeto, acomodadas en la cama) o STL. Para letras de
+  otro color: cambio de filamento a la altura de la base.
+
 * **Web (home de herramientas):** https://yoelalmiron1997.github.io/eden3d/
+* **Sopa de letras 3D:** https://yoelalmiron1997.github.io/eden3d/sopa.html
 * **Mate con hueco:** https://yoelalmiron1997.github.io/eden3d/mate.html
 * **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
@@ -72,6 +91,7 @@ inserto** (`web/mate.html`, motor `engine/mate_core.py`).
 ```
 engine/          motor paramétrico en Python puro (el mismo que usa Grasshopper)
                  mate_core.py / mate_web.py: motor del Mate con hueco
+                 sopa_core.py / sopa_web.py: motor de la Sopa de letras 3D
 web/             página estática: visor three.js + motor corriendo en el navegador (Pyodide)
 specs/           requisitos con ID (Spec-Driven Development)
 tests/motor/     pytest: geometría, autorriego (booleanas exactas), exportación, licencia

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sopa de letras 3D · TecnoBear</title>
+  <meta name="description" content="Armá una sopa de letras con tus palabras y bajala para imprimir en 3D, cortada en piezas que encastran.">
+  <meta name="copyright" content="© Eden3D — Yoel Almirón. Todos los derechos reservados.">
+  <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear, inicio" data-testid="link-home">
+      <img src="assets/tecnobear.svg" alt="" width="30" height="30"><span class="brand-sub">Sopa de letras 3D</span>
+    </a>
+    <nav class="nav">
+      <a href="./" class="hide-sm">Herramientas</a>
+      <a href="calidad/" data-testid="link-calidad" class="solo-admin">Calidad</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset class="sec" data-sec="palabras">
+        <legend>Palabras</legend>
+        <label>Una por renglón (o separadas por comas)
+          <textarea id="palabras" data-testid="palabras" rows="7" spellcheck="false">mate
+yerba
+bombilla
+termo
+pava
+asado
+empanada
+alfajor
+tango
+gaucho
+ñandú
+dulce de leche</textarea>
+        </label>
+        <p class="hint small" id="cuenta" data-testid="cuenta"></p>
+        <div class="row2">
+          <label>Dificultad
+            <select id="dificultad" data-testid="sel-dificultad" disabled></select>
+          </label>
+          <label>Grilla
+            <select id="grilla" data-testid="sel-grilla">
+              <option value="0">Automática</option>
+              <option value="10">10 × 10</option>
+              <option value="12">12 × 12</option>
+              <option value="14">14 × 14</option>
+              <option value="16">16 × 16</option>
+              <option value="18">18 × 18</option>
+              <option value="20">20 × 20</option>
+            </select>
+          </label>
+        </div>
+        <button type="button" id="mezclar" data-testid="btn-mezclar">🔀 Otra mezcla</button>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="impresion">
+        <legend>Piezas e impresión</legend>
+        <div class="row2">
+          <label>Cama de la impresora
+            <select id="cama" data-testid="sel-cama"></select>
+          </label>
+          <label>Piezas
+            <select id="piezas" data-testid="sel-piezas">
+              <option value="0">Automático</option>
+              <option value="2">2 × 2</option>
+              <option value="3">3 × 3</option>
+              <option value="4">4 × 4</option>
+            </select>
+          </label>
+        </div>
+        <label class="slider"><span>Celda</span>
+          <input type="range" id="celda" data-testid="sl-celda" min="10" max="30" step="1" value="15">
+          <output id="o-celda">15 mm</output></label>
+        <label class="slider"><span>Holgura</span>
+          <input type="range" id="holgura" data-testid="sl-holgura" min="0" max="0.6" step="0.05" value="0.2">
+          <output id="o-holgura">0,2 mm</output></label>
+        <label class="slider"><span>Base</span>
+          <input type="range" id="base" data-testid="sl-base" min="1.6" max="6" step="0.2" value="3">
+          <output id="o-base">3 mm</output></label>
+        <label class="slider"><span>Relieve</span>
+          <input type="range" id="relieve" data-testid="sl-relieve" min="0.6" max="3" step="0.1" value="1.2">
+          <output id="o-relieve">1,2 mm</output></label>
+        <label class="check"><input type="checkbox" id="lista" data-testid="chk-lista" checked> Placa con la lista de palabras</label>
+        <p class="hint small">La holgura es el juego de cada encastre. Para letras de otro color, cambiá el filamento
+          a la altura de la base.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
+        <legend>Vista</legend>
+        <div class="row2">
+          <label>Base
+            <select id="color" data-testid="sel-color">
+              <option value="#ece9e2">Blanco</option>
+              <option value="#2c2c2c">Negro</option>
+              <option value="#1d2a4a">Azul noche</option>
+              <option value="#84a078">Salvia</option>
+              <option value="#c47052">Terracota</option>
+              <option value="#d6c4a6">Arena</option>
+            </select>
+          </label>
+          <label>Letras
+            <select id="color-letras" data-testid="sel-color-letras">
+              <option value="#2d4a2a">Verde</option>
+              <option value="#2c2c2c">Negro</option>
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#d9a441">Dorado</option>
+              <option value="#c0392b">Rojo</option>
+              <option value="#2f6fb3">Azul</option>
+            </select>
+          </label>
+        </div>
+        <label class="check"><input type="checkbox" id="solucion" data-testid="chk-solucion"> Mostrar la solución</label>
+        <label class="slider"><span>Separar</span>
+          <input type="range" id="separar" data-testid="sl-separar" min="0" max="100" step="1" value="0">
+          <output id="o-separar">0 %</output></label>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <div class="row3 even">
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="column">
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings" data-testid="avisos"></ul>
+      </article>
+    </section>
+
+    <section class="care sopa2d" aria-labelledby="s2d-title" data-testid="sopa-2d">
+      <div class="care-h">
+        <h2 id="s2d-title">La sopa</h2>
+        <button type="button" class="link" id="ver-sol" data-testid="btn-ver-solucion">Ver solución</button>
+      </div>
+      <div class="sopa-wrap"><table id="tabla" class="sopa-tabla" data-testid="tabla"></table></div>
+      <ul id="lista-palabras" class="sopa-palabras" data-testid="lista-palabras"></ul>
+    </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Motor de sopas <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="sopa.js"></script>
+</body>
+</html>

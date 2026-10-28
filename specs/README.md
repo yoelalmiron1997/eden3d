@@ -75,3 +75,4 @@ Un test puede cubrir varias specs y una spec puede tener varios tests.
 | MAR | Marca de agua personalizada | `marca.yml` |
 | CUE | Cuentas, roles y administración | `cuentas.yml` |
 | MAT | Mate con hueco | `mate.yml` |
+| SOP | Sopa de letras 3D | `sopa.yml` |

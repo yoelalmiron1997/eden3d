@@ -15,7 +15,7 @@ import pytest
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
-from web_helpers import open_app, open_mate  # noqa: E402
+from web_helpers import open_app, open_mate, open_sopa  # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -79,6 +79,15 @@ def mate_app(browser, base_url):
     page.context.close()
 
 
+@pytest.fixture(scope="session")
+def sopa_app(browser, base_url):
+    """Una sola página de la Sopa de letras 3D para sus tests."""
+    page = open_sopa(browser, base_url)
+    _SESSION_CONTEXTS.add(page.context)
+    yield page
+    page.context.close()
+
+
 _SESSION_CONTEXTS = set()
 
 
@@ -94,6 +103,8 @@ def _cerrar_paginas(request):
         _SESSION_CONTEXTS.add(request.getfixturevalue("app").context)
     if "mate_app" in request.fixturenames:
         _SESSION_CONTEXTS.add(request.getfixturevalue("mate_app").context)
+    if "sopa_app" in request.fixturenames:
+        _SESSION_CONTEXTS.add(request.getfixturevalue("sopa_app").context)
     for ctx in list(browser.contexts):
         if ctx not in _SESSION_CONTEXTS:
             ctx.close()
