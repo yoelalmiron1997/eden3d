@@ -29,3 +29,23 @@ def open_app(browser, base_url, viewport=(1360, 900), role=None, path="macetas.h
 def wait_build(page, before):
     page.wait_for_function("(n) => window.__eden.builds > n && !window.__eden.busy", arg=before,
                            timeout=READY_MS)
+
+
+def open_mate(browser, base_url, viewport=(1360, 900)):
+    """Abre mate.html (Mate con hueco) y espera el primer mate."""
+    ctx = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]},
+                              accept_downloads=True)
+    ctx.add_init_script("window.__EDEN_AUTH_MOCK = %s;" % json.dumps({"role": "sin-cuentas"}))
+    page = ctx.new_page()
+    page.console_errors = []
+    page.on("console", lambda m: page.console_errors.append(m.text) if m.type == "error" else None)
+    page.on("pageerror", lambda e: page.console_errors.append(str(e)))
+    page.goto(base_url + "mate.html")
+    page.wait_for_function("window.__mate && window.__mate.builds >= 1 && !window.__mate.busy",
+                           timeout=READY_MS)
+    return page
+
+
+def wait_mate(page, before):
+    page.wait_for_function("(n) => window.__mate.builds > n && !window.__mate.busy", arg=before,
+                           timeout=READY_MS)

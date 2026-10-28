@@ -40,7 +40,27 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
   grabado en la base; un test arma los 17 diseños con textos de prueba y verifica que
   ninguna pieza se rompa.
 
+### Mate con hueco
+
+Segunda herramienta: **mates imperiales para imprimir en 3D con el hueco exacto del
+inserto** (`web/mate.html`, motor `engine/mate_core.py`).
+
+* **10 modelos**: imperial clásico, camionero, torpedo, copa y pera, moderno
+  cilíndrico, **cohete** (con aletas y banda para la guarda), **vaso redondeado** (con
+  medallón para un relieve propio), **camionero anillado** y **facetado** (caras
+  triangulares alternadas con medallones).
+* **Hueco para** el vaso de polímero, el adaptador, **los dos juntos** o **un STL
+  propio** (de revolución: el motor lee el perfil y verifica el volumen).
+* El hueco sale del perfil exacto de los STL de los insertos, con **holgura** ajustable.
+* **Autoajuste**: el mate crece en alto y ancho hasta cumplir la **pared** y el **fondo**
+  mínimos (medidos de verdad, incluso en las facetas y los medallones).
+* Una sola **malla cerrada** sin booleanas (piel → boca → hueco), descarga en **STL o
+  3MF** con la licencia en los metadatos. Vista con el inserto adentro, corte y capas.
+* Componente de Grasshopper: `grasshopper/gh_mate_hueco.py` (mismo motor con
+  booleanas de Rhino y mates propios en Brep/Mesh).
+
 * **Web (home de herramientas):** https://yoelalmiron1997.github.io/eden3d/
+* **Mate con hueco:** https://yoelalmiron1997.github.io/eden3d/mate.html
 * **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
 
@@ -51,6 +71,7 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
 
 ```
 engine/          motor paramétrico en Python puro (el mismo que usa Grasshopper)
+                 mate_core.py / mate_web.py: motor del Mate con hueco
 web/             página estática: visor three.js + motor corriendo en el navegador (Pyodide)
 specs/           requisitos con ID (Spec-Driven Development)
 tests/motor/     pytest: geometría, autorriego (booleanas exactas), exportación, licencia

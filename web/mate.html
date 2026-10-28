@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mate con hueco · TecnoBear</title>
+  <meta name="description" content="Diseñá un mate imperial para imprimir en 3D con el hueco exacto para tu vaso de polímero o adaptador.">
+  <meta name="copyright" content="© Eden3D — Yoel Almirón. Todos los derechos reservados.">
+  <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear, inicio" data-testid="link-home">
+      <img src="assets/tecnobear.svg" alt="" width="30" height="30"><span class="brand-sub">Mate con hueco</span>
+    </a>
+    <nav class="nav">
+      <a href="./" class="hide-sm">Herramientas</a>
+      <a href="calidad/" data-testid="link-calidad" class="solo-admin">Calidad</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset class="sec" data-sec="mate">
+        <legend>Mate</legend>
+        <label>Modelo
+          <select id="tipo" data-testid="sel-tipo" disabled></select>
+        </label>
+        <label>Hueco para
+          <select id="inserto" data-testid="sel-inserto" disabled></select>
+        </label>
+        <div id="propio" class="file-row" hidden>
+          <input type="file" id="stl" data-testid="stl-propio" accept=".stl,model/stl">
+          <p class="hint small" id="stl-msg" data-testid="stl-msg">Subí el STL de tu vaso o adaptador: tiene que ser
+            de revolución (redondo) y estar parado sobre el eje Z. La parte más ancha es la boca.</p>
+        </div>
+        <label>Color
+          <select id="color" data-testid="sel-color">
+            <option value="#ece9e2">Blanco</option>
+            <option value="#2c2c2c">Negro</option>
+            <option value="#1d2a4a">Azul noche</option>
+            <option value="#7a1f24">Bordó</option>
+            <option value="#c47052">Terracota</option>
+            <option value="#d9a441">Dorado</option>
+            <option value="#e2742f">Naranja</option>
+            <option value="#84a078">Salvia</option>
+            <option value="#d6c4a6">Arena</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="medidas">
+        <legend>Medidas</legend>
+        <label class="check"><input type="checkbox" id="auto" data-testid="chk-auto" checked> Agrandar solo hasta la pared pedida</label>
+        <label class="slider"><span>Pared mínima</span>
+          <input type="range" id="pared" data-testid="sl-pared" min="2" max="6" step="0.1" value="3">
+          <output id="o-pared">3 mm</output></label>
+        <label class="slider"><span>Fondo mínimo</span>
+          <input type="range" id="piso" data-testid="sl-piso" min="2" max="20" step="0.5" value="4">
+          <output id="o-piso">4 mm</output></label>
+        <label class="slider"><span>Holgura</span>
+          <input type="range" id="holgura" data-testid="sl-holgura" min="0" max="0.8" step="0.05" value="0.2">
+          <output id="o-holgura">0,2 mm</output></label>
+        <label class="slider"><span>Alto</span>
+          <input type="range" id="altura" data-testid="sl-altura" min="0" max="200" step="1" value="0">
+          <output id="o-altura">del modelo</output></label>
+        <label class="slider"><span>Ancho</span>
+          <input type="range" id="diam_max" data-testid="sl-ancho" min="0" max="160" step="1" value="0">
+          <output id="o-diam_max">del modelo</output></label>
+        <label class="slider"><span>Boca</span>
+          <input type="range" id="diam_boca" data-testid="sl-boca" min="0" max="140" step="1" value="0">
+          <output id="o-diam_boca">del modelo</output></label>
+        <p class="hint small">En 0 usan la medida del modelo. La holgura es el juego para que el inserto entre justo.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="ambiente" data-closed-mobile>
+        <legend>Ambiente</legend>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+        <div class="seg seg4" id="light-presets" role="radiogroup" aria-label="Luz" data-testid="luces"></div>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
+        <legend>Vista</legend>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="cut" data-testid="chk-corte"> Corte</label>
+          <label class="check"><input type="checkbox" id="ver-inserto" data-testid="chk-inserto" checked> Inserto</label>
+          <label class="check"><input type="checkbox" id="hq" data-testid="chk-detalle"> HD</label>
+        </div>
+        <label class="check"><input type="checkbox" id="slicer" data-testid="chk-slicer"> Ver capas</label>
+        <div id="slicer-ui" hidden>
+          <label class="slider"><span>Capa</span>
+            <input type="range" id="layer" data-testid="sl-capa" min="1" max="1" step="1" value="1">
+            <output id="o-layer">—</output></label>
+          <div class="row2">
+            <button type="button" id="play-layers" data-testid="btn-capas">▶ Imprimir</button>
+            <p class="hint small" id="slicer-info" data-testid="slicer-info"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <div class="row3 even">
+          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL</button>
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="column">
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings" data-testid="avisos"></ul>
+      </article>
+    </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Motor de mates <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="mate.js"></script>
+</body>
+</html>
