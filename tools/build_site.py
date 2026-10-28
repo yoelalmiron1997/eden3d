@@ -22,7 +22,7 @@ ENGINE = os.path.join(ROOT, "engine")
 WEB_MODULES = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py",
                "eden_catalog.py", "eden_web.py", "eden_selftest.py", "eden_escena.py",
                "eden_plantas.py", "colecciones/catalogo_eden3d.json",
-               "colecciones/plantas.json"]
+               "colecciones/plantas.json", "mate_core.py", "mate_web.py"]
 PYODIDE_FILES = ["pyodide.js", "pyodide.asm.js", "pyodide.asm.wasm", "python_stdlib.zip",
                  "pyodide-lock.json"]
 PYODIDE_NOTICE = """Pyodide 0.27.7 — Mozilla Public License 2.0 (MPL-2.0)

@@ -351,3 +351,9 @@ html.es-admin .solo-admin { display: revert !important; }
 .tool-art .art-title small { display: block; font-size: 12px; letter-spacing: .18em; font-weight: 700; margin-top: 4px; }
 .modal-hero { margin: -24px -24px 4px; border-radius: 18px 18px 0 0; overflow: hidden; aspect-ratio: 16 / 9; }
 .modal-hero img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; display: block; }
+
+/* ---- mate con hueco: subir el STL del inserto ---- */
+.file-row { display: grid; gap: 6px; }
+.file-row[hidden] { display: none; }
+.file-row input[type=file] { font: inherit; font-size: 13px; color: var(--ink); max-width: 100%; }
+#stl-msg.err { color: #b3261e; }

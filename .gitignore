@@ -10,3 +10,4 @@ out_v2/
 *.3mf
 *.stl
 !engine/colecciones/
+!tests/motor/insertos/*.stl

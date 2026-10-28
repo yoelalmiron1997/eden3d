@@ -82,6 +82,10 @@ export class Viewer {
     this.mats = {
       MACETA: new THREE.MeshStandardMaterial({ color: 0xece9e2, roughness: 0.82, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
       PLATO: new THREE.MeshStandardMaterial({ color: 0xdedad2, roughness: 0.84, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
+      // inserto del mate con hueco (vaso de polímero), semitransparente
+      INSERTO: new THREE.MeshStandardMaterial({ color: 0xb9c2c9, roughness: 0.35, metalness: 0.55, transparent: true,
+        opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, envMapIntensity: 1.2,
+        polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 }),
       AGUA: new THREE.MeshPhysicalMaterial({ color: 0x3f9fd8, roughness: 0.05, metalness: 0, transparent: true,
         opacity: 0.5, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.8, specularIntensity: 1, depthWrite: false, side: THREE.DoubleSide }),
     };
@@ -210,7 +214,7 @@ export class Viewer {
     let tris = 0;
     for (const p of parts) {
       if (p.name === "AGUA") continue;                   // el agua la arma el visor (animada)
-      const name = p.name === "MACETA" ? "MACETA" : "PLATO";
+      const name = p.name === "MACETA" ? "MACETA" : (this.mats[p.name] ? p.name : "PLATO");
       const mesh = new THREE.Mesh(this.geom(p), this.mats[name]);
       mesh.name = name;
       mesh.castShadow = mesh.receiveShadow = true;

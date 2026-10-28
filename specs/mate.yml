@@ -1,0 +1,101 @@
+area: Mate con hueco
+prefijo: MAT
+specs:
+  - id: MAT-001
+    titulo: El hueco es exacto para el inserto
+    descripcion: >
+      El hueco del mate copia el vaso de polímero y el adaptador tal cual vienen en sus
+      STL, para que el inserto entre justo.
+    criterio: >
+      El perfil que el motor lee de Polimero_Mate.stl y Adaptador_Polimero_2.stl coincide
+      con el perfil incluido (±0,05 mm) y el volumen del inserto reconstruido difiere del
+      STL en menos de 1 %. Con holgura h el hueco es h mm más ancho y más hondo.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-002
+    titulo: Todos los mates salen cerrados e imprimibles
+    descripcion: Cada modelo, con cada inserto, es una malla cerrada lista para el laminador.
+    criterio: >
+      Los 10 modelos con polímero, adaptador y los dos juntos dan mallas cerradas y bien
+      orientadas (cada pieza), con volumen positivo y sin errores.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-003
+    titulo: El mate se agranda solo hasta la pared pedida
+    descripcion: >
+      Si el inserto no entra con la pared mínima, el mate crece (alto y ancho) en vez de
+      quedar con paredes finas o con el hueco afuera.
+    criterio: >
+      Con autoajuste, la pared mínima medida es ≥ la pedida (−0,05 mm) y el fondo ≥ el
+      pedido en todos los modelos; sin autoajuste y con un mate chico el reporte avisa o
+      da error (nunca dice "válido" con el hueco afuera).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-004
+    titulo: Hueco para los dos insertos juntos
+    descripcion: La opción "Los dos juntos" hace un solo hueco donde entran ambos.
+    criterio: >
+      A cada profundidad, el radio del hueco "ambos" es el mayor de los dos insertos
+      (contiene a los dos) y su profundidad es la del más hondo.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: MAT-005
+    titulo: Se puede usar el STL de un inserto propio
+    descripcion: >
+      La persona sube el STL de su vaso o adaptador y el motor le hace el hueco; si el
+      archivo no sirve, se lo explica.
+    criterio: >
+      Un STL de revolución (binario o ASCII) se acepta y da el mismo hueco que el inserto
+      incluido; una caja o un archivo roto se rechaza con un mensaje en español, sin
+      romper la página.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: MAT-006
+    titulo: Descarga en STL y 3MF con licencia
+    descripcion: Los archivos para imprimir llevan el nombre del modelo y la licencia.
+    criterio: >
+      export_stl y export_3mf devuelven archivos válidos con el nombre Mate-<MODELO>-<INSERTO>;
+      el 3MF trae Copyright y LicenseTerms en los metadatos.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-007
+    titulo: El motor del mate responde rápido
+    descripcion: Cambiar de modelo o de inserto no hace esperar.
+    criterio: En CPython, cualquier modelo con cualquier inserto tarda < 3 s en vista previa.
+    prioridad: media
+    nivel: rendimiento
+    estado: activa
+  - id: MAT-008
+    titulo: La página del mate carga y muestra el mate con el inserto
+    descripcion: mate.html carga el motor en el navegador y dibuja el mate y el inserto.
+    criterio: >
+      El estado dice "Listo", el selector tiene los 10 modelos y los 4 insertos, el visor
+      tiene las mallas MACETA e INSERTO, se ve el canvas y no hay errores de consola.
+      Cambiar de modelo recalcula y cambia el SKU.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: MAT-009
+    titulo: Descargas y STL propio desde la web
+    descripcion: Desde la página se baja el STL/3MF y se puede subir un inserto propio.
+    criterio: >
+      El botón STL descarga un archivo Mate-*.stl; al subir el STL del polímero el mate se
+      recalcula con "Mi archivo STL" y al subir un archivo que no sirve aparece el error.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: MAT-010
+    titulo: La herramienta aparece en el inicio
+    descripcion: El inicio de TecnoBear muestra la tarjeta "Mate con hueco".
+    criterio: >
+      La tarjeta tool-mate tiene su imagen y al tocarla abre el pop-up con el link a
+      mate.html.
+    prioridad: media
+    nivel: web
+    estado: activa

@@ -29,7 +29,7 @@
     </section>
 
     <section class="tools" aria-label="Herramientas">
-      <button type="button" class="tool-card" data-testid="tool-macetas" aria-haspopup="dialog">
+      <button type="button" class="tool-card" data-testid="tool-macetas" aria-haspopup="dialog" data-modal="tool-modal">
         <span class="tool-art photo">
           <img src="assets/herramientas/macetas_v_450.jpg" srcset="assets/herramientas/macetas_v_450.jpg 450w, assets/herramientas/macetas_v.jpg 900w"
             sizes="340px" alt="Maceta con autorriego desarmada: planta, tierra, maceta y plato con agua, sobre una mesa de jardín"
@@ -40,6 +40,19 @@
           <span class="tool-tag">Nueva</span>
           <strong>Generador de macetas</strong>
           <span>Diseñá macetas con autorriego para imprimir en 3D, con plantas y su guía de cuidados.</span>
+        </span>
+      </button>
+      <button type="button" class="tool-card" data-testid="tool-mate" aria-haspopup="dialog" data-modal="mate-modal">
+        <span class="tool-art photo">
+          <img src="assets/herramientas/mate_v_450.jpg" srcset="assets/herramientas/mate_v_450.jpg 450w, assets/herramientas/mate_v.jpg 900w"
+            sizes="340px" alt="Mate imperial impreso en 3D con el vaso de polímero adentro, sobre una mesa de jardín"
+            width="450" height="563" data-testid="tool-imagen-mate">
+          <span class="art-title" aria-hidden="true">Mate <b>con hueco</b><small>impreso en 3D</small></span>
+        </span>
+        <span class="tool-body">
+          <span class="tool-tag">Nueva</span>
+          <strong>Mate con hueco</strong>
+          <span>Elegí el modelo de mate y el motor le hace el hueco exacto para tu vaso de polímero o adaptador.</span>
         </span>
       </button>
     </section>
@@ -66,6 +79,27 @@
     </div>
   </dialog>
 
+  <dialog class="modal" id="mate-modal" data-testid="popup-mate" aria-labelledby="mm-title">
+    <div class="modal-box wide">
+      <div class="modal-hero"><img src="assets/herramientas/mate.jpg" alt="" width="1200" height="900"></div>
+      <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
+      <span class="tool-tag">Herramienta 2</span>
+      <h2 id="mm-title">Mate con hueco</h2>
+      <p>Elegí un modelo de mate imperial y el inserto. El motor calcula el hueco exacto, agranda el mate si hace falta y lo bajás listo para imprimir.</p>
+      <ul class="tm-list">
+        <li>10 modelos: imperial clásico, camionero, torpedo, copa, pera, cohete, facetado y más</li>
+        <li>Hueco exacto para el vaso de polímero, el adaptador o los dos</li>
+        <li>Subí el STL de tu propio inserto</li>
+        <li>Pared y fondo mínimos controlados, con holgura para que entre justo</li>
+        <li>Descarga en STL o 3MF</li>
+      </ul>
+      <div class="tm-actions">
+        <a class="btn primary" href="mate.html" data-testid="abrir-mate">Abrir el mate con hueco</a>
+        <button type="button" class="btn" data-close>Ahora no</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="foot">
     <p>© 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados. <a href="licencia.html">Licencia</a>.</p>
   </footer>
@@ -73,11 +107,15 @@
   <script type="module">
     import { mountAccount } from "./auth-ui.js";
     mountAccount(document.getElementById("account"));
+    for (const d of document.querySelectorAll("dialog.modal")) {
+      d.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => d.close()));
+      d.addEventListener("click", (e) => { if (e.target === d) d.close(); });
+    }
+    for (const c of document.querySelectorAll(".tool-card[data-modal]")) {
+      c.addEventListener("click", () => document.getElementById(c.dataset.modal).showModal());
+    }
     const dlg = document.getElementById("tool-modal");
     const open = () => dlg.showModal();
-    document.querySelector("[data-testid=tool-macetas]").addEventListener("click", open);
-    dlg.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => dlg.close()));
-    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
     // la primera visita muestra la herramienta en un pop-up
     let visto = false;
     try { visto = localStorage.getItem("tb-popup-macetas") === "1"; localStorage.setItem("tb-popup-macetas", "1"); } catch (e) {}

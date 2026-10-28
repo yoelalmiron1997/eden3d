@@ -74,3 +74,4 @@ Un test puede cubrir varias specs y una spec puede tener varios tests.
 | VIS | Visor 3D (luz y agua) | `visor.yml` |
 | MAR | Marca de agua personalizada | `marca.yml` |
 | CUE | Cuentas, roles y administración | `cuentas.yml` |
+| MAT | Mate con hueco | `mate.yml` |
