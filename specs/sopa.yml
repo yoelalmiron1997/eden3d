@@ -77,3 +77,27 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: SOP-009
+    titulo: Marcadores que encastran en las letras de cada palabra
+    descripcion: >
+      Por cada palabra hay un marcador (anillo con forma de cápsula) que se pone sobre la
+      palabra encontrada y agarra sus letras. Todos pueden estar puestos a la vez.
+    criterio: >
+      Hay un marcador por palabra ubicada; todas sus letras quedan adentro y la más
+      saliente queda a la distancia del ajuste de la pared interior (±0,05 mm), así agarra;
+      ninguna otra letra queda a menos de 0,3 mm de la pared exterior; la pared mide al
+      menos 1,2 mm (si no entra, la letra se achica sola); las palabras no comparten letras
+      y los marcadores no se tocan entre sí; son mallas cerradas y salen en el 3MF.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: SOP-010
+    titulo: Marcar la palabra encontrada en la web
+    descripcion: Al tocar una palabra de la lista se pone su marcador en el tablero 3D.
+    criterio: >
+      Con marcadores, el visor tiene un marcador por palabra (ocultos al empezar); tocar
+      una palabra muestra el suyo y la tacha; tocarla de nuevo lo saca; "Mostrar la
+      solución" los muestra todos.
+    prioridad: media
+    nivel: web
+    estado: activa

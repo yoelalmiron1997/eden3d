@@ -45,7 +45,10 @@ NOMBRE_DIR = {(0, 1): "→", (1, 0): "↓", (1, 1): "↘", (-1, 1): "↗", (0, -
 LIMITES = {"celda_min": 10.0, "celda_max": 30.0, "grilla_min": 5, "grilla_max": 24,
            "palabras_max": 40, "cama_min": 80.0, "cama_max": 400.0}
 DEFAULTS = {"celda": 15.0, "base": 3.0, "relieve": 1.2, "margen": 6.0, "holgura": 0.2,
-            "cama": 220.0, "letra": 0.48, "lista": True, "dificultad": "media"}
+            "cama": 220.0, "letra": 0.48, "lista": True, "dificultad": "media",
+            "marcadores": True, "ajuste": 0.15, "pared_marcador": 1.6}
+PARED_MARCADOR_MIN = 1.2     # mm: con menos, la letra se achica sola
+LUZ_VECINAS = 0.3            # mm entre el marcador y las letras de al lado
 
 
 # ===========================================================================
@@ -81,13 +84,13 @@ def limpiar_palabras(palabras):
     return limpias[:LIMITES["palabras_max"]], descartadas
 
 
-def tamano_auto(palabras):
+def tamano_auto(palabras, factor=2.4):
     """Grilla cuadrada donde entran cómodas las palabras."""
     if not palabras:
         return 10
     largo = max(len(p) for p in palabras)
     letras = sum(len(p) for p in palabras)
-    n = max(largo + 1, int(math.ceil(math.sqrt(letras * 2.4))), LIMITES["grilla_min"])
+    n = max(largo + 1, int(math.ceil(math.sqrt(letras * factor))), LIMITES["grilla_min"])
     return min(n, LIMITES["grilla_max"])
 
 
@@ -106,10 +109,34 @@ def _cabe(grid, w, r, c, dr, dc):
     return cruces
 
 
-def generar(palabras, filas=None, cols=None, dificultad="media", semilla=1):
-    """Ubica las palabras (las más largas primero; prefiere cruces) y rellena."""
+SEPARACION_CELDAS = 0.8     # con marcadores: distancia mínima entre dos palabras (en celdas)
+
+
+def _d_segs(a, b):
+    """Distancia entre dos segmentos (r0, c0, r1, c1) de la grilla."""
+    def d_pt(px, py, s):
+        ax, ay, bx, by = s
+        vx, vy = bx - ax, by - ay
+        L = vx * vx + vy * vy
+        t = 0.0 if L == 0 else max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / L))
+        return math.hypot(px - ax - t * vx, py - ay - t * vy)
+
+    def cruzan(s, q):
+        def o(p1, p2, p3):
+            return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
+        A, B, C, D = (s[0], s[1]), (s[2], s[3]), (q[0], q[1]), (q[2], q[3])
+        return (o(A, B, C) * o(A, B, D) < 0) and (o(C, D, A) * o(C, D, B) < 0)
+    if cruzan(a, b):
+        return 0.0
+    return min(d_pt(a[0], a[1], b), d_pt(a[2], a[3], b), d_pt(b[0], b[1], a), d_pt(b[2], b[3], a))
+
+
+def generar(palabras, filas=None, cols=None, dificultad="media", semilla=1, separadas=False):
+    """Ubica las palabras (las más largas primero; prefiere cruces) y rellena.
+    separadas=True (con marcadores): sin letras compartidas y con lugar entre palabras,
+    así todos los marcadores pueden estar puestos a la vez."""
     palabras, descartadas = limpiar_palabras(palabras)
-    n = tamano_auto(palabras)
+    n = tamano_auto(palabras, 3.2 if separadas else 2.4)
     filas = int(filas or n)
     cols = int(cols or n)
     filas = max(LIMITES["grilla_min"], min(LIMITES["grilla_max"], filas))
@@ -119,15 +146,20 @@ def generar(palabras, filas=None, cols=None, dificultad="media", semilla=1):
     mejor = None
     for intento in range(12):              # varios intentos: se queda con el más completo
         grid = [[None] * cols for _ in range(filas)]
-        ubicadas, faltan = [], []
+        ubicadas, faltan, segs = [], [], []
         for w in sorted(palabras, key=lambda x: (-len(x), x)):
             opciones = []
             for dr, dc in dirs:
                 for r in range(filas):
                     for c in range(cols):
                         k = _cabe(grid, w, r, c, dr, dc)
-                        if k >= 0:
-                            opciones.append((k, rnd.random(), r, c, dr, dc))
+                        if k < 0 or (separadas and k > 0):
+                            continue
+                        if separadas:
+                            sg = (r, c, r + dr * (len(w) - 1), c + dc * (len(w) - 1))
+                            if any(_d_segs(sg, q) < SEPARACION_CELDAS for q in segs):
+                                continue
+                        opciones.append((k, rnd.random(), r, c, dr, dc))
             if not opciones:
                 faltan.append(w)
                 continue
@@ -138,6 +170,7 @@ def generar(palabras, filas=None, cols=None, dificultad="media", semilla=1):
                 else rnd.choice(opciones[:max(1, len(opciones) // 3)])
             for i, ch in enumerate(w):
                 grid[r + dr * i][c + dc * i] = ch
+            segs.append((r, c, r + dr * (len(w) - 1), c + dc * (len(w) - 1)))
             ubicadas.append({"palabra": w, "fila": r, "col": c, "df": dr, "dc": dc,
                              "dir": NOMBRE_DIR[(dr, dc)]})
         if mejor is None or len(faltan) < len(mejor[2]):
@@ -164,7 +197,7 @@ def generar(palabras, filas=None, cols=None, dificultad="media", semilla=1):
     return {"grid": ["".join(f) for f in grid], "filas": filas, "cols": cols,
             "ubicadas": ubicadas, "faltan": faltan, "descartadas": descartadas,
             "dificultad": dificultad if dificultad in DIRECCIONES else "media",
-            "semilla": semilla}
+            "semilla": semilla, "separadas": separadas}
 
 
 def verificar(sopa):
@@ -473,6 +506,98 @@ def placa_lista(sopa, p, ancho):
             "alto_mm": round(alto, 1)}
 
 
+# ===========================================================================
+# 5. MARCADORES: un anillo por palabra que encastra alrededor de sus letras
+# ===========================================================================
+def centro_celda(sopa, p, r, c):
+    cel, m = p["celda"], p["margen"]
+    H = sopa["filas"] * cel + 2 * m
+    return (m + c * cel + cel / 2.0, H - m - r * cel - cel / 2.0)
+
+
+def _puntos_letra(sopa, p, cap, r, c):
+    res, _ = glifo(sopa["grid"][r][c], cap)
+    x, y = centro_celda(sopa, p, r, c)
+    return [(x + a, y + b) for ext, _h in res for a, b in ext]
+
+
+def _d_seg(px, py, ax, ay, bx, by):
+    vx, vy = bx - ax, by - ay
+    L = vx * vx + vy * vy
+    t = 0.0 if L == 0 else max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / L))
+    return math.hypot(px - ax - t * vx, py - ay - t * vy)
+
+
+def medir_marcador(sopa, p, cap, u):
+    """Radio interior (las letras de la palabra adentro + ajuste para que agarre) y
+    lugar libre hasta las letras vecinas. Devuelve dict con ri, libre y pared."""
+    n = len(u["palabra"])
+    celdas = [(u["fila"] + u["df"] * i, u["col"] + u["dc"] * i) for i in range(n)]
+    A = centro_celda(sopa, p, *celdas[0])
+    B = centro_celda(sopa, p, *celdas[-1])
+    propias = set(celdas)
+    dentro = 0.0
+    for r, c in celdas:
+        for x, y in _puntos_letra(sopa, p, cap, r, c):
+            dentro = max(dentro, _d_seg(x, y, A[0], A[1], B[0], B[1]))
+    ri = dentro + p["ajuste"]
+    # letras vecinas: las de la caja que rodea a la palabra (más una celda)
+    r0 = max(0, min(r for r, _ in celdas) - 2)
+    r1 = min(sopa["filas"] - 1, max(r for r, _ in celdas) + 2)
+    c0 = max(0, min(c for _, c in celdas) - 2)
+    c1 = min(sopa["cols"] - 1, max(c for _, c in celdas) + 2)
+    afuera = 1e9
+    for r in range(r0, r1 + 1):
+        for c in range(c0, c1 + 1):
+            if (r, c) in propias:
+                continue
+            for x, y in _puntos_letra(sopa, p, cap, r, c):
+                afuera = min(afuera, _d_seg(x, y, A[0], A[1], B[0], B[1]))
+    pared = min(p["pared_marcador"], afuera - LUZ_VECINAS - ri)
+    return {"A": A, "B": B, "ri": ri, "pared": pared, "celdas": celdas}
+
+
+def _capsula(A, B, r, n=18):
+    """Contorno CCW de una cápsula de radio r alrededor del segmento AB."""
+    ang = math.atan2(B[1] - A[1], B[0] - A[0])
+    pts = []
+    for i in range(n + 1):                          # semicírculo en B
+        a = ang - math.pi / 2 + math.pi * i / n
+        pts.append((B[0] + r * math.cos(a), B[1] + r * math.sin(a)))
+    for i in range(n + 1):                          # semicírculo en A
+        a = ang + math.pi / 2 + math.pi * i / n
+        pts.append((A[0] + r * math.cos(a), A[1] + r * math.sin(a)))
+    return pts
+
+
+def marcadores(sopa, p, cap):
+    """Un marcador por palabra: anillo con forma de cápsula, apoyado en la base y
+    1 mm más alto que las letras. Va puesto sobre la palabra (para la vista)."""
+    out = []
+    for k, u in enumerate(sopa["ubicadas"]):
+        m = medir_marcador(sopa, p, cap, u)
+        if m["pared"] <= 0.2:
+            continue
+        ext = _capsula(m["A"], m["B"], m["ri"] + m["pared"])
+        hueco = list(reversed(_capsula(m["A"], m["B"], m["ri"])))
+        V, F = [], []
+        z0 = p["base"]
+        prisma(ext, [hueco], z0, z0 + p["relieve"] + 1.0, V, F)
+        out.append({"nombre": "M%d" % (k + 1), "palabra": u["palabra"], "malla": (V, F),
+                    "A": m["A"], "B": m["B"],
+                    "ri_mm": round(m["ri"], 2), "pared_mm": round(m["pared"], 2),
+                    "largo_mm": round(math.hypot(m["B"][0] - m["A"][0], m["B"][1] - m["A"][1])
+                                      + 2 * (m["ri"] + m["pared"]), 1),
+                    "celdas": m["celdas"]})
+    return out
+
+
+def pared_minima_marcadores(sopa, p, cap):
+    if not sopa["ubicadas"]:
+        return 99.0
+    return min(medir_marcador(sopa, p, cap, u)["pared"] for u in sopa["ubicadas"])
+
+
 def mesh_volume(V, F):
     s = 0.0
     for a, b, c in F:
@@ -522,6 +647,9 @@ def parametros(opts):
     p["cama"] = _clamp(o.get("cama"), LIMITES["cama_min"], LIMITES["cama_max"], DEFAULTS["cama"])
     p["letra"] = _clamp(o.get("letra"), 0.35, 0.6, DEFAULTS["letra"])
     p["lista"] = o.get("lista", True) is not False
+    p["marcadores"] = o.get("marcadores", True) is not False
+    p["ajuste"] = _clamp(o.get("ajuste"), 0.0, 0.5, DEFAULTS["ajuste"])
+    p["letra_pedida"] = p["letra"]
     px, py = o.get("piezas_x"), o.get("piezas_y")
     p["piezas_x"] = int(px) if px and int(px) > 0 else None
     p["piezas_y"] = int(py) if py and int(py) > 0 else None
@@ -532,7 +660,8 @@ def build_sopa(opts=None):
     opts = dict(opts or {})
     p = parametros(opts)
     sopa = generar(opts.get("palabras") or [], opts.get("filas") or None, opts.get("cols") or None,
-                   opts.get("dificultad") or "media", int(opts.get("semilla") or 1))
+                   opts.get("dificultad") or "media", int(opts.get("semilla") or 1),
+                   separadas=p["marcadores"])
     errores, avisos = [], []
     if not sopa["ubicadas"]:
         errores.append("Agregá al menos una palabra de 2 letras o más")
@@ -541,6 +670,15 @@ def build_sopa(opts=None):
                       % ", ".join(sopa["faltan"]))
     if sopa["descartadas"]:
         avisos.append("Se ignoraron: %s" % ", ".join(sopa["descartadas"]))
+    # con marcadores: si la pared del marcador no entra entre las letras (diagonales),
+    # la letra se achica de a poco hasta que entre
+    if p["marcadores"] and sopa["ubicadas"]:
+        while p["letra"] > 0.30 and \
+                pared_minima_marcadores(sopa, p, p["letra"] * p["celda"]) < PARED_MARCADOR_MIN:
+            p["letra"] = round(p["letra"] - 0.02, 3)
+        if p["letra"] < p["letra_pedida"] - 1e-9:
+            avisos.append("Letra achicada a %.1f mm para que los marcadores entren entre las letras"
+                          % (p["letra"] * p["celda"]))
     piezas_2d, info = armar_piezas(sopa, p)
     if info["sin_lengueta"]:
         avisos.append("%d borde(s) sin lengüeta: agrandá la celda o achicá la letra"
@@ -567,11 +705,24 @@ def build_sopa(opts=None):
             pl["volumen_cm3"] = round(v / 1000.0, 1)
             vol += v
             piezas.append(pl)
+    marcs = marcadores(sopa, p, cap) if p["marcadores"] else []
+    for mk in marcs:
+        vol += mesh_volume(*mk["malla"])
+    if p["marcadores"] and len(marcs) < len(sopa["ubicadas"]):
+        avisos.append("%d palabra(s) sin marcador: agrandá la celda"
+                      % (len(sopa["ubicadas"]) - len(marcs)))
+    if marcs and min(mk["pared_mm"] for mk in marcs) < PARED_MARCADOR_MIN:
+        avisos.append("Marcadores con pared de %.1f mm: agrandá la celda"
+                      % min(mk["pared_mm"] for mk in marcs))
+    largos = [mk["largo_mm"] for mk in marcs if mk["largo_mm"] > p["cama"] - 5]
+    if largos:
+        avisos.append("Hay marcadores más largos que la cama (%.0f mm): ponelos en diagonal"
+                      % max(largos))
     entra = all(max(pz["medidas_mm"]) <= p["cama"] - 5 for pz in piezas)
     if not entra:
         avisos.append("Alguna pieza no entra en una cama de %.0f mm" % p["cama"])
     cerradas = all(mesh_check(pz["placa"][1])["closed"] and mesh_check(pz["letras"][1])["closed"]
-                   for pz in piezas)
+                   for pz in piezas) and all(mesh_check(mk["malla"][1])["closed"] for mk in marcs)
     n_tab = len([q for q in piezas if q["nombre"] != "LISTA"])
     rep = {
         "sku": "Sopa-%dx%d-%s" % (sopa["filas"], sopa["cols"], sopa["dificultad"].upper()),
@@ -583,6 +734,9 @@ def build_sopa(opts=None):
         "letra_mm": cap, "holgura_mm": p["holgura"], "cama_mm": p["cama"],
         "cambio_color_mm": p["base"], "peso_g": round(vol / 1000.0 * PLA_G_CM3, 0),
         "volumen_cm3": round(vol / 1000.0, 1), "cerradas": cerradas, "entra_en_cama": entra,
+        "marcadores": len(marcs),
+        "pared_marcador_mm": round(min([mk["pared_mm"] for mk in marcs] or [0.0]), 2),
+        "ajuste_mm": p["ajuste"],
         "motor": SOPA_VERSION,
     }
-    return {"piezas": piezas, "sopa": sopa, "report": rep, "params": p}
+    return {"piezas": piezas, "sopa": sopa, "report": rep, "params": p, "marcadores": marcs}

@@ -11,7 +11,7 @@ const num = (v, d = 1) => (+v).toFixed(d).replace(".", ",");
 
 // estado visible para los tests e2e (window.__sopa)
 const state = { ready: false, busy: false, info: null, summary: null, parts: [], builds: 0, errors: [],
-  semilla: 1, auth: null, scene: "estudio", solucion: false, separar: 0 };
+  semilla: 1, auth: null, scene: "estudio", solucion: false, separar: 0, encontradas: new Set() };
 window.__sopa = state;
 
 // ------------------------------------------------------------------ worker
@@ -38,16 +38,19 @@ viewer.viewDir = new THREE.Vector3(0.1, 1.6, 1);
 viewer.viewDist = 0.95;
 viewer.mats.LETRAS = new THREE.MeshStandardMaterial({ color: 0x2d4a2a, roughness: 0.7, metalness: 0, side: THREE.DoubleSide });
 viewer.mats.SOLUCION = new THREE.MeshStandardMaterial({ color: 0x2d4a2a, roughness: 0.6, metalness: 0, side: THREE.DoubleSide });
+viewer.mats.MARCADOR = new THREE.MeshStandardMaterial({ color: 0xe8562a, roughness: 0.45, metalness: 0, side: THREE.DoubleSide });
 window.__sopaViewer = viewer;
 Object.defineProperty(state, "viewer", { get: () => ({
   meshes: viewer.meshNames(), triangles: viewer.triangles, frames: viewer.stats.frames,
   piezas: [...new Set(viewer.model.children.map((m) => m.userData.pieza).filter(Boolean))],
   separacion: piezaOffsetMax(), scene: viewer.sceneKey,
   solucion: "#" + viewer.mats.SOLUCION.color.getHexString(),
+  marcadores: viewer.model.children.filter((m) => m.name === "MARCADOR").length,
+  marcadoresVisibles: viewer.model.children.filter((m) => m.name === "MARCADOR" && m.visible).map((m) => m.userData.palabra),
 }) });
 
 // ------------------------------------------------------------------ opciones
-const SL = { celda: [0, " mm"], holgura: [2, " mm"], base: [1, " mm"], relieve: [1, " mm"] };
+const SL = { celda: [0, " mm"], holgura: [2, " mm"], base: [1, " mm"], relieve: [1, " mm"], ajuste: [2, " mm"] };
 
 function palabras() {
   return $("palabras").value.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
@@ -57,7 +60,8 @@ function opts() {
   const n = +$("grilla").value;
   const pz = +$("piezas").value;
   const o = { palabras: palabras(), dificultad: $("dificultad").value, semilla: state.semilla,
-    filas: n, cols: n, cama: +$("cama").value, piezas_x: pz, piezas_y: pz, lista: $("lista").checked };
+    filas: n, cols: n, cama: +$("cama").value, piezas_x: pz, piezas_y: pz, lista: $("lista").checked,
+    marcadores: $("marcadores").checked };
   for (const k of Object.keys(SL)) o[k] = +$(k).value;
   return o;
 }
@@ -90,6 +94,7 @@ function showReport(s) {
     ["Tablero", `${Math.round(s.tablero_mm[0])} × ${Math.round(s.tablero_mm[1])} mm`, "f-tablero"],
     ["Piezas", `${s.piezas} (${s.piezas_x} × ${s.piezas_y}) · ${s.lenguetas} encastres`, "f-piezas"],
     ["Letra", `${num(s.letra_mm)} mm · celda ${num(s.celda_mm, 0)} mm`, "f-letra", "minor"],
+    ...(s.marcadores ? [["Marcadores", `${s.marcadores} · pared ${num(s.pared_marcador_mm)} mm · ajuste ${num(s.ajuste_mm, 2)} mm`, "f-marcadores"]] : []),
     ["Cambio de color", `a ${num(s.cambio_color_mm)} mm`, "f-color", "minor"],
     ["Peso", `${s.peso_g} g PLA (100 %)`, "f-peso"],
     ["Cálculo", `${s.seconds} s`, "f-tiempo", "minor"],
@@ -109,9 +114,31 @@ function render2d(s) {
   $("tabla").innerHTML = s.grid.map((fila, r) => `<tr>${Array.from(fila, (ch, c) =>
     `<td data-rc="${r},${c}" class="${sol.has(`${r},${c}`) ? "w" : ""}">${ch}</td>`).join("")}</tr>`).join("");
   $("lista-palabras").innerHTML = (s.ubicadas || []).map((u, i) =>
-    `<li><button type="button" data-i="${i}" title="${u.dir}">${esc(u.palabra)}</button></li>`).join("") +
+    `<li><button type="button" data-i="${i}" data-palabra="${esc(u.palabra)}" title="${u.dir}"
+      aria-pressed="${state.encontradas.has(u.palabra)}">${esc(u.palabra)}</button></li>`).join("") +
     (s.faltan || []).map((w) => `<li class="falta" title="No entró">${esc(w)}</li>`).join("");
   verSolucion(state.solucion);
+}
+
+function marcadoresVisibles() {
+  for (const m of viewer.model.children) {
+    if (m.name !== "MARCADOR") continue;
+    m.visible = state.separar === 0 && (state.solucion || state.encontradas.has(m.userData.palabra));
+  }
+}
+
+function marcar(palabra) {
+  if (state.separar > 0) {                    // para ver el marcador, el tablero tiene que estar armado
+    $("separar").value = 0;
+    $("o-separar").textContent = "0 %";
+    separar(0);
+  }
+  if (state.encontradas.has(palabra)) state.encontradas.delete(palabra);
+  else state.encontradas.add(palabra);
+  for (const b of $("lista-palabras").querySelectorAll("button[data-palabra]")) {
+    b.setAttribute("aria-pressed", String(state.encontradas.has(b.dataset.palabra)));
+  }
+  marcadoresVisibles();
 }
 
 function verSolucion(on) {
@@ -120,6 +147,7 @@ function verSolucion(on) {
   $("solucion").checked = on;
   $("ver-sol").textContent = on ? "Ocultar solución" : "Ver solución";
   viewer.mats.SOLUCION.color.set(on ? "#e8562a" : $("color-letras").value);
+  marcadoresVisibles();
 }
 
 function resaltar(i) {
@@ -150,10 +178,11 @@ function separar(k) {
   const c0 = box.getCenter(new THREE.Vector3());
   for (const o of viewer.model.children) {
     const p = o.userData.pieza;
-    if (!p || !centros[p]) { o.position.set(0, 0, 0); continue; }
+    if (!p || !centros[p]) { o.position.set(0, 0, 0); continue; }   // lista y marcadores
     const c = centros[p].getCenter(new THREE.Vector3()).sub(c0);
     o.position.set(c.x * k * 0.35, c.y * k * 0.35, 0);
   }
+  marcadoresVisibles();
 }
 
 // ------------------------------------------------------------------ cálculo
@@ -171,7 +200,13 @@ async function build(refit = false) {
     render2d(r.summary);
     if (r.summary.valid) {
       viewer.showModel(r.parts, null, refit);
-      viewer.model.children.forEach((m, i) => { m.userData.pieza = r.parts[i]?.pieza; });
+      const palabraDe = Object.fromEntries((r.summary.lista_marcadores || []).map((m) => [m.nombre, m.palabra]));
+      viewer.model.children.forEach((m, i) => {
+        m.userData.pieza = r.parts[i]?.pieza;
+        if (m.name === "MARCADOR") { m.userData.palabra = palabraDe[m.userData.pieza]; m.castShadow = true; }
+      });
+      const vigentes = new Set((r.summary.ubicadas || []).map((u) => u.palabra));
+      for (const w of [...state.encontradas]) if (!vigentes.has(w)) state.encontradas.delete(w);
       viewer.setColor($("color").value);
       viewer.mats.LETRAS.color.set($("color-letras").value);
       verSolucion(state.solucion);
@@ -287,7 +322,7 @@ $("palabras").addEventListener("input", () => {
   clearTimeout(tPal);
   tPal = setTimeout(() => build(true), 900);
 });
-for (const id of ["dificultad", "grilla", "cama", "piezas", "lista"]) $(id).addEventListener("change", () => build(true));
+for (const id of ["dificultad", "grilla", "cama", "piezas", "lista", "marcadores"]) $(id).addEventListener("change", () => build(true));
 for (const k of Object.keys(SL)) {
   $(k).addEventListener("input", () => { $("o-" + k).textContent = sliderText(k); });
   $(k).addEventListener("change", () => build(k === "celda"));
@@ -304,7 +339,12 @@ $("ver-sol").addEventListener("click", () => verSolucion(!state.solucion));
 $("separar").addEventListener("input", () => { $("o-separar").textContent = $("separar").value + " %"; separar(+$("separar").value / 100); });
 $("lista-palabras").addEventListener("mouseover", (ev) => { const b = ev.target.closest("button[data-i]"); if (b) resaltar(+b.dataset.i); });
 $("lista-palabras").addEventListener("mouseout", () => resaltar(-1));
-$("lista-palabras").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-i]"); if (b) resaltar(+b.dataset.i); });
+$("lista-palabras").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-i]");
+  if (!b) return;
+  resaltar(+b.dataset.i);
+  marcar(b.dataset.palabra);
+});
 $("scenes").addEventListener("click", (ev) => {
   const b = ev.target.closest("button[data-k]");
   if (!b) return;

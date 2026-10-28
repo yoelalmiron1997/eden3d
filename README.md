@@ -73,6 +73,12 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
   los cortes van entre celdas (ninguna letra queda partida) y las **lengüetas** van en
   la franja libre entre filas de letras, una cada ~3 celdas y alternando el lado, con
   **holgura** ajustable (cada lado se corre la mitad).
+* **Marcadores**: un anillo con forma de cápsula por palabra que se pone sobre la palabra
+  encontrada y **encastra en sus letras** (la pared interior queda a la distancia del
+  *ajuste* de la letra más saliente, así agarra). Con marcadores las palabras no se
+  cruzan y quedan separadas, para que todos puedan estar puestos a la vez; si la pared
+  no entra entre las letras (diagonales), la letra se achica sola. En la web, tocar una
+  palabra pone su marcador en el tablero.
 * Vista 3D con piezas separables y la **solución** resaltada; vista 2D de la sopa.
   Descarga en 3MF (una pieza por objeto, acomodadas en la cama) o STL. Para letras de
   otro color: cambio de filamento a la altura de la base.
