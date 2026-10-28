@@ -174,8 +174,8 @@ def test_descargas():
     assert name == rep["sku"] + ".3mf" and name.startswith("Sopa-") and "DIFICIL" in name
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         model = z.read("3D/3dmodel.model").decode("utf-8")
-    assert model.count("<object ") == rep["piezas"] + 1 + rep["marcadores"]   # + lista + marcadores
-    assert rep["marcadores"] == rep["palabras"]
+    assert model.count("<object ") == rep["piezas"] + 1 + rep["bloques"]   # + lista + bloques
+    assert model.count("BLOQUE_") == rep["bloques"] > 0
     assert 'name="Copyright"' in model and 'name="LicenseTerms"' in model
     name, data = sopa_web.export_stl(o)
     n = struct.unpack("<I", data[80:84])[0]
@@ -189,9 +189,11 @@ def test_build_para_la_web():
     assert s["valid"] and len(s["grid"]) == s["filas"]
     nombres = {p["name"] for p in r["parts"]}
     assert {"MACETA", "LETRAS", "SOLUCION"} <= nombres
-    tablero = {p["pieza"] for p in r["parts"] if p["name"] != "MARCADOR"}
+    tablero = {p["pieza"] for p in r["parts"] if p["name"] != "BLOQUE"}
     assert len(tablero) == s["piezas"] + 1
-    assert len([p for p in r["parts"] if p["name"] == "MARCADOR"]) == s["marcadores"] == len(s["ubicadas"])
+    assert len([p for p in r["parts"] if p["name"] == "BLOQUE"]) == 1      # un modelo; la web lo copia
+    for u in s["ubicadas"]:
+        assert len(u["centros"]) == len(u["palabra"])
     vacia = sopa_web.build({"palabras": []})["summary"]
     assert not vacia["valid"] and vacia["errors"]
 
@@ -206,60 +208,54 @@ def test_rapido():
 
 
 # ----------------------------------------------------------------- SOP-009
-def _pts_letra(r, sopa, p, cap, rc):
-    return sc._puntos_letra(sopa, p, cap, *rc)
+@pytest.mark.spec("SOP-009")
+@pytest.mark.parametrize("cap", [6.0, 7.2, 9.0])
+@pytest.mark.parametrize("ajuste", [0.0, 0.1, 0.25])
+def test_un_bloque_agarra_cualquier_letra(cap, ajuste):
+    p = sc.parametros({"ajuste": ajuste})
+    m = sc.medidas_bloque(p, cap)
+    iw, ih = m["hueco"]
+    _, (_, h0, _, h1) = sc.glifo("H", cap)
+    for ch in sc.ALFABETO:
+        res, (x0, y0, x1, y1) = sc.glifo(ch, cap)
+        assert y0 == pytest.approx(h0, abs=0.02) and y1 == pytest.approx(h1, abs=0.02), ch
+        for ext, _h in res:
+            for x, y in ext:
+                assert abs(x) <= iw / 2 - sc.LUZ_LATERAL + 1e-6 and abs(y) <= ih / 2 + 1e-6
+        assert ih / 2 - max(abs(y0), abs(y1)) == pytest.approx(ajuste, abs=0.02), ch
 
 
 @pytest.mark.spec("SOP-009")
-@pytest.mark.parametrize("dif", ["facil", "media", "dificil"])
-@pytest.mark.parametrize("semilla", [1, 2, 3])
-def test_marcadores_agarran_y_no_se_tocan(dif, semilla):
-    r = sc.build_sopa({"palabras": ARG, "semilla": semilla, "dificultad": dif})
+@pytest.mark.parametrize("dif", ["facil", "dificil"])
+def test_bloques_en_el_tablero(dif):
+    r = sc.build_sopa({"palabras": ARG, "semilla": 3, "dificultad": dif})
     sopa, p, rep = r["sopa"], r["params"], r["report"]
     cap = rep["letra_mm"]
-    marcs = r["marcadores"]
-    assert len(marcs) == len(sopa["ubicadas"]) and rep["marcadores"] == len(marcs)
-    usadas = {}
-    for u in sopa["ubicadas"]:                          # sin letras compartidas
-        for i in range(len(u["palabra"])):
-            rc = (u["fila"] + u["df"] * i, u["col"] + u["dc"] * i)
-            assert rc not in usadas, (u["palabra"], usadas.get(rc))
-            usadas[rc] = u["palabra"]
-    capsulas = []
-    for mk in marcs:
-        u = next(x for x in sopa["ubicadas"] if x["palabra"] == mk["palabra"])
-        m = sc.medir_marcador(sopa, p, cap, u)
-        A, B, ri, w = m["A"], m["B"], m["ri"], m["pared"]
-        assert w >= sc.PARED_MARCADOR_MIN - 1e-6
-        d = lambda q: sc._d_seg(q[0], q[1], A[0], A[1], B[0], B[1])
-        propias = [q for rc in m["celdas"] for q in sc._puntos_letra(sopa, p, cap, *rc)]
-        holgura_min = min(ri - d(q) for q in propias)
-        assert holgura_min >= 0                               # todas adentro
-        assert holgura_min == pytest.approx(p["ajuste"], abs=0.05)   # la más saliente agarra
-        for rr in range(sopa["filas"]):
-            for cc in range(sopa["cols"]):
-                if (rr, cc) in m["celdas"]:
-                    continue
-                for q in sc._puntos_letra(sopa, p, cap, rr, cc):
-                    assert d(q) >= ri + w + sc.LUZ_VECINAS - 1e-6
-        V, F = mk["malla"]
-        assert sc.mesh_check(F)["closed"] and sc.mesh_volume(V, F) > 0
-        capsulas.append((A, B, ri + w))
-    for i, (A, B, ro) in enumerate(capsulas):
-        for A2, B2, ro2 in capsulas[i + 1:]:
-            dist = sc._d_segs((A[0], A[1], B[0], B[1]), (A2[0], A2[1], B2[0], B2[1]))
-            assert dist > ro + ro2
+    assert rep["bloques"] == max(len(u["palabra"]) for u in sopa["ubicadas"]) == 12   # DULCEDELECHE
+    ow, oh = sc.medidas_bloque(p, cap)["afuera"]
+    cel = p["celda"]
+    assert ow < cel and oh < cel                       # vecinos (y en diagonal) no se tocan
+    # puesto en cualquier celda, no toca las letras de al lado
+    for r0 in range(sopa["filas"]):
+        for c0 in range(sopa["cols"]):
+            cx, cy = sc.centro_celda(sopa, p, r0, c0)
+            for rr in range(max(0, r0 - 1), min(sopa["filas"], r0 + 2)):
+                for cc in range(max(0, c0 - 1), min(sopa["cols"], c0 + 2)):
+                    if (rr, cc) == (r0, c0):
+                        continue
+                    for x, y in sc._puntos_letra(sopa, p, cap, rr, cc):
+                        dx = max(0.0, abs(x - cx) - ow / 2)
+                        dy = max(0.0, abs(y - cy) - oh / 2)
+                        assert math.hypot(dx, dy) >= sc.LUZ_VECINAS
+    V, F = r["bloque"]
+    assert sc.mesh_check(F)["closed"] and sc.mesh_volume(V, F) > 0
+    assert min(v[2] for v in V) == pytest.approx(0.0)
 
 
 @pytest.mark.spec("SOP-009")
-def test_sin_marcadores_las_palabras_se_pueden_cruzar():
-    r = sc.build_sopa({"palabras": ARG, "semilla": 1, "marcadores": False})
-    assert r["marcadores"] == [] and r["report"]["marcadores"] == 0
-    assert r["report"]["letra_mm"] == pytest.approx(0.48 * 15, abs=0.01)
-
-
-@pytest.mark.spec("SOP-009")
-def test_marcadores_mas_flojos_con_mas_ajuste():
-    a = sc.build_sopa({"palabras": ARG, "semilla": 2, "dificultad": "facil", "ajuste": 0.1})
-    b = sc.build_sopa({"palabras": ARG, "semilla": 2, "dificultad": "facil", "ajuste": 0.3})
-    assert b["marcadores"][0]["ri_mm"] == pytest.approx(a["marcadores"][0]["ri_mm"] + 0.2, abs=0.011)
+def test_sin_bloques():
+    r = sc.build_sopa({"palabras": ARG, "semilla": 1, "bloques": False})
+    assert r["bloque"] is None and r["report"]["bloques"] == 0
+    name, data = sopa_web.export_3mf({"palabras": ARG, "semilla": 1, "bloques": False})
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        assert "BLOQUE" not in z.read("3D/3dmodel.model").decode("utf-8")

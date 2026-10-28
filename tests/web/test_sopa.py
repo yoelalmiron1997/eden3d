@@ -59,7 +59,7 @@ def test_descarga_3mf(sopa_app):
     with zipfile.ZipFile(io.BytesIO(open(d.path(), "rb").read())) as z:
         model = z.read("3D/3dmodel.model").decode("utf-8")
     s = pg.evaluate("window.__sopa.summary")
-    assert model.count("<object ") == s["piezas"] + 1 + s["marcadores"]
+    assert model.count("<object ") == s["piezas"] + 1 + s["bloques"]
 
 
 @pytest.mark.spec("SOP-008")
@@ -81,17 +81,20 @@ def test_tarjeta_en_el_inicio(browser, base_url):
 def test_marcar_palabras(sopa_app):
     pg = sopa_app
     pg.locator(T % "chk-solucion").uncheck()
-    vw = pg.evaluate("window.__sopa.viewer")
-    n = len(pg.evaluate("window.__sopa.summary.ubicadas"))
-    assert vw["marcadores"] == n and vw["marcadoresVisibles"] == []
+    assert pg.evaluate("window.__sopa.viewer.bloquesPuestos") == 0
     primera = pg.locator(T % "lista-palabras" + " button").first
     palabra = primera.get_attribute("data-palabra")
     primera.click()
-    assert pg.evaluate("window.__sopa.viewer.marcadoresVisibles") == [palabra]
+    assert pg.evaluate("window.__sopa.viewer.bloquesPuestos") == len(palabra)
+    assert pg.evaluate("window.__sopa.viewer.palabrasMarcadas") == [palabra]
     assert primera.get_attribute("aria-pressed") == "true"
     primera.click()
-    assert pg.evaluate("window.__sopa.viewer.marcadoresVisibles") == []
+    assert pg.evaluate("window.__sopa.viewer.bloquesPuestos") == 0
     pg.locator(T % "chk-solucion").check()
-    assert len(pg.evaluate("window.__sopa.viewer.marcadoresVisibles")) == n
+    s = pg.evaluate("window.__sopa.summary")
+    celdas = {(x, y) for u in s["ubicadas"] for x, y in u["centros"]}
+    assert pg.evaluate("window.__sopa.viewer.bloquesPuestos") == len(celdas)
+    assert sorted(pg.evaluate("window.__sopa.viewer.palabrasMarcadas")) == sorted(u["palabra"] for u in s["ubicadas"])
     pg.locator(T % "chk-solucion").uncheck()
+    assert "iguales" in pg.locator(T % "f-bloques").inner_text()
     assert not pg.console_errors, pg.console_errors
