@@ -70,21 +70,27 @@ def app(browser, base_url):
     page.context.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mate_app(browser, base_url):
-    """Una sola página del Mate con hueco para sus tests."""
+    """Una página del Mate con hueco para los tests de su archivo. Se cierra al terminar ese archivo: una
+    página con el visor dibujando (WebGL por software) le roba CPU a todos los tests
+    que siguen y en CI se pasaba de los 40 minutos."""
     page = open_mate(browser, base_url)
     _SESSION_CONTEXTS.add(page.context)
     yield page
+    _SESSION_CONTEXTS.discard(page.context)
     page.context.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def sopa_app(browser, base_url):
-    """Una sola página de la Sopa de letras 3D para sus tests."""
+    """Una página de la Sopa de letras 3D para los tests de su archivo. Se cierra al terminar ese archivo: una
+    página con el visor dibujando (WebGL por software) le roba CPU a todos los tests
+    que siguen y en CI se pasaba de los 40 minutos."""
     page = open_sopa(browser, base_url)
     _SESSION_CONTEXTS.add(page.context)
     yield page
+    _SESSION_CONTEXTS.discard(page.context)
     page.context.close()
 
 
