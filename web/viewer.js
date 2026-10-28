@@ -7,8 +7,9 @@ import { Water } from "./water.js";
 import { LAYER_MM, slicerMaterial, sliceSegments, buildPlate, orderSegments, buildPrintHead } from "./slicer.js";
 
 export const LIGHTS = {
+  // estudio usa el fondo del tema (claro u oscuro) definido en style.css
   estudio: { label: "Estudio", env: 0.85, sun: [0xfff4e6, 2.4], alt: 52, hemi: [0xfff6e8, 0x8a7a66, 0.55],
-    fill: 0.45, exposure: 1.0, shadow: 0.2, stage: "radial-gradient(120% 90% at 60% 30%, #fbf6ee 0%, #efe6d8 55%, #e3d6c2 100%)" },
+    fill: 0.45, exposure: 1.0, shadow: 0.2, stage: "var(--stage)" },
   manana: { label: "Mañana", env: 0.7, sun: [0xfff0d0, 3.4], alt: 38, hemi: [0xdcecff, 0x9a8a6a, 0.6],
     fill: 0.3, exposure: 1.05, shadow: 0.32, stage: "radial-gradient(120% 90% at 70% 20%, #fffaf0 0%, #f3ead6 50%, #dfd0b2 100%)" },
   atardecer: { label: "Tarde", env: 0.45, sun: [0xffa860, 3.6], alt: 12, hemi: [0xffd2a8, 0x5a4636, 0.45],
@@ -171,7 +172,6 @@ export class Viewer {
     this.placeSun();
     const S = SCENES[this.sceneKey];
     const bg = (S && S.stage) || L.stage;
-    this.host.parentElement.style.setProperty("--stage", bg);
     this.host.parentElement.style.background = bg;
   }
 
@@ -693,7 +693,6 @@ export class Viewer {
     }
     const bg = S.stage || LIGHTS[this.lightKey].stage;
     this.host.parentElement.style.background = bg;
-    this.host.parentElement.style.setProperty("--stage", bg);
     if (S.light) this.setLight(S.light, S.sun ? S.sun[0] : undefined);
     this.altOverride = S.sun ? S.sun[1] : null;
     this.placeSun();

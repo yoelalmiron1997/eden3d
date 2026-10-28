@@ -48,3 +48,15 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: CUE-005
+    titulo: Calidad y cobertura sólo para el administrador
+    descripcion: >
+      Los links a Calidad y Specs, el tablero de calidad y la cobertura son internos:
+      los ve el administrador, no el resto.
+    criterio: >
+      Para visitante y usuario no aparecen los links de Calidad/Specs y /calidad/ dice
+      "Sólo administradores"; el admin ve los links y el tablero. Sin cuentas
+      configuradas los links no se muestran y el tablero queda como antes.
+    prioridad: alta
+    nivel: web
+    estado: activa

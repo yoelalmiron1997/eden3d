@@ -1,6 +1,9 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // Botón de cuenta del encabezado y ventana de ingreso / registro.
 import { initAuth, onAuth, signIn, signUp, signOut, resetPassword, ROLES } from "./auth.js";
+import { mountTheme } from "./theme.js";
+
+const RAIZ = new URL("./", import.meta.url).href;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -73,9 +76,14 @@ export function openLogin(why = "") {
 }
 
 // host: elemento del encabezado donde va el botón de cuenta
-export function mountAccount(host, base = "") {
+export function mountAccount(host) {
   if (!host) return;
+  const theme = document.createElement("span");
+  host.before(theme);
+  mountTheme(theme);
   onAuth((a) => {
+    // Calidad, specs y cobertura: sólo para administradores
+    document.documentElement.classList.toggle("es-admin", !!a.perms.admin);
     if (!a.configured) { host.innerHTML = ""; return; }
     if (!a.user) {
       host.innerHTML = `<button type="button" class="acc-btn" data-testid="btn-ingresar">Ingresar</button>`;
@@ -83,7 +91,7 @@ export function mountAccount(host, base = "") {
       return;
     }
     host.innerHTML = `
-      ${a.perms.admin ? `<a href="${base}admin.html" class="acc-link" data-testid="link-admin">Admin</a>` : ""}
+      ${a.perms.admin ? `<a href="${RAIZ}admin.html" class="acc-link" data-testid="link-admin">Admin</a>` : ""}
       <span class="acc-chip" title="${esc(a.user.email)}"><span class="acc-mail">${esc(a.user.email)}</span>
         <span class="role role-${a.role}" data-testid="rol">${ROLES[a.role].label}</span></span>
       <button type="button" class="acc-btn ghost" data-testid="btn-salir">Salir</button>`;

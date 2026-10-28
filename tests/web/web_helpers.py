@@ -6,12 +6,12 @@ READY_MS = 180_000
 
 
 def open_app(browser, base_url, viewport=(1360, 900), role=None, path="macetas.html", users=None):
-    """Abre el generador. role = None (sin cuentas configuradas, como hoy en la web),
-    o "visitante" / "usuario" / "pro" / "admin" con un login simulado (sólo localhost)."""
+    """Abre el generador. role = None (simula la web sin cuentas configuradas, descarga
+    libre) o "visitante" / "usuario" / "pro" / "admin" con un login simulado (sólo localhost)."""
     ctx = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]},
                               accept_downloads=True)
-    if role:
-        mock = {"role": role, "email": "%s@eden3d.test" % role}
+    if True:
+        mock = {"role": role or "sin-cuentas", "email": "%s@eden3d.test" % role}
         if users:
             mock["users"] = users
         ctx.add_init_script("window.__EDEN_AUTH_MOCK = %s;" % json.dumps(mock))

@@ -137,6 +137,7 @@ def test_tablero_de_calidad(browser, base_url, site_dir):
             json.dump(data, fh)
     try:
         ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+        ctx.add_init_script('window.__EDEN_AUTH_MOCK = {"role": "admin", "email": "admin@eden3d.test"};')
         p = ctx.new_page()
         p.goto(base_url + "calidad/")
         p.wait_for_function("!!window.__calidad")
@@ -496,6 +497,8 @@ def test_cambio_de_modelo_mientras_calcula(browser, base_url):
 def test_home_tecnobear(browser, base_url):
     page = open_app(browser, base_url, path="")
     assert page.locator(T % "home-titulo").inner_text() == "Herramientas de TecnoBear"
+    page.wait_for_function("(() => { const e = document.querySelector('[data-testid=tool-imagen]');"
+                           " return e.complete && e.naturalWidth > 0 && e.currentSrc.includes('macetas_v'); })()", timeout=15_000)
     pop = page.locator(T % "popup-macetas")
     pop.wait_for(state="visible", timeout=10_000)              # primera visita: se abre solo
     assert "Generador de macetas" in pop.inner_text()
@@ -609,4 +612,42 @@ def test_panel_admin(browser, base_url):
     with page.expect_download() as dl:
         page.locator(T % "cov-csv").click()
     assert dl.value.suggested_filename == "cobertura_marca_Ñandú_2026.csv"
+    page.context.close()
+
+
+
+@pytest.mark.spec("WEB-013")
+def test_modo_claro_y_oscuro(browser, base_url):
+    page = open_app(browser, base_url, path="")
+    page.locator(T % "popup-macetas").wait_for(state="visible", timeout=10_000)
+    page.keyboard.press("Escape")
+    btn = page.locator(T % "btn-tema")
+    assert btn.get_attribute("data-tema") == "auto"
+    fondo = lambda: page.evaluate("getComputedStyle(document.body).backgroundColor")
+    btn.click()
+    assert page.evaluate("document.documentElement.dataset.theme") == "light"
+    claro = fondo()
+    btn.click()
+    assert page.evaluate("document.documentElement.dataset.theme") == "dark"
+    assert fondo() != claro
+    page.reload()
+    assert page.evaluate("document.documentElement.dataset.theme") == "dark", "se recuerda"
+    page.locator(T % "btn-tema").click()
+    assert page.evaluate("document.documentElement.dataset.theme") is None, "vuelve a automático"
+    page.context.close()
+
+
+@pytest.mark.spec("CUE-005")
+def test_calidad_solo_admin(browser, base_url):
+    for role, ve in (("visitante", False), ("usuario", False), ("admin", True)):
+        page = open_app(browser, base_url, role=role, path="")
+        page.wait_for_function("document.querySelector('[data-testid=btn-tema]')")
+        assert page.locator(T % "link-calidad").is_visible() is ve, role
+        page.goto(base_url + "calidad/")
+        page.wait_for_function("!document.getElementById('q-main').hidden || !document.getElementById('q-denegado').hidden")
+        assert page.locator(T % "q-denegado").is_visible() is (not ve), role
+        assert page.locator("#q-main").is_visible() is ve, role
+        page.context.close()
+    page = open_app(browser, base_url, path="")                 # sin cuentas configuradas
+    assert not page.locator(T % "link-calidad").is_visible()
     page.context.close()

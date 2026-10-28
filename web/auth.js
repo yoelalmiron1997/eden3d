@@ -14,6 +14,7 @@ export const ROLES = {
   admin: { label: "Administrador", download: true, brand: true, admin: true },
 };
 
+const SITIO = new URL("./", import.meta.url).href;   // raíz de la web (para los links de los emails)
 const listeners = new Set();
 const auth = { configured: false, client: null, user: null, role: "visitante", mock: false, ready: false };
 
@@ -56,6 +57,7 @@ function mockFromWindow() {
   const m = local && window.__EDEN_AUTH_MOCK;
   if (!m) return false;
   auth.mock = true;
+  if (m.role === "sin-cuentas") { auth.configured = false; return true; }   // como antes del login
   auth.configured = true;
   auth.user = m.role && m.role !== "visitante" ? { id: "mock", email: m.email || "test@eden3d.local" } : null;
   auth.role = auth.user ? m.role : "visitante";
@@ -67,7 +69,7 @@ export async function initAuth() {
   if (auth.ready) return snapshot();
   try {
     if (!mockFromWindow() && SUPABASE.url && SUPABASE.anonKey) {
-      await loadScript(new URL("vendor/supabase/supabase.js", document.baseURI).href);
+      await loadScript(new URL("./vendor/supabase/supabase.js", import.meta.url).href);
       auth.client = window.supabase.createClient(SUPABASE.url, SUPABASE.anonKey);
       auth.configured = true;
       const { data } = await auth.client.auth.getSession();
@@ -114,7 +116,7 @@ export async function signIn(email, password) {
 
 export async function signUp(email, password) {
   if (auth.mock) return signIn(email, password);
-  const redirect = new URL("./", document.baseURI).href;
+  const redirect = SITIO;
   const { data, error } = await auth.client.auth.signUp({ email, password, options: { emailRedirectTo: redirect } });
   fail(error);
   return { confirm: !data.session };
@@ -122,7 +124,7 @@ export async function signUp(email, password) {
 
 export async function resetPassword(email) {
   if (auth.mock) return;
-  const { error } = await auth.client.auth.resetPasswordForEmail(email, { redirectTo: new URL("./", document.baseURI).href });
+  const { error } = await auth.client.auth.resetPasswordForEmail(email, { redirectTo: SITIO });
   fail(error);
 }
 

@@ -9,11 +9,14 @@ La web es estática (GitHub Pages), así que las cuentas viven en
 3. **Direcciones permitidas**: *Authentication → URL Configuration*:
    * Site URL: `https://yoelalmiron1997.github.io/eden3d/`
    * Redirect URLs: `https://yoelalmiron1997.github.io/eden3d/**`
-4. **Conectar la web**: *Project Settings → API* (o *Data API*) y copiar
-   *Project URL* y la clave **anon public** (nunca la `service_role`).
-   En GitHub: *Settings → Secrets and variables → Actions → **Variables***
-   → crear `SUPABASE_URL` y `SUPABASE_ANON_KEY` con esos valores. El próximo
-   push (o *Actions → Run workflow*) publica la web con el login activo.
+4. **Conectar la web**: *Project Settings → API Keys → Legacy* y copiar
+   *Project URL* y la clave **anon** (nunca la `service_role`) en
+   [`web/config.js`](../web/config.js). (Opcional: en GitHub, *Settings → Secrets and
+   variables → Actions → Variables* con `SUPABASE_URL` y `SUPABASE_ANON_KEY`; si
+   existen, el build las usa en vez de las de `config.js`.)
+
+> Estado: el proyecto `xjyerniuhecwdgfbteez` ya está creado, con el esquema cargado,
+> la Site URL y la Redirect URL configuradas, y la web conectada.
 5. **Hacerte admin**: entrá a la web, *Ingresar → Crear cuenta* con tu email,
    confirmá el mail y en el *SQL Editor* corré
    `update public.perfiles set rol = 'admin' where email = 'tu@email';`

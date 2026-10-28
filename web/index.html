@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Herramientas de TecnoBear</title>
   <meta name="description" content="Herramientas gratis de TecnoBear para la comunidad: diseño e impresión 3D desde el navegador.">
@@ -15,7 +17,7 @@
       <img src="assets/tecnobear.svg" alt="" width="34" height="34"><span class="brand-sub tb">TecnoBear</span>
     </a>
     <nav class="nav">
-      <a href="calidad/" class="hide-sm">Calidad</a>
+      <a href="calidad/" class="solo-admin hide-sm" data-testid="link-calidad">Calidad</a>
       <span id="account" class="account"></span>
     </nav>
   </header>
@@ -28,16 +30,11 @@
 
     <section class="tools" aria-label="Herramientas">
       <button type="button" class="tool-card" data-testid="tool-macetas" aria-haspopup="dialog">
-        <span class="tool-art" aria-hidden="true">
-          <svg viewBox="0 0 120 90">
-            <ellipse cx="60" cy="82" rx="38" ry="5" fill="rgba(0,0,0,.12)"/>
-            <path d="M22 70h76l-4 10H26z" fill="#d9d2c4"/>
-            <path d="M30 34h60l-6 38H36z" fill="#f2ede4"/>
-            <path d="M36 40l8 30M48 38l8 34M60 38l8 34M72 38l8 34M84 40l-4 22M44 38l-8 26M56 38l-8 34M68 38l-8 34M80 38l-8 34"
-              stroke="#cfc6b6" stroke-width="2"/>
-            <path d="M28 30h64v6H28z" fill="#e6dfd2"/>
-            <path d="M60 30c-3-10-12-14-20-12 4 6 12 10 20 12zm0 0c3-11 12-16 21-14-4 7-12 12-21 14zm0 0c-1-11 2-20 8-24 2 9-2 18-8 24z" fill="#5d8c4f"/>
-          </svg>
+        <span class="tool-art photo">
+          <img src="assets/herramientas/macetas_v_450.jpg" srcset="assets/herramientas/macetas_v_450.jpg 450w, assets/herramientas/macetas_v.jpg 900w"
+            sizes="340px" alt="Maceta con autorriego desarmada: planta, tierra, maceta y plato con agua, sobre una mesa de jardín"
+            width="450" height="563" data-testid="tool-imagen">
+          <span class="art-title" aria-hidden="true">Maceta con <b>autorriego</b><small>impresa en 3D</small></span>
         </span>
         <span class="tool-body">
           <span class="tool-tag">Nueva</span>
@@ -50,6 +47,7 @@
 
   <dialog class="modal" id="tool-modal" data-testid="popup-macetas" aria-labelledby="tm-title">
     <div class="modal-box wide">
+      <div class="modal-hero"><img src="assets/herramientas/macetas.jpg" alt="" width="1200" height="900"></div>
       <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
       <span class="tool-tag">Herramienta 1</span>
       <h2 id="tm-title">Generador de macetas</h2>

@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calidad · Eden3D</title>
   <meta name="description" content="Tablero de calidad de Eden3D Studio: specs, trazabilidad y resultados de los tests de cada versión.">
@@ -12,9 +14,14 @@
 <body>
   <header class="top">
     <a class="brand" href="../"><span class="pill">Eden3D</span><span class="brand-sub">Calidad</span></a>
-    <nav class="nav"><a href="../">Configurador</a><a href="#matriz">Specs</a><a href="#tests">Tests</a></nav>
+    <nav class="nav"><a href="../macetas.html">Generador</a><a href="#matriz" class="hide-sm">Specs</a><a href="#tests" class="hide-sm">Tests</a>
+      <span id="account" class="account"></span></nav>
   </header>
-  <main class="q">
+  <section id="q-denegado" class="card denied" data-testid="q-denegado" hidden>
+    <h1>Sólo administradores</h1>
+    <p class="muted">El tablero de calidad y la cobertura de los tests son internos.</p>
+  </section>
+  <main class="q" id="q-main">
     <section class="q-head">
       <div>
         <h1>Tablero de calidad</h1>
@@ -66,5 +73,16 @@
   <footer class="foot"><p>© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. <a href="../licencia.html">Licencia</a>.</p></footer>
   <div class="tip" id="tip" role="tooltip" hidden></div>
   <script type="module" src="calidad.js"></script>
+  <script type="module">
+    import { mountAccount, openLogin } from "../auth-ui.js";
+    import { onAuth } from "../auth.js";
+    mountAccount(document.getElementById("account"));
+    onAuth((a) => {
+      const ok = !a.configured || a.perms.admin;     // sin cuentas configuradas queda como antes
+      document.getElementById("q-main").hidden = !ok;
+      document.getElementById("q-denegado").hidden = ok;
+      if (!ok && !a.user) openLogin("El tablero de calidad es sólo para administradores.");
+    });
+  </script>
 </body>
 </html>

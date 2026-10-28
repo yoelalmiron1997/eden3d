@@ -87,6 +87,7 @@ def build(out, node_modules):
     with open(os.path.join(out, "licencia.html"), "w", encoding="utf-8") as fh:
         fh.write("""<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>Licencia · Eden3D</title>
+<script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="style.css"></head><body><header class="top"><a class="brand" href="./">
 <span class="pill">Eden3D</span><span class="brand-sub">Studio</span></a></header>
 <main style="max-width:860px;margin:0 auto;padding:20px 16px"><pre data-testid="licencia-texto"

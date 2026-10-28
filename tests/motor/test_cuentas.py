@@ -37,9 +37,14 @@ def test_los_roles_de_la_web_coinciden_con_la_base():
 
 
 @pytest.mark.spec("CUE-003")
-def test_el_repo_no_guarda_claves():
+def test_el_repo_no_guarda_claves_secretas():
+    """La clave de la web es la 'anon' (pública): nunca la service_role."""
+    import base64
     cfg = open(os.path.join(REPO, "web", "config.js"), encoding="utf-8").read()
-    assert 'url: ""' in cfg and 'anonKey: ""' in cfg
+    for tok in re.findall(r"eyJ[\w-]+\.([\w-]+)\.[\w-]+", cfg):
+        payload = json.loads(base64.urlsafe_b64decode(tok + "=" * (-len(tok) % 4)))
+        assert payload["role"] == "anon", payload
+    assert "service_role" not in cfg.replace("NUNCA poner acá la clave service_role", "")
 
 
 @pytest.mark.spec("CUE-001")

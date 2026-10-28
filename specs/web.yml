@@ -112,8 +112,20 @@ specs:
       por ahora, el generador de macetas, que se presenta en un pop-up.
     criterio: >
       La portada dice "Herramientas de TecnoBear" y tiene la tarjeta del generador de
-      macetas; en la primera visita se abre el pop-up (después, al tocar la tarjeta) y
-      "Abrir el generador" lleva a macetas.html.
+      macetas con su imagen (render real de la maceta desarmada en el jardín); en la
+      primera visita se abre el pop-up (después, al tocar la tarjeta) y "Abrir el
+      generador" lleva a macetas.html.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: WEB-013
+    titulo: Modo claro y oscuro
+    descripcion: >
+      Un botón en el encabezado de todas las páginas alterna entre automático (el del
+      sistema), claro y oscuro, y se recuerda para la próxima visita.
+    criterio: >
+      Cada toque pasa automático → claro → oscuro → automático; claro y oscuro cambian
+      los colores de la página; al recargar se mantiene el elegido.
     prioridad: media
     nivel: web
     estado: activa
