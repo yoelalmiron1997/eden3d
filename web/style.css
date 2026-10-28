@@ -107,7 +107,7 @@ button.link { background: none; border: 0; color: var(--green); padding: 0; min-
 .warnings { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
 .warnings li { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 4px 8px; font-size: 12px; }
 .warnings li.err { background: #fde8e4; color: #8a2614; }
-.foot { padding: 14px 20px 22px; font-size: 12.5px; color: var(--muted); max-width: 1400px; margin: 0 auto; width: 100%; }
+.foot { padding: 14px 20px 22px; font-size: 12.5px; color: var(--muted); max-width: 1400px; margin: 0 auto; width: 100%; text-align: center; }
 .foot p { margin: 4px 0; }
 .muted { color: var(--muted); }
 
