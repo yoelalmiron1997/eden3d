@@ -244,9 +244,13 @@ specs:
       que se inclina para armar la montañita y se vuelve a parar, el agua caliente que
       entra por el costado bajo (agua interactiva como la del plato de las macetas: gotas,
       olas y ondas al tocarla), la bombilla y el vapor. "Separar" saca el inserto con todo
-      adentro (con animación en loop, como el despiece de las macetas).
+      adentro (con animación en loop, como el despiece de las macetas). El agua es
+      transparente y la bombilla tiene el estilo de las bombillas argentinas (filtro de
+      resorte, cuadrado, cuchara o pala; caña apenas curva, virola y pico chato abierto).
     criterio: >
-      Tocar "Cebar el mate" pasa por las fases llenar → montañita (el mate se inclina) →
+      El selector de bombilla tiene 5 estilos (resorte, resorte de color, filtro cuadrado,
+      cuchara y pala) y cambiarlo cambia la bombilla del mate; el agua es casi incolora
+      (diferencia entre canales de color < 0,15) y translúcida (opacidad < 0,5). Tocar "Cebar el mate" pasa por las fases llenar → montañita (el mate se inclina) →
       cebar (sube el agua) → bombilla → listo, con la malla CEBADO en la escena; al
       terminar, el agua queda debajo de la cima de la montañita y la bombilla y el vapor
       se ven; "Gota" tira una gota; la montañita más empinada deja el agua más baja;

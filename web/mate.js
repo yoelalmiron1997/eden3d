@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
-import { Cebado } from "./mate-cebado.js";
+import { Cebado, ESTILOS } from "./mate-cebado.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
 
@@ -639,6 +639,8 @@ function cebadoUi() {
   for (const id of ["gota", "olas"]) $(id).disabled = !(c.flags.agua && c.enEscena);
 }
 
+for (const [k, n] of Object.entries(ESTILOS)) $("bombilla-estilo").add(new Option(n, k));
+$("bombilla-estilo").addEventListener("change", () => cebado.setEstilo($("bombilla-estilo").value));
 $("cebar").addEventListener("click", () => { cebado.play(); cebadoUi(); });
 $("ver-yerba").addEventListener("change", () => { cebado.setFlag("yerba", $("ver-yerba").checked); cebadoUi(); });
 $("ver-agua").addEventListener("change", () => { cebado.setFlag("agua", $("ver-agua").checked); cebadoUi(); });

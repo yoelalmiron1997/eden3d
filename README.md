@@ -68,8 +68,9 @@ inserto** (`web/mate.html`, motor `engine/mate_core.py`).
   convertidas con `tools/fuentes.py`), más un **grosor** para engordar letras y dibujos.
 * **Cebar el mate** (`web/mate-cebado.js`): animación de la yerba que cae adentro del
   inserto, el mate que se inclina para armar la **montañita** (ángulo ajustable), el agua
-  caliente que entra por el costado bajo (el agua interactiva del plato de las macetas:
-  gotas, olas y ondas al tocarla), la bombilla y el vapor. **Separar** saca el inserto
+  caliente y transparente que entra por el costado bajo (el agua interactiva del plato de las macetas:
+  gotas, olas y ondas al tocarla), la bombilla (5 estilos argentinos: resorte, resorte de
+  color, filtro cuadrado, cuchara y pala) y el vapor. **Separar** saca el inserto
   con todo adentro, con animación en loop. El motor le pasa a la web la cavidad del
   inserto (`summary.cavidad`).
 * **Medallón encastrable**: el diseño va en una pieza circular aparte que entra en un

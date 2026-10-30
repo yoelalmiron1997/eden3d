@@ -24,6 +24,7 @@ export class Cebado {
     this.v = viewer;
     this.flags = { yerba: false, agua: false, bombilla: true, vapor: true };
     this.alfa = 40;                         // ángulo de la montañita (°)
+    this.estilo = "resorte";                // bombilla
     this.t = F.fin;                         // fin de la animación = mate cebado
     this.playing = false;
     this.explode = 0;
@@ -32,11 +33,16 @@ export class Cebado {
     this.stats = { frames: 0, cebados: 0, gotas: 0 };
     viewer.mats.YERBA = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0,
       side: THREE.DoubleSide, envMapIntensity: 0.6 });
-    viewer.mats.BOMBILLA = new THREE.MeshStandardMaterial({ color: 0xeceef0, roughness: 0.28, metalness: 0.75,
+    viewer.mats.BOMBILLA = new THREE.MeshStandardMaterial({ color: 0xf4f5f7, roughness: 0.24, metalness: 0.55,
       envMapIntensity: 1.6 });
     // el agua del mate (verdosa, por la yerba) y el chorro de la pava (transparente)
-    viewer.mats.AGUA_MATE = new THREE.MeshPhysicalMaterial({ color: 0x8f9a3a, roughness: 0.06, metalness: 0,
-      transparent: true, opacity: 0.78, side: THREE.DoubleSide, depthWrite: false, envMapIntensity: 1.2 });
+    // agua transparente: se ve la yerba mojada debajo
+    viewer.mats.AGUA_MATE = new THREE.MeshPhysicalMaterial({ color: 0xcfe6ee, roughness: 0.05, metalness: 0,
+      transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, envMapIntensity: 0.45,
+      specularIntensity: 0.6 });
+    viewer.mats.VIROLA = new THREE.MeshStandardMaterial({ color: 0xf0c25a, roughness: 0.28, metalness: 0.55, envMapIntensity: 1.6 });
+    viewer.mats.BOMBILLA_COLOR = new THREE.MeshStandardMaterial({ color: 0xff5a1f, roughness: 0.35, metalness: 0.35, envMapIntensity: 1.2 });
+    viewer.mats.BOMBILLA_ADENTRO = new THREE.MeshStandardMaterial({ color: 0x2c2c2e, roughness: 0.6, metalness: 0.5, side: THREE.DoubleSide });
     viewer.mats.CHORRO = new THREE.MeshPhysicalMaterial({ color: 0xdff1f7, roughness: 0.04, metalness: 0,
       transparent: true, opacity: 0.55, envMapIntensity: 1.4 });
     this.matGrano = new THREE.PointsMaterial({ color: 0x6c7a2c, size: 1.5, sizeAttenuation: true });
@@ -215,29 +221,30 @@ export class Cebado {
 
   armarBombilla() {
     const c = this.cav, R = this.R;
-    const b = new THREE.Group();
-    b.name = "BOMBILLA";
-    // de la cuchara (abajo, del lado del agua) hasta el pico (afuera del mate)
-    const abajo = new THREE.Vector3(-0.3 * R, 0, c.fondo + 7);
-    const boca = new THREE.Vector3(-0.78 * R, 0, c.boca);
+    // de la punta del filtro (abajo, del lado del agua) hacia la boca, y afuera del mate
+    const abajo = new THREE.Vector3(-0.3 * R, 0, c.fondo + 4);
+    const boca = new THREE.Vector3(-0.8 * R, 0, c.boca);
     const dir = boca.clone().sub(abajo).normalize();
-    const largo = 168;
-    const recta = abajo.clone().addScaledVector(dir, largo - 26);
-    const codo = recta.clone().add(new THREE.Vector3(-9, 0, 12));
-    const pico = codo.clone().add(new THREE.Vector3(-12, 0, 6));
-    const curva = new THREE.CatmullRomCurve3([abajo.clone().addScaledVector(dir, 10), recta, codo, pico], false, "centripetal");
-    const tubo = new THREE.Mesh(new THREE.TubeGeometry(curva, 80, 3.2, 14, false), this.v.mats.BOMBILLA);
-    const cuchara = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.v.mats.BOMBILLA);
-    cuchara.scale.set(7.5, 2.6, 12);
-    cuchara.position.copy(abajo.clone().addScaledVector(dir, 4));
-    cuchara.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
-    const boquilla = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), this.v.mats.BOMBILLA);
-    boquilla.scale.set(4.5, 2.2, 4.5);
-    boquilla.position.copy(pico);
-    for (const m of [tubo, cuchara, boquilla]) { m.castShadow = true; b.add(m); }
+    const b = construirBombilla(this.estilo, this.v.mats);
+    b.name = "BOMBILLA";
+    b.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);   // el codo queda hacia afuera
+    this.baseBombilla = abajo;
+    b.position.copy(abajo);
     this.dirBombilla = dir;
     this.bombilla = b;
     this.group.add(b);
+  }
+
+  setEstilo(e) {
+    if (!ESTILOS[e]) return;
+    this.estilo = e;
+    if (!this.group) return;
+    const vis = this.bombilla ? this.bombilla.visible : false;
+    this.group.remove(this.bombilla);
+    this.bombilla.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+    this.armarBombilla();
+    this.bombilla.visible = vis;
+    this.actualizar(!this.playing);
   }
 
   texturaVapor() {
@@ -346,7 +353,7 @@ export class Cebado {
     // bombilla que entra desde arriba
     const k = E.bombilla;
     this.bombilla.visible = this.flags.bombilla && k > 0.001 && (this.flags.yerba || this.flags.agua);
-    this.bombilla.position.copy(this.dirBombilla).multiplyScalar((1 - k) * 90);
+    this.bombilla.position.copy(this.baseBombilla).addScaledVector(this.dirBombilla, (1 - k) * 90);
   }
 
   alturas(E) {
@@ -526,10 +533,183 @@ export class Cebado {
 
   info() {
     return { fase: this.fase(), t: +this.t.toFixed(2), playing: this.playing, flags: { ...this.flags },
-      alfa: this.alfa, nivelAgua: this.water ? +this.water.level.toFixed(2) : null,
+      alfa: this.alfa, estilo: this.estilo, nivelAgua: this.water ? +this.water.level.toFixed(2) : null,
       nivelYerba: this.cav ? +this.nivelYerba().toFixed(2) : null, separar: this.explode,
       enEscena: !!(this.group && this.group.parent), tilt: this.stats.tilt || 0,
       bombilla: !!(this.bombilla && this.bombilla.visible), vapor: !!(this.vapor && this.vapor.visible),
       cebados: this.stats.cebados, gotas: this.stats.gotas };
   }
+}
+
+// ====================================================================== bombillas
+// Estilos como las bombillas argentinas de alpaca/acero: filtro de resorte, cuadrado,
+// cuchara o pala; caña apenas curva, virola y pico chato y abierto. Eje local +Z desde la
+// punta del filtro; el codo va hacia -X (afuera del mate).
+export const ESTILOS = {
+  resorte: "Resorte (clásica)",
+  color: "Resorte de color",
+  cuadrada: "Filtro cuadrado",
+  cuchara: "Cuchara",
+  pala: "Pala",
+};
+const LARGO = 176;
+
+// barrido de una sección elíptica (rx a lo ancho, ry de canto) por una curva plana (XZ);
+// hueca en la punta (pared de 0,45 mm) para que se vea el pico abierto
+function barrido(curva, seccion, mat, matAdentro, n = 90, m = 24) {
+  const B = new THREE.Vector3(0, 1, 0);
+  const pos = [], idx = [];
+  const anillo = (t, dr) => {
+    const P = curva.getPointAt(t), T = curva.getTangentAt(t);
+    const N = new THREE.Vector3().crossVectors(B, T).normalize();
+    const { rx, ry } = seccion(t);
+    const out = [];
+    for (let j = 0; j < m; j++) {
+      const a = (j / m) * TAU;
+      const q = P.clone().addScaledVector(B, (rx - dr) * Math.cos(a)).addScaledVector(N, (ry - dr) * Math.sin(a));
+      out.push(q.x, q.y, q.z);
+    }
+    return out;
+  };
+  for (let i = 0; i <= n; i++) pos.push(...anillo(i / n, 0));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < m; j++) {
+      const a = i * m + j, b = i * m + ((j + 1) % m), c = a + m, d = b + m;
+      idx.push(a, c, b, b, c, d);
+    }
+  }
+  // borde del pico: anillo exterior → anillo interior
+  const o0 = pos.length / 3 - m;
+  const i0 = pos.length / 3;
+  pos.push(...anillo(1, 0.45));
+  for (let j = 0; j < m; j++) {
+    const a = o0 + j, b = o0 + ((j + 1) % m), c = i0 + j, d = i0 + ((j + 1) % m);
+    idx.push(a, c, b, b, c, d);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const tubo = new THREE.Mesh(g, mat);
+  // adentro del pico, oscuro (se ve el agujero)
+  const ip = [], ii = [];
+  const k0 = 0.86;
+  const nI = 12;
+  for (let i = 0; i <= nI; i++) ip.push(...anillo(k0 + (1 - k0) * (i / nI), 0.45));
+  for (let i = 0; i < nI; i++) {
+    for (let j = 0; j < m; j++) {
+      const a = i * m + j, b = i * m + ((j + 1) % m), c = a + m, d = b + m;
+      ii.push(a, c, b, b, c, d);
+    }
+  }
+  const cap = ip.length / 3;                 // tapa del fondo del agujero
+  const P = curva.getPointAt(k0);
+  ip.push(P.x, P.y, P.z);
+  for (let j = 0; j < m; j++) ii.push(cap, j, (j + 1) % m);
+  const gi = new THREE.BufferGeometry();
+  gi.setAttribute("position", new THREE.Float32BufferAttribute(ip, 3));
+  gi.setIndex(ii);
+  gi.computeVertexNormals();
+  return [tubo, new THREE.Mesh(gi, matAdentro)];
+}
+
+function cilindro(r0, r1, z0, z1, mat, seg = 28) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, z1 - z0, seg), mat);
+  m.rotation.x = Math.PI / 2;
+  m.position.z = (z0 + z1) / 2;
+  return m;
+}
+
+function aro(r, tubo, z, mat) {
+  const m = new THREE.Mesh(new THREE.TorusGeometry(r, tubo, 10, 36), mat);
+  m.position.z = z;
+  return m;
+}
+
+export function construirBombilla(estilo, mats) {
+  const g = new THREE.Group();
+  const plata = mats.BOMBILLA, oro = mats.VIROLA, adentro = mats.BOMBILLA_ADENTRO;
+  const cana = estilo === "color" ? mats.BOMBILLA_COLOR : plata;
+  const pala = estilo === "pala";
+  const z0 = pala ? 0 : estilo === "cuchara" ? 30 : 26;
+  // caña: casi recta abajo y con una curva suave arriba, hacia afuera
+  const curva = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, z0), new THREE.Vector3(0, 0, z0 + 50), new THREE.Vector3(-1.5, 0, 112),
+    new THREE.Vector3(-6, 0, 150), new THREE.Vector3(-11, 0, LARGO)], false, "centripetal");
+  const seccion = (t) => {
+    let rx = 3.3, ry = 3.3;
+    if (pala) {                              // ancha y chata abajo, se angosta hacia arriba
+      const k = ease(Math.min(1, t / 0.62));
+      rx = 7.4 + (3.3 - 7.4) * k;
+      ry = 2.0 + (3.3 - 2.0) * k;
+    }
+    const u = ease((t - 0.86) / 0.14);      // pico chato
+    return { rx: rx + (4.5 - rx) * u, ry: ry + (1.6 - ry) * u };
+  };
+  for (const m of barrido(curva, seccion, cana, adentro)) g.add(m);
+  if (estilo === "resorte" || estilo === "color") {
+    g.add(cilindro(4.2, 4.2, 0, 24, plata));                 // alma del filtro
+    for (let z = 1.6; z < 23; z += 2.3) g.add(aro(4.3, 1.05, z, plata));   // el resorte
+    g.add(cilindro(4.6, 3.4, 23.5, 28, plata));
+  } else if (estilo === "cuadrada") {
+    const caja = new THREE.Mesh(new THREE.BoxGeometry(9, 9, 24), plata);
+    caja.position.z = 12;
+    g.add(caja);
+    for (const z of [3, 8, 13, 18]) {                       // ranuras
+      const r = new THREE.Mesh(new THREE.BoxGeometry(9.2, 9.2, 0.9), adentro);
+      r.position.z = z;
+      g.add(r);
+    }
+    g.add(cilindro(4.6, 3.4, 24, 29, plata));
+  } else if (estilo === "cuchara") {
+    const cu = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 20), plata);
+    cu.scale.set(8, 2.7, 13);
+    cu.position.z = 13;
+    g.add(cu);
+    // agujeritos del filtro, en las dos caras
+    const hueco = new THREE.CircleGeometry(0.75, 12);
+    for (let fila = -3; fila <= 3; fila++) {
+      for (let col = -2; col <= 2; col++) {
+        const x = col * 2.6 + (fila % 2 ? 1.3 : 0), z = 13 + fila * 2.6;
+        const e = (x / 8) ** 2 + ((z - 13) / 13) ** 2;
+        if (e > 0.62) continue;
+        for (const sgn of [1, -1]) {
+          const h = new THREE.Mesh(hueco, adentro);
+          h.position.set(x, sgn * (2.7 * Math.sqrt(1 - e) + 0.04), z);
+          h.rotation.x = sgn * -Math.PI / 2;
+          g.add(h);
+        }
+      }
+    }
+    g.add(cilindro(2.6, 3.6, 24, 31, plata));
+    g.add(aro(3.7, 0.7, 30, plata), aro(3.7, 0.7, 32, plata));
+  } else if (pala) {
+    const tapa = cilindro(1, 1, -0.6, 0.6, plata, 32);                     // punta cerrada
+    tapa.scale.set(7.4, 1, 2.0);
+    g.add(tapa);
+    for (let i = 0; i < 5; i++) {                            // rayitas de la pala
+      const r = new THREE.Mesh(new THREE.BoxGeometry(0.45, 4.08, 6), adentro);
+      r.position.set(-4 + i * 2, 0, 9);
+      g.add(r);
+    }
+  }
+  // virola cerca de la boca: dorada en la clásica y la pala, doble aro en las otras
+  if (estilo === "resorte" || pala) {
+    const v = new THREE.Mesh(new THREE.CylinderGeometry(pala ? 1 : 3.75, pala ? 1 : 3.75, 5, 28), oro);
+    if (pala) { v.geometry.dispose(); v.geometry = new THREE.BoxGeometry(11.5, 6.4, 5); }
+    const p = curva.getPointAt(pala ? 0.5 : 0.7), tg = curva.getTangentAt(pala ? 0.5 : 0.7);
+    v.position.copy(p);
+    v.quaternion.setFromUnitVectors(pala ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0), tg);
+    g.add(v);
+  } else if (estilo === "cuadrada" || estilo === "cuchara") {
+    for (const d of [-1.4, 1.4]) {
+      const t = 0.74 + d / LARGO;
+      const a = aro(3.5, 0.75, 0, plata);
+      a.position.copy(curva.getPointAt(t));
+      a.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), curva.getTangentAt(t));
+      g.add(a);
+    }
+  }
+  g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  return g;
 }

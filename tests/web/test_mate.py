@@ -279,6 +279,17 @@ def test_cebar_el_mate(browser, base_url):
         let m = -1e9; for (let i = 2; i < p.length; i += 3) m = Math.max(m, p[i]); return m; }""")
     assert c["nivelAgua"] < cima - 5
     assert "Listo" in pg.locator(T % "cebado-fase").inner_text()
+    # agua transparente y bombillas como las argentinas
+    dif, op = pg.evaluate("""() => { const m = window.__mateViewer.mats.AGUA_MATE; const h = m.color.getHex();
+        const c = [(h >> 16) & 255, (h >> 8) & 255, h & 255].map((x) => x / 255);   // sRGB, como se ve
+        return [Math.max(...c) - Math.min(...c), m.opacity]; }""")
+    assert dif < 0.15 and op < 0.5
+    ops = pg.locator(T % "sel-bombilla" + " option").evaluate_all("(o) => o.map((x) => x.value)")
+    assert ops == ["resorte", "color", "cuadrada", "cuchara", "pala"]
+    assert c["estilo"] == "resorte"
+    for e in ("cuchara", "pala"):
+        pg.locator(T % "sel-bombilla").select_option(e)
+        assert pg.evaluate("window.__mate.cebado.estilo") == e and pg.evaluate("window.__mate.cebado.bombilla")
     # gota y olas en el agua del mate
     g0 = c["gotas"]
     pg.locator(T % "btn-gota").click()

@@ -92,7 +92,8 @@ def _pack(V, F):
 
 
 def malla_inserto(res):
-    """El inserto (sin holgura) en su lugar, para verlo dentro del hueco."""
+    """El inserto (sin holgura) en su lugar, para verlo dentro del hueco: un vaso abierto
+    (pared exterior, borde y pared interior hasta el fondo), así se ve lo de adentro."""
     canon, _, _ = mc.hueco_de(res["opts"])
     H = res["params"]["H"]
     hundir = res["report"].get("hundir_mm", 0.0)
@@ -107,7 +108,16 @@ def malla_inserto(res):
         i0 = len(V)
         V.extend((r * c, r * s, z) for c, s in cs)
         cadena.append(list(range(i0, i0 + M)))
-    V.append((0.0, 0.0, rz[-1][1]))
+    # borde y pared de adentro, de la boca al fondo
+    cav = cavidad(res)
+    z_top = rows[-1][1]
+    adentro = [(cav["r"][-1], z_top)] + [(r, z) for z, r in zip(reversed(cav["z"]), reversed(cav["r"]))
+                                        if z < z_top - 0.05]
+    for r, z in adentro:
+        i0 = len(V)
+        V.extend((r * c, r * s, z) for c, s in cs)
+        cadena.append(list(range(i0, i0 + M)))
+    V.append((0.0, 0.0, cav["fondo"]))
     cadena.append(len(V) - 1)
     for A, B in zip(cadena, cadena[1:]):
         mc._coser(F, A, B)
