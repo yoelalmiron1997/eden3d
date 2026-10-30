@@ -29,21 +29,25 @@ specs:
     nivel: motor
     estado: activa
   - id: PAT-003
-    titulo: Se fusionan a la maceta o al plato
+    titulo: Clavadas a la base de la maceta, siempre sin plato
     descripcion: >
-      El soporte de la cadera se mete en la pared de la pieza que toca la mesa (el plato si
-      hay, si no la maceta) sin pasar al lado de adentro, y las descargas las traen pegadas.
+      Las patitas van siempre en la maceta sin plato: con patitas el modo pasa a "Sin
+      plato". Un zócalo abraza el pie de la maceta (se mete en la pared sin pasar al lado
+      de adentro) y de ahí salen las caderas; las descargas las traen pegadas.
     criterio: >
-      Sin plato van en la maceta y con plato (autorriego, rosca, apoyado) en el plato; el
-      soporte entra en la pared (empieza adentro de la cara de afuera) y no más de la
-      textura + 0,6 de la pared; el STL y el 3MF de esa pieza tienen las patitas (más
-      triángulos, malla cerrada); patas, patas y brazos, y brazos solos funcionan.
+      Con patitas, cualquier modo pedido se arma "Sin plato" (SKU SOLA) y la única pieza es
+      la maceta; hay un zócalo para las dos patas (y uno por brazo) que entra en la pared
+      (más adentro que la cara de afuera, no más que la textura + 0,6 de la pared) y sale
+      afuera; el primer eslabón no lo toca (más que la holgura); el STL y el 3MF tienen las
+      patitas (más triángulos, malla cerrada); patas, patas y brazos, y brazos solos funcionan.
     prioridad: alta
     nivel: motor
     estado: activa
   - id: PAT-004
     titulo: Opciones de las patitas
-    descripcion: Tipo (patas, patas y bracitos, bracitos), pies (botitas o de pato), eslabones y holgura.
+    descripcion: >
+      Tipo (patas, patas y bracitos, bracitos), pies (zapatillas, botitas o de pato),
+      eslabones y holgura.
     criterio: >
       Los eslabones van de 2 a 5 y la holgura de 0,3 a 0,7 mm (fuera de rango se ajustan);
       un tipo o pie desconocido se rechaza con un mensaje; con pies de pato los bracitos
@@ -54,11 +58,13 @@ specs:
   - id: PAT-005
     titulo: Patitas en la web, con la maceta sentada en un estante
     descripcion: >
-      En macetas.html se eligen las patitas y los pies; cada eslabón se ve aparte y
+      En macetas.html se eligen las patitas y los pies (zapatillas por defecto); el plato
+      queda en "Sin plato" y bloqueado mientras haya patitas; cada eslabón se ve aparte y
       "Sentarla en el borde" la sube a un estante: las patas cuelgan y se balancean y los
       bracitos saludan.
     criterio: >
-      Elegir "Patitas y bracitos" muestra los eslabones PATA_* y BRAZO_*, el mensaje con el
+      Elegir "Patitas y bracitos" pone el plato en "Sin plato" (bloqueado; al sacar las
+      patitas vuelve el que estaba) y muestra los eslabones PATA_* y BRAZO_*, el mensaje con el
       grosor y la holgura; "Sentarla en el borde" pone el estante y deja la cadera de las
       patas a unos 80° (colgando) y los brazos levantados; cambiar los pies o los eslabones
       recalcula; la descarga STL trae las patitas; sin errores en la consola.

@@ -601,16 +601,29 @@ window.addEventListener("error", (e) => state.errors.push(String(e.message)));
 main();
 
 // ------------------------------------------------------------------ patitas articuladas
-const PIEZA_TXT = { MACETA: "la maceta", PLATO: "el plato" };
 function patitasMsg(p) {
   $("patitas-ui").hidden = !$("patitas").value;
   if (!p) { $("patitas-msg").textContent = ""; return; }
   const c = p.cadenas[0];
-  $("patitas-msg").textContent = `Van pegadas a ${PIEZA_TXT[p.pieza_archivo] || "la pieza"} y salen impresas ya armadas: `
+  $("patitas-msg").textContent = `Van clavadas a la base de la maceta (sin plato) y salen impresas ya armadas: `
     + `eslabones de ${String(c.grosor_mm).replace(".", ",")} mm con ${String(p.holgura).replace(".", ",")} mm de juego. `
     + "Al sacarlas de la cama, doblalas despacio para soltar las bisagras.";
 }
-for (const id of ["patitas", "pies"]) $(id).addEventListener("change", () => { patitasMsg(null); build(); });
+// las patitas van siempre sin plato, clavadas a la base de la maceta
+function patitasModo() {
+  const con = !!$("patitas").value;
+  if (con) {
+    if ($("mode").value !== "pot") $("mode").dataset.antes = $("mode").value;
+    $("mode").value = "pot";
+  } else if ($("mode").dataset.antes) {
+    $("mode").value = $("mode").dataset.antes;
+    delete $("mode").dataset.antes;
+  }
+  $("mode").disabled = con || !state.ready;
+  $("mode").title = con ? "Con patitas la maceta va sin plato" : "";
+}
+$("patitas").addEventListener("change", () => { patitasModo(); patitasMsg(null); build(); });
+$("pies").addEventListener("change", () => { patitasMsg(null); build(); });
 $("eslabones").addEventListener("input", () => { $("o-eslabones").textContent = $("eslabones").value; });
 $("holgura-patas").addEventListener("input", () => {
   $("o-holgura-patas").textContent = (+$("holgura-patas").value).toFixed(2).replace(".", ",") + " mm";

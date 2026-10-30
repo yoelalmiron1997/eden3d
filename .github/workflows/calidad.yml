@@ -98,7 +98,9 @@ jobs:
       - name: Resultado
         if: steps.motor.outcome != 'success' || steps.web.outcome != 'success' || steps.gate.outcome != 'success'
         run: |
-          echo "motor=${{ steps.motor.outcome }} web=${{ steps.web.outcome }} gate=${{ steps.gate.outcome }}"
+          echo "::error title=Resultado::motor=${{ steps.motor.outcome }} web=${{ steps.web.outcome }} gate=${{ steps.gate.outcome }}"
+          # cada test en rojo como anotación (se leen por la API aunque los logs no estén a mano)
+          python tools/fallas_ci.py reports/motor-junit.xml reports/web-junit.xml || true
           exit 1
 
   deploy:

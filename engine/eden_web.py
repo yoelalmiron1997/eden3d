@@ -87,6 +87,8 @@ def _clean_overrides(ov):
 def params(opts):
     cat = catalog()
     mode = opts.get("mode") or "screw_dish_sw"
+    if opts.get("patitas"):                    # las patitas van siempre sin plato, en la base
+        mode = "pot"
     if mode not in WEB_MODES:
         raise ValueError("modo no disponible en la web: %s" % mode)
     d = ec.find_design(cat, opts.get("design") or cat["designs"][0]["code"])

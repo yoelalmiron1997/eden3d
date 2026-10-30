@@ -25,10 +25,11 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
 * **Agua interactiva** en el plato de autorriego: olas, vaivén y una simulación de
   ondas; tocás el agua y cae una gota que salpica, y hay lluvia y "hacer olas".
 * **Patitas articuladas** (`engine/eden_patitas.py`, diseño propio): patitas, bracitos o
-  los dos, con botitas o patas de pato, de 2 a 5 eslabones y holgura ajustable. Se
-  imprimen **ya armadas** (print in place) acostadas en la cama: bisagras de anillo y
-  barra, sin restas booleanas, con la holgura exacta entre eslabones; el soporte de la
-  cadera se **fusiona** a la pieza que toca la mesa (el plato si hay, si no la maceta). En
+  los dos, con **zapatillas**, botitas o patas de pato, de 2 a 5 eslabones y holgura
+  ajustable. Se imprimen **ya armadas** (print in place) acostadas en la cama: bisagras de
+  anillo y barra, sin restas booleanas, con la holgura exacta entre eslabones. Van siempre
+  en la maceta **sin plato**, **clavadas a la base**: un zócalo abraza el pie de la
+  maceta y de ahí salen las caderas. En
   la web, "Sentarla en el borde" la pone sobre un estante con las patas colgando y los
   bracitos saludando.
 * **Despiece animado**: plato, agua, maceta, tierra y plantas se separan y se vuelven

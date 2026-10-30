@@ -108,20 +108,35 @@ def test_rodilla_gira_90_grados_sin_chocar():
 
 # ----------------------------------------------------------------- PAT-003
 @pytest.mark.spec("PAT-003")
-@pytest.mark.parametrize("mode,pieza", [("pot", "MACETA"), ("screw_dish_sw", "PLATO-AUTORRIEGO"),
-                                        ("screw_dish", "PLATO-INCLINADO"), ("saucer", "PLATO")])
-def test_van_en_la_pieza_que_toca_la_mesa(mode, pieza):
-    res = maceta(mode)
-    nombre, cad, info = pt.armar(res, {"tipo": "patas"})
-    assert nombre == pieza and info["pieza"] == pieza
-    p = res["params"]
+@pytest.mark.parametrize("mode", ["pot", "screw_dish_sw", "screw_dish", "saucer"])
+def test_siempre_sin_plato_y_clavadas_a_la_base(mode):
+    o = {"mode": mode, "size": "S", "patitas": {"tipo": "patas_brazos"}}
+    p = ew.params(o)
+    assert p["mode"] == "pot"
+    r = ew.build(o)
+    assert "SOLA" in r["summary"]["sku"]
+    assert [x["name"] for x in r["parts"] if not x["name"].startswith(("PATA", "BRAZO"))] == ["MACETA"]
+    res = core.build_pot(p)
+    nombre, cad, info = pt.armar(res, o["patitas"])
+    assert nombre == "MACETA" and info["pieza"] == "MACETA"
+    tex, pared = float(p.get("tex_amp") or 0), float(p["wall"])
+    zocalos = cad[0]["soporte"][-3:]                    # uno para las patas y uno por brazo
+    assert len(zocalos) == 3
+    for V, F in zocalos:
+        assert ew.mesh_check(F)["closed"]
+        rs = pt._radios(res["vertices"], max(v[2] for v in V))   # la pared a la altura del zócalo
+        afuera = adentro = 0
+        for x, y, z in V:
+            k = int(round(math.degrees(math.atan2(y, x)))) % 360
+            d = math.hypot(x, y) - rs[k]
+            assert d >= -tex - 0.6 * pared - 1e-6          # no pasa al lado de adentro
+            afuera += d > 0.5
+            adentro += d < -0.1
+        assert afuera and adentro                          # abraza la pared: adentro y afuera
+    # el primer eslabón de cada cadena no toca ningún soporte (zócalos incluidos)
+    sop = cKDTree(np.vstack([nube(c["soporte"]) for c in cad]))
     for c in cad:
-        u_out = c["u_pared"]
-        th = math.radians(c["angulo"])
-        U = (math.cos(th), math.sin(th))
-        us = [x * U[0] + y * U[1] for V, _ in c["soporte"] for x, y, z in V]
-        assert min(us) < u_out                                       # entra en la pared
-        assert min(us) >= u_out - float(p.get("tex_amp") or 0) - 0.6 * float(p["wall"]) - 1e-6
+        assert sop.query(nube(c["eslabones"][0]["shells"]), distance_upper_bound=1)[0].min() > 0.4
 
 
 @pytest.mark.spec("PAT-003")
@@ -158,7 +173,8 @@ def test_opciones():
     assert [len(c["eslabones"]) for c in cad] == [4, 4, 2, 2]
     inf = ew.info()["patitas"]
     assert [t["id"] for t in inf["tipos"]] == ["patas", "patas_brazos", "brazos"]
-    assert [p["id"] for p in inf["pies"]] == ["bota", "pato"]
+    assert [p["id"] for p in inf["pies"]] == ["zapatilla", "bota", "pato"]
+    assert inf["defecto"]["pie"] == "zapatilla"
     # la web recibe cada eslabón aparte con su eje
     r = ew.build({"mode": "pot", "size": "S", "patitas": {"tipo": "patas", "eslabones": 2}})
     nombres = [p["name"] for p in r["parts"]]

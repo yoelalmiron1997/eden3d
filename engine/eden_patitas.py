@@ -17,8 +17,9 @@ que salen del pie de la maceta (o del plato, si va en plato). Las bisagras son d
     antes del anillo de k+1: la rodilla gira para abajo y para arriba sin trabarse.
 
 Todo son sólidos cerrados que se superponen (cajas redondeadas, cilindros, toros); el
-laminador los une, como las aletas del mate. El soporte de la cadera se mete en la pared
-de la pieza ("se fusiona") sin llegar al lado de adentro.
+laminador los une, como las aletas del mate. Las patitas van siempre en la maceta sin
+plato, "clavadas" a la base: un zócalo abraza el pie de la maceta (se mete en la pared
+sin llegar al lado de adentro) y de ahí salen las púas de las caderas.
 
     agregar(res, opciones) -> info     (suma las piezas a la maceta o al plato de res)
     armar(res, opciones)   -> (pieza, cadenas, info) sin tocar res (la web las anima)
@@ -28,8 +29,8 @@ import math
 TAU = 2.0 * math.pi
 
 TIPOS = [("patas", "Patitas"), ("patas_brazos", "Patitas y bracitos"), ("brazos", "Bracitos")]
-PIES = [("bota", "Botitas"), ("pato", "Patas de pato")]
-DEFECTO = {"tipo": "patas", "pie": "bota", "eslabones": 3, "holgura": 0.45}
+PIES = [("zapatilla", "Zapatillas"), ("bota", "Botitas"), ("pato", "Patas de pato")]
+DEFECTO = {"tipo": "patas", "pie": "zapatilla", "eslabones": 3, "holgura": 0.45}
 LIMITES = {"eslabones": (2, 5), "holgura": (0.3, 0.7)}
 FRENTE = -math.pi / 2          # las patas salen hacia -y (el frente, como el relieve del mate)
 PIEZA_PLATO = ("PLATO", "PLATO-INCLINADO", "PLATO-AUTORRIEGO", "PLATO-OCULTO", "PLATO-ROSCA")
@@ -75,6 +76,46 @@ def prisma(poly, w0, w1):
     for i in range(n):
         j = (i + 1) % n
         F += [(b, j, i), (t, n + i, n + j), (i, j, n + j), (i, n + j, n + i)]
+    return V, _orientar(V, F)
+
+
+def prisma_concavo(poly, w0, w1):
+    """Extrusión vertical de un polígono simple cualquiera (antihorario), tapas con earcut."""
+    from eden_floor import earcut
+    n = len(poly)
+    V = [(u, v, w0) for u, v in poly] + [(u, v, w1) for u, v in poly]
+    tris = earcut(list(poly), list(range(n)), [])
+    F = []
+    for a, b, c in tris:
+        F += [(a, c, b), (n + a, n + b, n + c)]
+    for i in range(n):
+        j = (i + 1) % n
+        F += [(i, j, n + j), (i, n + j, n + i)]
+    return V, _orientar(V, F)
+
+
+def elipsoide(u, v, w, a, b, c, w_min=0.0, n=40, m=20):
+    """Elipsoide (semiejes a, b, c) con la parte de abajo aplastada en w_min: apoya plano."""
+    V = [(u, v, max(w_min, w - c))]
+    for j in range(1, m):
+        ph = math.pi * j / m - math.pi / 2
+        for i in range(n):
+            th = TAU * i / n
+            V.append((u + a * math.cos(ph) * math.cos(th), v + b * math.cos(ph) * math.sin(th),
+                      max(w_min, w + c * math.sin(ph))))
+    V.append((u, v, w + c))
+    top = len(V) - 1
+    F = []
+    for i in range(n):
+        F.append((0, 1 + (i + 1) % n, 1 + i))
+    for j in range(m - 2):
+        for i in range(n):
+            a0, a1 = 1 + j * n + i, 1 + j * n + (i + 1) % n
+            b0, b1 = a0 + n, a1 + n
+            F += [(a0, a1, b1), (a0, b1, b0)]
+    base = 1 + (m - 2) * n
+    for i in range(n):
+        F.append((base + i, base + (i + 1) % n, top))
     return V, _orientar(V, F)
 
 
@@ -140,6 +181,14 @@ def medidas(D, holgura=0.45, brazo=False):
 def _punta(m, u0, u1, final):
     """Pie o mano al final de la cadena (desde u0, largo u1 - u0)."""
     t, W = m["t"], m["W"]
+    if final == "zapatilla":              # zapatilla: capellada redonda, suela y puntera
+        L = u1 - u0 + 1.5 * t
+        uc = u0 + 0.55 * L
+        sh = [prisma(rect_redondo(u0 - 0.2, u0 + 0.45 * t, -W / 2, W / 2, 0.2 * t), 0.0, t),
+              elipsoide(uc, 0.0, 0.5 * t, 0.55 * L, 0.62 * W, 0.62 * t),          # capellada
+              prisma(rect_redondo(uc - 0.56 * L, uc + 0.57 * L, -0.66 * W, 0.66 * W, 0.6 * W, 8), 0.0, 0.16 * t),
+              elipsoide(uc + 0.33 * L, 0.0, 0.32 * t, 0.24 * L, 0.5 * W, 0.34 * t)]   # puntera
+        return sh
     if final == "bota":
         return [prisma(rect_redondo(u0, u1 + 0.9 * t, -0.62 * W, 0.62 * W, 0.45 * t, 6), 0.0, t)]
     if final == "pato":                   # pata palmeada: abanico chato con tres dedos
@@ -194,11 +243,46 @@ def cadena(m, n, final):
 # DÓNDE VA Y CÓMO SE PEGA A LA PIEZA
 # ===========================================================================
 def pieza_de(res):
-    """La pieza que toca la mesa: el plato si hay, si no la maceta."""
-    for pt in res.get("parts") or []:
-        if pt["name"] in PIEZA_PLATO:
-            return pt["name"], pt["vertices"], pt["faces"]
+    """Las patitas van siempre en la maceta (sin plato): la web fuerza "Sin plato"."""
     return "MACETA", res["vertices"], res["faces"]
+
+
+def _radios(V, t, n=360):
+    """Radio de la cara de afuera del pie de la maceta, cada 1° (entre z 0 y t)."""
+    rs = [0.0] * n
+    for x, y, z in V:
+        if 0.15 < z < t - 0.15:
+            k = int(round(math.degrees(math.atan2(y, x)))) % n
+            r = math.hypot(x, y)
+            if r > rs[k]:
+                rs[k] = r
+    for k in range(n):                     # huecos (sin vértices en ese grado): vecino
+        if rs[k] == 0.0:
+            rs[k] = max(rs[(k - 1) % n], rs[(k + 1) % n])
+    return rs
+
+
+def zocalo(V, th0, ancho_mm, t, tex, pared, lip=1.2):
+    """Zócalo que abraza el pie de la maceta (sector de anillo entre la pared y un poco
+    afuera) centrado en th0, de ancho_mm de arco; queda clavado a la base."""
+    rs = _radios(V, t)
+    r_med = sum(rs) / len(rs)
+    dth = (ancho_mm / 2.0) / r_med
+    n = max(8, int(math.degrees(2 * dth)) * 2)
+    afuera, adentro = [], []
+    for i in range(n + 1):
+        th = th0 - dth + 2 * dth * i / n
+        k = int(round(math.degrees(th))) % 360
+        ro = rs[k]
+        afuera.append((th, ro + lip))
+        adentro.append((th, ro - tex - 0.6 * pared))
+    poly = [(r * math.cos(th), r * math.sin(th)) for th, r in afuera] + \
+           [(r * math.cos(th), r * math.sin(th)) for th, r in reversed(adentro)]
+    # antihorario
+    a = sum(p[0] * q[1] - q[0] * p[1] for p, q in zip(poly, poly[1:] + poly[:1]))
+    if a < 0:
+        poly = poly[::-1]
+    return prisma_concavo(poly, 0.0, t)
 
 
 def _pared(V, theta, v_off, t, banda=2.0):
@@ -261,14 +345,21 @@ def armar(res, o):
         mano = "ala" if o["pie"] == "pato" else "mano"
         pedidos += [("BRAZO_I", math.pi, 0.0, m, 2, mano), ("BRAZO_D", 0.0, 0.0, m, 2, mano)]
     cadenas = []
+    zocalos = []
+    patas = [x for x in pedidos if x[0].startswith("PATA")]
+    if patas:                                  # un solo zócalo para las dos patas
+        m = patas[0][3]
+        S = abs(patas[1][2] - patas[0][2])
+        zocalos.append(zocalo(V, FRENTE, S + m["W"] + 6.0, m["t"], tex, pared))
     for nom, th, voff, m, n, final in pedidos:
         t = m["t"]
         u_out = _pared(V, th, voff, t)
         u_in = u_out - tex - 0.6 * pared           # se mete en la pared sin pasarla
-        u_eje = u_out + t / 2.0 + m["c"] + 1.0     # el anillo del primer eslabón no roza la pared
+        u_eje = u_out + t / 2.0 + m["c"] + 1.6     # el anillo del primer eslabón no roza el zócalo
         hw = m["W"] / 2.0
-        soporte = [prisma(rect_redondo(u_in, u_out + 1.0, -hw, hw, 0.2 * t), 0.0, t),
-                   prisma(rect_redondo(u_in, u_eje + m["pe"], -hw, -hw + m["pw"], 0.45 * m["pw"]), 0.0, t),
+        if nom.startswith("BRAZO"):
+            zocalos.append(zocalo(V, th, m["W"] + 5.0, t, tex, pared))
+        soporte = [prisma(rect_redondo(u_in, u_eje + m["pe"], -hw, -hw + m["pw"], 0.45 * m["pw"]), 0.0, t),
                    prisma(rect_redondo(u_in, u_eje + m["pe"], hw - m["pw"], hw, 0.45 * m["pw"]), 0.0, t),
                    cilindro_v(u_eje, t / 2.0, -hw + 0.4, hw - 0.4, m["rb"])]
         esl = []
@@ -283,6 +374,9 @@ def armar(res, o):
                         "medidas": {k: round(v, 3) for k, v in m.items()},
                         "angulo": round(math.degrees(th), 1), "desplazamiento": round(voff, 2),
                         "u_pared": round(u_out, 2), "u_eje": round(u_eje, 2)})
+    # los zócalos van con la primera cadena de su lado (se suman a la maceta igual)
+    if cadenas:
+        cadenas[0]["soporte"] = cadenas[0]["soporte"] + zocalos
     info = {"tipo": o["tipo"], "pie": o["pie"], "eslabones": o["eslabones"], "holgura": o["holgura"],
             "pieza": nombre, "cadenas": [{"nombre": c["nombre"], "eslabones": len(c["eslabones"]),
                                           "grosor_mm": round(c["medidas"]["t"], 2),
