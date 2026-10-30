@@ -208,7 +208,7 @@ def test_build_para_la_web():
         assert len(p["positions"]) == p["vertices"] * 12
         assert len(p["indices"]) == p["triangles"] * 12
     info = mate_web.info()
-    assert len(info["tipos"]) == 10
+    assert len(info["tipos"]) == 17
     assert [i["id"] for i in info["insertos"]] == ["polimero", "adaptador", "ambos", "propio"]
 
 

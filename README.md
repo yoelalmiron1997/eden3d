@@ -45,10 +45,12 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
 Segunda herramienta: **mates imperiales para imprimir en 3D con el hueco exacto del
 inserto** (`web/mate.html`, motor `engine/mate_core.py`).
 
-* **10 modelos**: imperial clásico, camionero, torpedo, copa y pera, moderno
+* **17 modelos**: imperial clásico, camionero, torpedo, copa y pera, moderno
   cilíndrico, **cohete** (con aletas y banda para la guarda), **vaso redondeado** (con
-  medallón para un relieve propio), **camionero anillado** y **facetado** (caras
-  triangulares alternadas con medallones).
+  medallón para un relieve propio), **camionero anillado**, **facetado** (caras
+  triangulares alternadas con medallones), **triangular**, **con patitas**, **low poly
+  torcido** e **irregular** (caras planas de verdad), **vaso cónico**, **labio grueso** y
+  **cubos 3D** (relieve de cubos en perspectiva).
 * **Hueco para** el **polímero escalonado**, el **polímero base**, **los dos juntos** o **un STL
   propio** (de revolución: el motor lee el perfil y verifica el volumen).
 * El hueco sale del perfil exacto de los STL de los insertos, con **holgura** ajustable.

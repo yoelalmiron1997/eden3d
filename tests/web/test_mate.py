@@ -15,7 +15,7 @@ INS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 def test_carga_y_muestra_el_mate(mate_app):
     pg = mate_app
     assert "Listo" in pg.locator(T % "estado").inner_text()
-    assert pg.locator(T % "sel-tipo" + " option").count() == 10
+    assert pg.locator(T % "sel-tipo" + " option").count() == 17
     assert pg.locator(T % "sel-inserto" + " option").count() == 4
     assert pg.evaluate("window.__mate.summary.valid")
     vw = pg.evaluate("window.__mate.viewer")

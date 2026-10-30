@@ -101,6 +101,42 @@ TIPOS = [
      "panza": [(0.0, 0.62), (0.42, 1.0), (1.0, "boca")],
      "extras": {"facetas": {"n": 6, "alternado": True},
                 "medallones": {"n": 3, "radio": 14.0, "z": 0.27, "prof": 1.2}}},
+    # --- modelos nuevos (fotos de referencia de Yoel, 2026-10-30)
+    {"id": "triangular", "nombre": "Triangular", "H": 112.0, "Dmax": 92.0, "Dboca": 92.0,
+     "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
+     "panza": [(0.0, 0.80), (0.04, 0.88), (0.20, 0.93), (0.60, 0.97), (0.90, 1.0),
+               (1.0, "boca")],
+     "extras": {"lobulos": {"n": 3, "amp": 0.13, "agudo": 1.4}}},
+    {"id": "patitas", "nombre": "Con patitas", "H": 118.0, "Dmax": 98.0, "Dboca": 82.0,
+     "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
+     "panza": [(0.0, 0.66), (0.10, 0.80), (0.30, 0.98), (0.48, 1.0), (0.72, 0.90),
+               (0.86, 0.82), (0.93, 0.86), (1.0, "boca")],
+     "extras": {"lobulos": {"n": 4, "amp": 0.16, "agudo": 3.0, "z1": 0.24, "fase": 0.5},
+                "medallones": {"n": 1, "radio": 24.0, "z": 0.55, "prof": 1.2}}},
+    {"id": "lowpoly_torcido", "nombre": "Low poly torcido", "H": 116.0, "Dmax": 100.0,
+     "Dboca": 96.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": True,
+     "panza": [(0.0, 0.74), (0.18, 0.93), (0.40, 1.0), (0.62, 0.95), (0.84, 0.86),
+               (1.0, "boca")],
+     "extras": {"poliedro": {"n": 7, "giro": 0.3}}},
+    {"id": "vaso_conico", "nombre": "Vaso cónico", "H": 110.0, "Dmax": 90.0, "Dboca": 90.0,
+     "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": True,
+     "panza": [(0.0, 0.80), (1.0, "boca")],
+     "extras": {"anillos": [(0.0, 0.08, 2.5)]}},
+    {"id": "lowpoly_irregular", "nombre": "Low poly irregular", "H": 118.0, "Dmax": 100.0,
+     "Dboca": 84.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": True,
+     "panza": [(0.0, 0.72), (0.22, 0.94), (0.46, 1.0), (0.72, 0.86), (0.88, 0.80),
+               (1.0, "boca")],
+     "extras": {"poliedro": {"n": 7, "giro": 0.5, "azar_r": 0.07, "azar_th": 0.22,
+                             "semilla": 7}}},
+    {"id": "labio_grueso", "nombre": "Labio grueso", "H": 112.0, "Dmax": 100.0,
+     "Dboca": 84.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
+     "panza": [(0.0, 0.70), (0.06, 0.86), (0.36, 1.0), (0.66, 0.93), (0.80, 0.82),
+               (0.84, 0.90), (0.95, 0.90), (1.0, "boca")],
+     "extras": {"medallones": {"n": 1, "radio": 16.0, "z": 0.45, "prof": 1.2}}},
+    {"id": "rombos", "nombre": "Cubos 3D", "H": 112.0, "Dmax": 92.0, "Dboca": 92.0,
+     "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
+     "panza": [(0.0, 0.88), (0.30, 0.90), (0.70, 0.94), (1.0, "boca")],
+     "extras": {"rombos": {"columnas": 10, "alto": 3.0}}},
 ]
 TIPOS_POR_ID = dict((t["id"], t) for t in TIPOS)
 
@@ -479,6 +515,141 @@ def _radio_poligono(sec, th):
     return best or 0.0
 
 
+def _lobulos(filas, M, H, lb):
+    """Panza con n lóbulos: r·(1 + amp·g(θ)·w(z)), g = ((1 + cos nθ)/2)^agudo (el primero,
+    al frente, o corrido `fase` del período). w = 1 hasta z1·H y baja suave a 0 en los 6 mm siguientes (patitas)."""
+    n, amp, ag = int(lb["n"]), float(lb["amp"]), float(lb.get("agudo", 1.0))
+    z1 = float(lb.get("z1", 1.0)) * H
+    fase = float(lb.get("fase", 0.0)) * TAU / n         # 0.5: entre lóbulos al frente
+    g = [((1.0 + math.cos(n * (TAU * k / M + math.pi / 2) - fase * n)) / 2.0) ** ag
+         for k in range(M)]
+    for z, rs in filas:
+        if z <= z1:
+            w = 1.0 if z1 >= H else 0.5 * (1.0 + math.cos(math.pi * max(0.0, z - (z1 - 18.0)) / 18.0)) \
+                if z > z1 - 18.0 else 1.0
+        else:
+            w = 0.0
+        if w > 0:
+            for k in range(M):
+                rs[k] *= 1.0 + amp * g[k] * w
+
+
+def _rombos(filas, M, H, R, rb):
+    """Relieve de cubos en perspectiva (tumbling blocks): grilla de hexágonos (punta arriba);
+    cada hexágono son tres rombos planos que bajan desde el centro. Se apaga cerca de la
+    base y de la boca."""
+    ncol, alto = int(rb["columnas"]), float(rb["alto"])
+    ancho = TAU * R / ncol                     # ancho de un hexágono (mm)
+    lado = ancho / math.sqrt(3.0)
+    sq3 = math.sqrt(3.0)
+    # vértices "cercanos" a 90°, 210° y 330° (lado 1)
+    E = [(math.cos(math.radians(a)), math.sin(math.radians(a))) for a in (90, 210, 330)]
+    pares = [(E[0], E[1]), (E[1], E[2]), (E[2], E[0])]
+
+    def prof(x, y):                            # x, y en unidades de lado
+        fila = int(math.floor(y / 1.5 + 0.5))
+        mejor = None
+        for j in (fila - 1, fila, fila + 1):   # centro más cercano
+            off = 0.5 * sq3 if j % 2 else 0.0
+            i = math.floor((x - off) / sq3 + 0.5)
+            for ii in (i - 1, i, i + 1):
+                cx, cy = ii * sq3 + off, 1.5 * j
+                d = (x - cx) ** 2 + (y - cy) ** 2
+                if mejor is None or d < mejor[0]:
+                    mejor = (d, x - cx, y - cy)
+        _, px, py = mejor
+        for (ax, ay), (bx, by) in pares:
+            det = ax * by - ay * bx
+            a = (px * by - py * bx) / det
+            b = (ax * py - ay * px) / det
+            if a >= -1e-9 and b >= -1e-9:
+                return min(2.0, a + b)
+        return 2.0
+    borde = 4.0
+    for z, rs in filas:
+        w = min(1.0, max(0.0, min(z - 1.0, H - 2.0 - z) / borde))
+        if w <= 0:
+            continue
+        y = z / lado
+        for k in range(M):
+            x = (k / float(M)) * ncol * sq3
+            rs[k] += w * alto * (1.0 - prof(x, y) / 2.0)
+
+
+def _filas_poliedro(p, s, M, paso, pd):
+    """Piel de caras planas: un polígono de n vértices por punto de control (girado `giro`
+    medio lado por nivel: torcido; con azar en radio y ángulo: irregular). Entre niveles,
+    triángulos planos; cada fila es el corte exacto a su altura."""
+    n = int(pd["n"])
+    giro = float(pd.get("giro", 0.5)) * TAU / n
+    ar, at = float(pd.get("azar_r", 0.0)), float(pd.get("azar_th", 0.0)) * TAU / n
+    rnd = __import__("random").Random(int(pd.get("semilla", 1)))
+    niveles = []
+    for k, (r, z) in enumerate(_control(p, s)):
+        R = r / math.cos(math.pi / n)
+        pts = []
+        for i in range(n):
+            th = -math.pi / 2 + k * giro + TAU * i / n + (rnd.uniform(-at, at) if at else 0.0)
+            rr = R * (1.0 + (rnd.uniform(-ar, ar) if ar else 0.0))
+            pts.append((th % TAU, rr * math.cos(th), rr * math.sin(th), z))
+        pts.sort()
+        niveles.append([q[1:] for q in pts])
+    # triangulación entre niveles: cremallera por ángulo
+    tris = []
+    for A, B in zip(niveles, niveles[1:]):
+        ang = lambda q: math.atan2(q[1], q[0]) % TAU
+        i0 = min(range(n), key=lambda i: ang(A[i]))
+        j0 = min(range(n), key=lambda j: ang(B[j]))
+        i = j = 0
+        while i < n or j < n:
+            a, a2 = A[(i0 + i) % n], A[(i0 + i + 1) % n]
+            b, b2 = B[(j0 + j) % n], B[(j0 + j + 1) % n]
+            ta = ang(a2) + (TAU if i + 1 >= n or ang(a2) < ang(A[i0]) else 0.0)
+            tb = ang(b2) + (TAU if j + 1 >= n or ang(b2) < ang(B[j0]) else 0.0)
+            if j >= n or (i < n and ta <= tb):
+                tris.append((a, a2, b))
+                i += 1
+            else:
+                tris.append((a, b2, b))
+                j += 1
+    zs = [lv[0][2] for lv in niveles]
+    filas = []
+    for z0, z1 in zip(zs, zs[1:]):
+        m = max(1, int(math.ceil((z1 - z0) / paso)))
+        for jj in range(0 if not filas else 1, m + 1):
+            z = z0 + (z1 - z0) * jj / float(m)
+            zc = min(max(z, z0 + 1e-6), z1 - 1e-6)      # corte apenas adentro de la banda
+            segs = []
+            for t in tris:
+                if not (min(q[2] for q in t) <= zc <= max(q[2] for q in t)):
+                    continue
+                cruces = []
+                for u, v in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+                    if (u[2] - zc) * (v[2] - zc) < 0:
+                        f = (zc - u[2]) / (v[2] - u[2])
+                        cruces.append((u[0] + f * (v[0] - u[0]), u[1] + f * (v[1] - u[1])))
+                if len(cruces) == 2:
+                    segs.append(cruces)
+            filas.append((z, [_radio_segs(segs, TAU * k / M) for k in range(M)]))
+    return filas
+
+
+def _radio_segs(segs, th):
+    """Radio del rayo de ángulo th contra el contorno (lista de segmentos)."""
+    dx, dy = math.cos(th), math.sin(th)
+    best = None
+    for (x1, y1), (x2, y2) in segs:
+        ex, ey = x2 - x1, y2 - y1
+        den = dx * ey - dy * ex
+        if abs(den) < 1e-12:
+            continue
+        r = (x1 * ey - y1 * ex) / den
+        u = (x1 * dy - y1 * dx) / den
+        if r > 0 and -1e-9 <= u <= 1 + 1e-9:
+            best = r if best is None else max(best, r)
+    return best or 0.0
+
+
 def filas_exteriores(p, s, M, paso=1.5):
     """Anillos de la piel exterior, de abajo hacia arriba: [(z, [r_k])], con
     r_k el radio en el ángulo 2πk/M. Incluye anillos, facetas y medallones."""
@@ -504,9 +675,15 @@ def filas_exteriores(p, s, M, paso=1.5):
                 sec = _seccion_facetas(C, D, t)
                 filas.append((z0 + t * (z1 - z0),
                               [_radio_poligono(sec, TAU * k / M) for k in range(M)]))
+    elif "poliedro" in ex:
+        filas = _filas_poliedro(p, s, M, paso, ex["poliedro"])
     else:
         rows = _anillos(_subdividir(denso[1:-1], paso), ex.get("anillos"), H)
         filas = [(z, [r] * M) for r, z in rows]
+    if "lobulos" in ex:
+        _lobulos(filas, M, H, ex["lobulos"])
+    if "rombos" in ex:
+        _rombos(filas, M, H, p["Dmax"] / 2.0 * s, ex["rombos"])
     med = ex.get("medallones")
     if med:
         n, rad, prof = int(med["n"]), float(med["radio"]), float(med["prof"])
