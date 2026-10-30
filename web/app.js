@@ -620,6 +620,6 @@ $("sentar").addEventListener("click", () => {
   const on = $("sentar").getAttribute("aria-pressed") !== "true";
   patitas.setPose(on);
   $("sentar").setAttribute("aria-pressed", String(on));
-  $("sentar").textContent = on ? "■ Bajarla del estante" : "▶ Sentarla en el borde";
+  $("sentar").textContent = on ? "■ Bajarla" : "▶ Sentarla";     // cortos: entran en el celular
   setTimeout(() => viewer.fit(), 1300);                 // encuadra la maceta con el estante
 });
