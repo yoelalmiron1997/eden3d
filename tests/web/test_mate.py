@@ -255,3 +255,52 @@ def test_tipografias_y_medallon_en_la_web(browser, base_url):
     assert dl.value.suggested_filename.endswith("_MEDALLON.stl")
     assert not pg.console_errors, pg.console_errors
     pg.context.close()
+
+
+@pytest.mark.spec("MAT-021")
+def test_cebar_el_mate(browser, base_url):
+    from web_helpers import open_mate
+    pg = open_mate(browser, base_url)
+    assert pg.evaluate("window.__mate.viewer.meshes") == ["MACETA", "INSERTO"]
+    pg.locator(T % "btn-cebar").click()
+    c = pg.evaluate("window.__mate.cebado")
+    assert c["playing"] and c["fase"] == "llenar" and c["enEscena"]
+    assert "CEBADO" in pg.evaluate("window.__mate.viewer.meshes")
+    # recorre las fases con el reloj real (el visor limita cada cuadro a 0,1 s)
+    pg.wait_for_function("window.__mate.cebado.tilt > 10", timeout=READY_MS)
+    assert pg.evaluate("window.__mate.cebado.fase") == "montañita"
+    pg.wait_for_function("window.__mate.cebado.fase === 'cebar'", timeout=READY_MS)
+    pg.wait_for_function("window.__mate.cebado.fase === 'listo' && !window.__mate.cebado.playing",
+                         timeout=READY_MS)
+    c = pg.evaluate("window.__mate.cebado")
+    assert c["cebados"] == 1 and c["tilt"] == 0 and c["bombilla"]
+    pg.wait_for_function("window.__mate.cebado.vapor", timeout=READY_MS)
+    cima = pg.evaluate("""() => { const c = window.__mateCebado; const p = c.yerba.geometry.attributes.position.array;
+        let m = -1e9; for (let i = 2; i < p.length; i += 3) m = Math.max(m, p[i]); return m; }""")
+    assert c["nivelAgua"] < cima - 5
+    assert "Listo" in pg.locator(T % "cebado-fase").inner_text()
+    # gota y olas en el agua del mate
+    g0 = c["gotas"]
+    pg.locator(T % "btn-gota").click()
+    pg.locator(T % "btn-olas").click()
+    assert pg.evaluate("window.__mate.cebado.gotas") == g0 + 1
+    # montañita más empinada: el agua queda más baja
+    n0 = c["nivelAgua"]
+    pg.locator(T % "sl-montanita").fill("60")
+    pg.locator(T % "sl-montanita").dispatch_event("change")
+    assert pg.evaluate("window.__mate.cebado.alfa") == 60
+    assert pg.evaluate("window.__mate.cebado.nivelAgua") < n0
+    # separar: el inserto sale con todo adentro
+    pg.locator(T % "sl-separar").fill("100")
+    pg.locator(T % "sl-separar").dispatch_event("input")
+    assert pg.evaluate("window.__mate.cebado.separar") == 1
+    assert pg.evaluate("window.__mateViewer.model.getObjectByName('INSERTO').position.z") > 50
+    pg.locator(T % "btn-despiece").click()
+    pg.wait_for_function("window.__mate.cebado.separar > 0 && window.__mate.cebado.separar < 1", timeout=READY_MS)
+    pg.locator(T % "btn-despiece").click()
+    # sin yerba ni agua vuelve la escena de siempre
+    pg.locator(T % "chk-yerba").uncheck()
+    pg.locator(T % "chk-agua").uncheck()
+    assert pg.evaluate("window.__mate.viewer.meshes") == ["MACETA", "INSERTO"]
+    assert not pg.console_errors, pg.console_errors
+    pg.context.close()

@@ -66,6 +66,12 @@ inserto** (`web/mate.html`, motor `engine/mate_core.py`).
   libres y gruesas, fáciles de imprimir (Archivo Black, Anton, Fredoka, Lilita One, Russo
   One, Bungee, Luckiest Guy y Pacifico; licencias en `engine/fuentes/LICENCIAS.md`,
   convertidas con `tools/fuentes.py`), más un **grosor** para engordar letras y dibujos.
+* **Cebar el mate** (`web/mate-cebado.js`): animación de la yerba que cae adentro del
+  inserto, el mate que se inclina para armar la **montañita** (ángulo ajustable), el agua
+  caliente que entra por el costado bajo (el agua interactiva del plato de las macetas:
+  gotas, olas y ondas al tocarla), la bombilla y el vapor. **Separar** saca el inserto
+  con todo adentro, con animación en loop. El motor le pasa a la web la cavidad del
+  inserto (`summary.cavidad`).
 * **Medallón encastrable**: el diseño va en una pieza circular aparte que entra en un
   bolsillo del mate (fondo plano, proyectado sobre la piel). La pieza se imprime con la
   base plana en la cama y se descarga como `_MEDALLON.stl` (o en el 3MF).

@@ -237,3 +237,34 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: MAT-021
+    titulo: Cebar el mate (yerba, montañita y agua animadas)
+    descripcion: >
+      En mate.html, "Cebar el mate" anima la yerba que cae adentro del inserto, el mate
+      que se inclina para armar la montañita y se vuelve a parar, el agua caliente que
+      entra por el costado bajo (agua interactiva como la del plato de las macetas: gotas,
+      olas y ondas al tocarla), la bombilla y el vapor. "Separar" saca el inserto con todo
+      adentro (con animación en loop, como el despiece de las macetas).
+    criterio: >
+      Tocar "Cebar el mate" pasa por las fases llenar → montañita (el mate se inclina) →
+      cebar (sube el agua) → bombilla → listo, con la malla CEBADO en la escena; al
+      terminar, el agua queda debajo de la cima de la montañita y la bombilla y el vapor
+      se ven; "Gota" tira una gota; la montañita más empinada deja el agua más baja;
+      "Separar" al 100 % sube el inserto y su contenido y "Animar" lo hace en loop; sin
+      yerba ni agua la escena es la de siempre (MACETA e INSERTO); sin errores.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: MAT-022
+    titulo: Hueco del inserto para la animación del cebado
+    descripcion: >
+      El motor le pasa a la web el espacio libre adentro del inserto (donde van la yerba
+      y el agua) a cada altura.
+    criterio: >
+      Para el polímero escalonado, el polímero base, los dos y un STL propio, la cavidad
+      va del fondo (3 mm sobre el fondo del inserto) a la boca del mate, cada 1 mm, y su
+      radio queda siempre adentro del inserto (al menos 2 mm menos que su radio exterior a
+      esa altura y a 4,5 mm por debajo).
+    prioridad: media
+    nivel: motor
+    estado: activa

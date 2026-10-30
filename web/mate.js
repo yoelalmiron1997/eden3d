@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
+import { Cebado } from "./mate-cebado.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
 
@@ -40,6 +41,9 @@ function call(type, payload = {}, transfer = []) {
 const viewer = new Viewer($("viewer"));
 viewer.mats.MACETA.roughness = 0.6;
 window.__mateViewer = viewer;
+const cebado = new Cebado(viewer);
+window.__mateCebado = cebado;
+Object.defineProperty(state, "cebado", { get: () => cebado.info() });
 Object.defineProperty(state, "viewer", { get: () => ({
   meshes: viewer.meshNames(), triangles: viewer.triangles, frames: viewer.stats.frames, cut: viewer.cut,
   scene: viewer.sceneKey, light: viewer.lightKey, slicer: viewer.slicerInfo(),
@@ -138,6 +142,7 @@ async function build(refit = false) {
       decoSync(r.summary.deco);
       marcaReport(r.summary.marca);
       montarGizmo(r.summary.deco);
+      cebado.montar(r.summary.cavidad);
       $("dlcuna").hidden = !r.summary.cuna;
       $("dlmedallon").hidden = !r.summary.medallon;
     }
@@ -346,6 +351,7 @@ $("light-presets").addEventListener("click", (ev) => {
 $("slicer").addEventListener("change", () => {
   slicerUi(viewer.setSlicer($("slicer").checked, "MACETA"));
   montarGizmo(state.summary?.deco);                      // en modo capas no hay gumball
+  cebado.visibilidad();                                  // ni yerba ni agua
 });
 $("layer").addEventListener("input", () => { viewer.playSlicer(false); slicerUi(viewer.setLayer(+$("layer").value)); });
 $("play-layers").addEventListener("click", () => { viewer.playSlicer(!viewer.slicer.playing); slicerUi(); });
@@ -619,6 +625,44 @@ window.addEventListener("keydown", (e) => {               // atajos como en Rhin
   const m = { g: "translate", w: "translate", r: "rotate", e: "rotate", s: "scale" }[e.key.toLowerCase()];
   if (m) modoGizmo(m);
 });
+
+// ------------------------------------------------------------------ cebar el mate
+const FASE_TXT = { llenar: "Cargando la yerba…", "montañita": "Inclinando para armar la montañita…",
+  cebar: "Cebando con agua caliente por el costado…", bombilla: "Poniendo la bombilla…", listo: "¡Listo para tomar!" };
+
+function cebadoUi() {
+  const c = cebado.info();
+  $("ver-yerba").checked = c.flags.yerba;
+  $("ver-agua").checked = c.flags.agua;
+  $("cebado-fase").textContent = c.enEscena ? FASE_TXT[c.fase] || "" : "";
+  $("cebar").textContent = c.playing ? "■ Cebando…" : "▶ Cebar el mate";
+  for (const id of ["gota", "olas"]) $(id).disabled = !(c.flags.agua && c.enEscena);
+}
+
+$("cebar").addEventListener("click", () => { cebado.play(); cebadoUi(); });
+$("ver-yerba").addEventListener("change", () => { cebado.setFlag("yerba", $("ver-yerba").checked); cebadoUi(); });
+$("ver-agua").addEventListener("change", () => { cebado.setFlag("agua", $("ver-agua").checked); cebadoUi(); });
+$("ver-bombilla").addEventListener("change", () => cebado.setFlag("bombilla", $("ver-bombilla").checked));
+$("ver-vapor").addEventListener("change", () => cebado.setFlag("vapor", $("ver-vapor").checked));
+$("montanita").addEventListener("input", () => { $("o-montanita").textContent = $("montanita").value + "°"; });
+$("montanita").addEventListener("change", () => { cebado.setAlfa(+$("montanita").value); cebadoUi(); });
+$("separar").addEventListener("input", () => {
+  cebado.setLoop(false);
+  $("separar-loop").setAttribute("aria-pressed", "false");
+  $("separar-loop").textContent = "▶ Animar";
+  cebado.setSeparar(+$("separar").value / 100);
+  $("o-separar").textContent = $("separar").value + " %";
+});
+$("separar-loop").addEventListener("click", () => {
+  const on = $("separar-loop").getAttribute("aria-pressed") !== "true";
+  cebado.setLoop(on);
+  $("separar-loop").setAttribute("aria-pressed", String(on));
+  $("separar-loop").textContent = on ? "■ Parar" : "▶ Animar";
+});
+cebado.onSeparar = (k) => { $("separar").value = Math.round(k * 100); $("o-separar").textContent = Math.round(k * 100) + " %"; };
+$("gota").addEventListener("click", () => cebado.gota());
+$("olas").addEventListener("click", () => cebado.olas());
+setInterval(cebadoUi, 300);
 
 // ------------------------------------------------------------------ marca debajo de la base (Pro)
 function marcaReport(m) {

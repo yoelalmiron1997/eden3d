@@ -164,6 +164,32 @@
         <div class="seg seg4" id="light-presets" role="radiogroup" aria-label="Luz" data-testid="luces"></div>
       </fieldset>
 
+      <fieldset class="sec" data-sec="cebado">
+        <legend>Cebar el mate <span class="hint">yerba, montañita y agua</span></legend>
+        <button type="button" id="cebar" data-testid="btn-cebar">▶ Cebar el mate</button>
+        <p class="hint small" id="cebado-fase" data-testid="cebado-fase" aria-live="polite"></p>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="ver-yerba" data-testid="chk-yerba"> Yerba</label>
+          <label class="check"><input type="checkbox" id="ver-agua" data-testid="chk-agua"> Agua</label>
+          <label class="check"><input type="checkbox" id="ver-bombilla" data-testid="chk-bombilla" checked> Bombilla</label>
+          <label class="check"><input type="checkbox" id="ver-vapor" data-testid="chk-vapor" checked> Vapor</label>
+        </div>
+        <label class="slider"><span>Montañita</span>
+          <input type="range" id="montanita" data-testid="sl-montanita" min="15" max="60" step="1" value="40">
+          <output id="o-montanita">40°</output></label>
+        <div class="row-play">
+          <label class="slider"><span>Separar</span>
+            <input type="range" id="separar" data-testid="sl-separar" min="0" max="100" step="1" value="0">
+            <output id="o-separar">0 %</output></label>
+          <button type="button" id="separar-loop" data-testid="btn-despiece" aria-pressed="false">▶ Animar</button>
+        </div>
+        <div class="row3" id="water-fx">
+          <button type="button" id="gota" data-testid="btn-gota">Gota</button>
+          <button type="button" id="olas" data-testid="btn-olas">Olas</button>
+        </div>
+        <p class="hint small">Tocá el agua para tirar una gota. Separar saca el inserto con todo adentro.</p>
+      </fieldset>
+
       <fieldset class="sec" data-sec="vista" data-closed-mobile>
         <legend>Vista</legend>
         <div class="checks">

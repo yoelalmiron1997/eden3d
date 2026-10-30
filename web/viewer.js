@@ -130,6 +130,7 @@ export class Viewer {
       this.tickPlants(dt);
       this.tickSlicer(dt);
       this.tickExplode(dt);
+      if (this.tickers) for (const f of this.tickers) f(dt);   // animaciones de cada página (cebado del mate)
       if (this.onFrame) this.onFrame();
       this.renderer.render(this.scene, this.camera);
       this.stats.frames++;

@@ -116,6 +116,37 @@ def malla_inserto(res):
     return V, F
 
 
+def cavidad(res, pared=2.0, fondo=3.0, paso=1.0):
+    """Lo de adentro del inserto (donde van la yerba y el agua), para la animación del
+    cebado en la web: radio libre cada `paso` mm, desde el fondo hasta la boca. El inserto
+    es un vaso con pared de ~2 mm; la pestaña de arriba (más ancha) no agranda el hueco."""
+    canon, _, _ = mc.hueco_de(res["opts"])
+    H = res["params"]["H"]
+    hundir = res["report"].get("hundir_mm", 0.0)
+    rz = mc.colocar_hueco(mc.perfil_hueco(canon, 0.0, hundir, 0.0), H, hundir)
+    z_bot = min(z for _, z in rz)
+    z_top = max(z for _, z in rz)
+
+    def r_ext(z):
+        best = 0.0
+        for (r1, z1), (r2, z2) in zip(rz, rz[1:]):
+            if min(z1, z2) - 1e-9 <= z <= max(z1, z2) + 1e-9:
+                if abs(z2 - z1) < 1e-9:
+                    best = max(best, min(r1, r2))
+                else:
+                    best = max(best, r1 + (z - z1) * (r2 - r1) / (z2 - z1))
+        return best
+    z0 = z_bot + fondo
+    zs, rs = [], []
+    n = int((z_top - z0) / paso)
+    for i in range(n + 1):
+        z = z0 + i * paso
+        r = min(r_ext(z), r_ext(max(z0, z - 4.5)), r_ext(min(z_top, z + 0.01))) - pared
+        zs.append(round(z, 2))
+        rs.append(round(max(1.0, r), 2))
+    return {"z": zs, "r": rs, "fondo": round(z0, 2), "boca": round(z_top, 2)}
+
+
 def _resultado(opts):
     o = _opts(opts)
     res = mc.build_mate(o)
@@ -157,6 +188,7 @@ def build(opts):
             pos, idx = _pack(Vc, Fc)
             parts.append({"name": "CUNA", "positions": pos, "indices": idx,
                           "vertices": len(Vc), "triangles": len(Fc)})
+        rep["cavidad"] = cavidad(res)
         Vi, Fi = malla_inserto(res)
         pos, idx = _pack(Vi, Fi)
         parts.append({"name": "INSERTO", "positions": pos, "indices": idx,
