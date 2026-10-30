@@ -4,6 +4,7 @@ import { renderCare, renderCompat } from "./care.js";
 import { makeGuide } from "./guia.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
+import { Patitas } from "./patitas.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -47,6 +48,9 @@ function call(type, payload = {}) {
 
 const viewer = new Viewer($("viewer"));
 window.__edenViewer = viewer;
+const patitas = new Patitas(viewer);
+window.__edenPatitas = patitas;
+Object.defineProperty(state, "patitas", { get: () => patitas.info() });
 Object.defineProperty(state, "viewer", { get: () => ({
   meshes: viewer.meshNames(), triangles: viewer.triangles, plantTriangles: viewer.plantTriangles || 0,
   waterTime: viewer.stats.waterTime, waterLevel: viewer.stats.waterLevel, frames: viewer.stats.frames,
@@ -76,6 +80,10 @@ function opts() {
   };
   // marca personalizada: sólo con permiso (Pro o admin); si no, la del motor (Eden3D)
   if (state.brand !== null && state.auth?.perms.brand) o.brand = state.brand;
+  if ($("patitas").value) {
+    o.patitas = { tipo: $("patitas").value, pie: $("pies").value, eslabones: +$("eslabones").value,
+      holgura: +$("holgura-patas").value };
+  }
   return o;
 }
 
@@ -140,6 +148,8 @@ async function build(refit = false) {
       viewer.setColor($("color").value);
       viewer.setCut($("cut").checked);
       viewer.setWater($("water").checked);
+      patitas.montar(r.summary.patitas);
+      patitasMsg(r.summary.patitas);
       slicerUi();
     }
     state.triangles = viewer.triangles;
@@ -350,6 +360,9 @@ async function main() {
     fill($("size"), info.sizes, (s) => s, (s) => s);
     fill($("mode"), info.modes, (m) => m.code, (m) => m.label);
     fill($("drain"), info.drains, (d) => d.code, (d) => d.label);
+    fill($("patitas"), [{ id: "", nombre: "Sin patitas" }, ...info.patitas.tipos], (t) => t.id, (t) => t.nombre);
+    fill($("pies"), info.patitas.pies, (t) => t.id, (t) => t.nombre);
+    $("patitas").disabled = $("pies").disabled = false;
     $("size").value = "S";
     $("engine-v").textContent = info.engine;
     $("build-id").textContent = "web " + boot.version;
@@ -586,3 +599,27 @@ $("mode").addEventListener("change", () => renderCarePanel(state.compat));
 $("hq").addEventListener("change", () => build());
 window.addEventListener("error", (e) => state.errors.push(String(e.message)));
 main();
+
+// ------------------------------------------------------------------ patitas articuladas
+const PIEZA_TXT = { MACETA: "la maceta", PLATO: "el plato" };
+function patitasMsg(p) {
+  $("patitas-ui").hidden = !$("patitas").value;
+  if (!p) { $("patitas-msg").textContent = ""; return; }
+  const c = p.cadenas[0];
+  $("patitas-msg").textContent = `Van pegadas a ${PIEZA_TXT[p.pieza_archivo] || "la pieza"} y salen impresas ya armadas: `
+    + `eslabones de ${String(c.grosor_mm).replace(".", ",")} mm con ${String(p.holgura).replace(".", ",")} mm de juego. `
+    + "Al sacarlas de la cama, doblalas despacio para soltar las bisagras.";
+}
+for (const id of ["patitas", "pies"]) $(id).addEventListener("change", () => { patitasMsg(null); build(); });
+$("eslabones").addEventListener("input", () => { $("o-eslabones").textContent = $("eslabones").value; });
+$("holgura-patas").addEventListener("input", () => {
+  $("o-holgura-patas").textContent = (+$("holgura-patas").value).toFixed(2).replace(".", ",") + " mm";
+});
+for (const id of ["eslabones", "holgura-patas"]) $(id).addEventListener("change", () => build());
+$("sentar").addEventListener("click", () => {
+  const on = $("sentar").getAttribute("aria-pressed") !== "true";
+  patitas.setPose(on);
+  $("sentar").setAttribute("aria-pressed", String(on));
+  $("sentar").textContent = on ? "■ Bajarla del estante" : "▶ Sentarla en el borde";
+  setTimeout(() => viewer.fit(), 1300);                 // encuadra la maceta con el estante
+});

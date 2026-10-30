@@ -22,6 +22,7 @@ import time
 
 import eden_catalog as ec
 import eden_core as core
+import eden_patitas
 import eden_plantas
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -62,6 +63,10 @@ def info():
                        for k, v in eden_plantas.COBERTURAS.items()],
         "flex": eden_plantas.FLEX,
         "decor_mats": list(eden_plantas.DECOR_MATS),
+        "patitas": {"tipos": [{"id": k, "nombre": n} for k, n in eden_patitas.TIPOS],
+                    "pies": [{"id": k, "nombre": n} for k, n in eden_patitas.PIES],
+                    "defecto": dict(eden_patitas.DEFECTO),
+                    "limites": {k: list(v) for k, v in eden_patitas.LIMITES.items()}},
     }
 
 
@@ -149,6 +154,9 @@ def build(opts):
     rep = res["report"]
     parts = []
     abertura = None
+    pat = None
+    if rep.get("valid") and opts.get("patitas"):
+        pat = _patitas_web(res, opts["patitas"])
     if rep.get("valid"):
         for nm, V, F, dz in _placed(res):
             if nm == "MACETA":
@@ -157,6 +165,13 @@ def build(opts):
             pos, idx = _pack(V, F, dz)
             parts.append({"name": nm, "positions": pos, "indices": idx,
                           "vertices": len(V), "triangles": len(F)})
+        if pat:                          # cada eslabón aparte: la web los anima
+            for c in pat["cadenas"]:
+                for e in c["eslabones"]:
+                    pos, idx = _pack(e["V"], e["F"])
+                    parts.append({"name": e["parte"], "positions": pos, "indices": idx,
+                                  "vertices": len(e["V"]), "triangles": len(e["F"])})
+                    del e["V"], e["F"]
         Vw, Fw = core.water_mesh(res)
         if Vw:
             pos, idx = _pack(Vw, Fw)
@@ -188,6 +203,8 @@ def build(opts):
                                  [(pt["name"], (pt["report"].get("brand") or {}).get("cap_h_mm"))
                                   for pt in res.get("parts") or []])},
     }
+    if pat:
+        summary["patitas"] = pat
     if opts.get("check") and rep.get("valid"):          # cobertura del administrador
         summary["mesh_check"] = dict([("MACETA", mesh_check(res["faces"]))] +
                                      [(pt["name"], mesh_check(pt["faces"])) for pt in res.get("parts") or []])
@@ -195,6 +212,39 @@ def build(opts):
 
 
 _ABERTURA = {}
+
+
+def _patitas_web(res, o):
+    """Patitas para la web: el soporte de la cadera se suma a su pieza (fusionado) y los
+    eslabones van aparte, con el eje de cada bisagra para animarlos."""
+    nombre, cadenas, info = eden_patitas.armar(res, o)
+    if nombre == "MACETA":
+        V, F = res["vertices"], res["faces"]
+    else:
+        pt = [x for x in res["parts"] if x["name"] == nombre][0]
+        V, F = pt["vertices"], pt["faces"]
+    out = []
+    for c in cadenas:
+        for Vs, Fs in c["soporte"]:
+            off = len(V)
+            V.extend(Vs)
+            F.extend((a + off, b + off, d + off) for a, b, d in Fs)
+        esl = []
+        for k, e in enumerate(c["eslabones"]):
+            Ve, Fe = [], []
+            for Vs, Fs in e["shells"]:
+                off = len(Ve)
+                Ve.extend(Vs)
+                Fe.extend((a + off, b + off, d + off) for a, b, d in Fs)
+            (px, py, pz), d = e["eje"]
+            esl.append({"parte": "%s_%d" % (c["nombre"], k + 1), "V": Ve, "F": Fe,
+                        "eje": [round(px, 3), round(py, 3), round(pz, 3)], "dir": [round(x, 4) for x in d]})
+        out.append({"nombre": c["nombre"], "eslabones": esl, "angulo": c["angulo"], "grosor_mm": round(c["medidas"]["t"], 2)})
+    res["report"]["patitas"] = info
+    info = dict(info)
+    info["cadenas"] = out
+    info["pieza_archivo"] = ec.PART_FILE.get(nombre, nombre)
+    return info
 
 
 def plants(opts, ids, decor=True, cobertura=None):
@@ -241,6 +291,8 @@ def export_3mf(opts):
     res = core.build_pot(p)
     if not res["report"].get("valid"):
         raise ValueError("; ".join(res["report"].get("errors", [])) or "modelo inválido")
+    if o.get("patitas"):
+        eden_patitas.agregar(res, o["patitas"])
     meta = {"Title": p["model_id"], "Designer": "Eden3D",
             "Copyright": "© Eden3D — Yoel Almirón. Todos los derechos reservados.",
             "LicenseTerms": LICENSE_NOTE,
@@ -266,6 +318,8 @@ def export_stl(opts, part="MACETA"):
     res = core.build_pot(p)
     if not res["report"].get("valid"):
         raise ValueError("; ".join(res["report"].get("errors", [])) or "modelo inválido")
+    if o.get("patitas"):
+        eden_patitas.agregar(res, o["patitas"])
     for nm, V, F in ec.pieces(res):
         if nm == part:
             name = "%s_%s.stl" % (p["model_id"], nm)

@@ -1,0 +1,67 @@
+area: Macetas articuladas (patitas y bracitos)
+prefijo: PAT
+specs:
+  - id: PAT-001
+    titulo: Las patitas salen impresas ya armadas y sueltas
+    descripcion: >
+      Patas y bracitos son cadenas de eslabones acostados en la cama, con bisagras de
+      anillo y barra que se imprimen armadas (print in place). Diseño propio de Eden3D.
+    criterio: >
+      Cada sólido es una malla cerrada con volumen positivo; entre eslabones vecinos (y
+      entre la cadera y el primer eslabón) queda exactamente la holgura pedida (±0,05 mm);
+      eslabones no vecinos y las dos patas no se tocan; el primer eslabón queda a más de la
+      holgura de la pared; todo apoya en la cama (z mínimo 0, nada por debajo).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PAT-002
+    titulo: Las bisagras giran sin trabarse
+    descripcion: >
+      La barra entra en el agujero del anillo con holgura, el anillo cabe entre las púas,
+      y los cuerpos de los eslabones quedan fuera del alcance de las púas al girar.
+    criterio: >
+      Radio de la barra + holgura = radio del agujero del anillo; el hueco entre púas es
+      mayor que el ancho del anillo + 2 holguras; el cuerpo del eslabón siguiente empieza
+      más allá del alcance de las púas (+ holgura) y el del eslabón anterior termina antes
+      del anillo (+ holgura); la barra mide al menos 2,5 mm; el grosor escala con la
+      maceta (8 a 14 mm).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PAT-003
+    titulo: Se fusionan a la maceta o al plato
+    descripcion: >
+      El soporte de la cadera se mete en la pared de la pieza que toca la mesa (el plato si
+      hay, si no la maceta) sin pasar al lado de adentro, y las descargas las traen pegadas.
+    criterio: >
+      Sin plato van en la maceta y con plato (autorriego, rosca, apoyado) en el plato; el
+      soporte entra en la pared (empieza adentro de la cara de afuera) y no más de la
+      textura + 0,6 de la pared; el STL y el 3MF de esa pieza tienen las patitas (más
+      triángulos, malla cerrada); patas, patas y brazos, y brazos solos funcionan.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: PAT-004
+    titulo: Opciones de las patitas
+    descripcion: Tipo (patas, patas y bracitos, bracitos), pies (botitas o de pato), eslabones y holgura.
+    criterio: >
+      Los eslabones van de 2 a 5 y la holgura de 0,3 a 0,7 mm (fuera de rango se ajustan);
+      un tipo o pie desconocido se rechaza con un mensaje; con pies de pato los bracitos
+      terminan en alitas; info() de la web publica las opciones.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: PAT-005
+    titulo: Patitas en la web, con la maceta sentada en un estante
+    descripcion: >
+      En macetas.html se eligen las patitas y los pies; cada eslabón se ve aparte y
+      "Sentarla en el borde" la sube a un estante: las patas cuelgan y se balancean y los
+      bracitos saludan.
+    criterio: >
+      Elegir "Patitas y bracitos" muestra los eslabones PATA_* y BRAZO_*, el mensaje con el
+      grosor y la holgura; "Sentarla en el borde" pone el estante y deja la cadera de las
+      patas a unos 80° (colgando) y los brazos levantados; cambiar los pies o los eslabones
+      recalcula; la descarga STL trae las patitas; sin errores en la consola.
+    prioridad: alta
+    nivel: web
+    estado: activa

@@ -23,7 +23,7 @@ WEB_MODULES = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py
                "eden_catalog.py", "eden_web.py", "eden_selftest.py", "eden_escena.py",
                "eden_plantas.py", "colecciones/catalogo_eden3d.json",
                "colecciones/plantas.json", "mate_core.py", "mate_web.py", "mate_deco.py",
-               "mate_fuentes.py",
+               "mate_fuentes.py", "eden_patitas.py",
                "sopa_core.py", "sopa_web.py"]
 PYODIDE_FILES = ["pyodide.js", "pyodide.asm.js", "pyodide.asm.wasm", "python_stdlib.zip",
                  "pyodide-lock.json"]

@@ -221,8 +221,10 @@ export class Viewer {
     let tris = 0;
     for (const p of parts) {
       if (p.name === "AGUA") continue;                   // el agua la arma el visor (animada)
-      const name = p.name === "MACETA" ? "MACETA" : (this.mats[p.name] ? p.name : "PLATO");
-      const mesh = new THREE.Mesh(this.geom(p), this.mats[name]);
+      // eslabones de las patitas: cada uno con su nombre (se animan), del color de la maceta
+      const limb = /^(PATA|BRAZO)_/.test(p.name);
+      const name = p.name === "MACETA" ? "MACETA" : (this.mats[p.name] || limb ? p.name : "PLATO");
+      const mesh = new THREE.Mesh(this.geom(p), limb ? this.mats.MACETA : this.mats[name]);
       mesh.name = name;
       mesh.castShadow = mesh.receiveShadow = true;
       this.model.add(mesh);
@@ -351,7 +353,7 @@ export class Viewer {
     const off = this.explodeOffset();
     const pot = this.model.getObjectByName("MACETA");
     if (pot) pot.position.z = off;
-    this.plants.position.y = off;
+    this.plants.position.y = off + (this.lift || 0);      // lift: la maceta sentada en un estante
     const H = off / 0.95 / Math.max(this.explode, 1e-6);
     for (const g of this.plants.children) {
       const b = g.userData.base;
