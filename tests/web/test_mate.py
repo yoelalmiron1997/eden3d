@@ -278,7 +278,9 @@ def test_cebar_el_mate(browser, base_url):
     cima = pg.evaluate("""() => { const c = window.__mateCebado; const p = c.yerba.geometry.attributes.position.array;
         let m = -1e9; for (let i = 2; i < p.length; i += 3) m = Math.max(m, p[i]); return m; }""")
     assert c["nivelAgua"] < cima - 5
-    assert "Listo" in pg.locator(T % "cebado-fase").inner_text()
+    # el cartel de la fase se refresca cada 0,3 s: se espera a que diga "Listo"
+    pg.wait_for_function("document.querySelector('[data-testid=cebado-fase]').textContent.includes('Listo')",
+                         timeout=READY_MS)
     # agua transparente y bombillas como las argentinas
     dif, op = pg.evaluate("""() => { const m = window.__mateViewer.mats.AGUA_MATE; const h = m.color.getHex();
         const c = [(h >> 16) & 255, (h >> 8) & 255, h & 255].map((x) => x / 255);   // sRGB, como se ve
