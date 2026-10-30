@@ -153,11 +153,16 @@ specs:
     titulo: Relieve con gumball en la web
     descripcion: >
       En mate.html se elige texto o SVG, se ve el relieve en el mate y se acomoda con un
-      gumball (mover sobre la superficie, girar y escalar) o con los controles.
+      gumball (mover sobre la superficie, girar y escalar) o con los controles. Mientras
+      se arrastra, el relieve se vuelve a apoyar sobre la piel real en cada cuadro (no
+      queda flotando ni enterrado donde el mate cambia de ancho, como en el labio).
     criterio: >
       Elegir "Texto" muestra la malla RELIEVE y el gumball; arrastrar el gumball (mover)
-      cambia el ángulo y la altura y recalcula; girar cambia la rotación; escalar cambia
-      el tamaño; subir un SVG lo proyecta; la cuña se ve y se descarga en STL.
+      cambia el ángulo y la altura y recalcula; durante el arrastre y después de soltar,
+      todos los vértices del relieve quedan entre 0,8 mm adentro y la profundidad pedida
+      afuera de la piel (±0,05 mm), también al subirlo al labio del modelo Labio grueso;
+      girar cambia la rotación; escalar cambia el tamaño; subir un SVG lo proyecta; la
+      cuña se ve y se descarga en STL.
     prioridad: alta
     nivel: web
     estado: activa
@@ -176,4 +181,59 @@ specs:
       cuello; Cubos 3D tiene un relieve de 3 mm que se repite 10 veces alrededor.
     prioridad: media
     nivel: motor
+    estado: activa
+  - id: MAT-017
+    titulo: Los modelos salen lisos, sin círculos
+    descripcion: >
+      Ningún modelo de fábrica trae círculos rebajados (medallones): el lugar para un
+      diseño lo hace el medallón encastrable sólo cuando se lo pide.
+    criterio: >
+      Ningún modelo tiene "medallones" en sus extras; Vaso redondeado y Labio grueso son
+      de revolución (cada fila con un solo radio); sin relieve ni medallón, la piel del
+      frente de Con patitas y Facetado no tiene rebajes (la misma piel que sin el extra).
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: MAT-018
+    titulo: Tipografías gruesas para el texto en relieve
+    descripcion: >
+      El texto del relieve se puede poner en 9 tipografías (la de trazos de Eden3D y 8
+      libres, gruesas, fáciles de imprimir) y se puede engordar hasta 1,5 mm.
+    criterio: >
+      Las 8 tipografías libres traen A–Z, a–z, 0–9, acentos y Ñ, figuran con su licencia
+      (OFL o Apache) en fuentes/LICENCIAS.md, y con cada una el relieve sale cerrado; la
+      tipografía por defecto (Archivo Black) cubre más superficie que la de trazos con el
+      mismo texto y alto; un carácter que no está en la tipografía se rechaza con un
+      mensaje en español; con grosor g el relieve es 2·g (±0,3 mm) más ancho y más alto.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-019
+    titulo: Medallón encastrable
+    descripcion: >
+      El texto o el SVG puede ir en un medallón circular aparte: el mate lleva un
+      bolsillo (la diferencia con la pieza, proyectada sobre la piel, con fondo plano) y
+      la pieza encastra en él. La pieza se imprime con la base plana en la cama.
+    criterio: >
+      Con medallón: el mate y la pieza son mallas cerradas; ningún punto de la pieza en su
+      lugar queda adentro de la pared del mate (±0,01 mm); el bolsillo tiene al menos el
+      diámetro pedido en el fondo y al menos la profundidad pedida; el juego queda entre la
+      holgura y holgura + 0,8 mm; el diseño entra en el disco (se achica si hace falta y
+      lo avisa); la pieza en la cama apoya plana en z = 0; se descarga como
+      "…_MEDALLON.stl" y va como objeto aparte en el 3MF; el relieve ya no se suma al mate.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-020
+    titulo: Tipografías y medallón en la web
+    descripcion: >
+      En mate.html se elige la tipografía y el grosor del texto, y se activa el medallón
+      encastrable con su diámetro y holgura; la pieza se ve en su lugar y se descarga.
+    criterio: >
+      El selector de tipografía tiene las 9 y cambiarla recalcula con esa fuente; el grosor
+      se manda al motor; tildar "En un medallón encastrable" muestra la malla MEDALLON, el
+      mensaje con el juego y el botón "STL medallón", que baja "…_MEDALLON.stl"; sin
+      errores en la consola.
+    prioridad: alta
+    nivel: web
     estado: activa

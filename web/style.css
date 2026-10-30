@@ -372,4 +372,4 @@ html.es-admin .solo-admin { display: revert !important; }
 .sopa-palabras button[aria-pressed="true"] { background: #e8562a; border-color: #e8562a; color: #fff; text-decoration: line-through; }
 .seg3 { grid-template-columns: repeat(3, 1fr); }
 #deco-ui { display: grid; gap: 8px; }
-#deco-ui[hidden], #cuna-row[hidden] { display: none; }
+#deco-ui[hidden], #cuna-row[hidden], #medallon-ui[hidden], #deco-fuente-row[hidden] { display: none; }

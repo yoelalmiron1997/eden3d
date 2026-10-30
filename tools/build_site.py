@@ -23,6 +23,7 @@ WEB_MODULES = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py
                "eden_catalog.py", "eden_web.py", "eden_selftest.py", "eden_escena.py",
                "eden_plantas.py", "colecciones/catalogo_eden3d.json",
                "colecciones/plantas.json", "mate_core.py", "mate_web.py", "mate_deco.py",
+               "mate_fuentes.py",
                "sopa_core.py", "sopa_web.py"]
 PYODIDE_FILES = ["pyodide.js", "pyodide.asm.js", "pyodide.asm.wasm", "python_stdlib.zip",
                  "pyodide-lock.json"]
@@ -47,6 +48,14 @@ def build(out, node_modules):
         shutil.copy2(src, dst)
         with open(src, "rb") as fh:
             h.update(fh.read())
+    # tipografías del relieve del mate (se bajan cuando se eligen)
+    fd = os.path.join(ENGINE, "fuentes")
+    for f in sorted(os.listdir(fd)):
+        if f.endswith(".json") or f.endswith(".md"):
+            os.makedirs(os.path.join(pyd, "fuentes"), exist_ok=True)
+            shutil.copy2(os.path.join(fd, f), os.path.join(pyd, "fuentes", f))
+            with open(os.path.join(fd, f), "rb") as fh:
+                h.update(fh.read())
     version = h.hexdigest()[:10]
     with open(os.path.join(pyd, "manifest.json"), "w", encoding="utf-8") as fh:
         json.dump({"version": version, "files": WEB_MODULES}, fh, indent=1)

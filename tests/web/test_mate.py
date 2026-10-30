@@ -186,3 +186,72 @@ def test_relieve_con_gumball(browser, base_url, tmp_path):
     assert dl.value.suggested_filename.endswith("_CUNA.stl")
     assert not pg.console_errors, pg.console_errors
     pg.context.close()
+
+
+ALTURAS = """() => { const m = window.__mateViewer.model.getObjectByName('RELIEVE');
+  const p = m.geometry.attributes.position; let lo = 1e9, hi = -1e9;
+  for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const h = Math.hypot(x, y) - window.__matePiel(z, Math.atan2(y, x));
+    lo = Math.min(lo, h); hi = Math.max(hi, h); }
+  return [lo, hi]; }"""
+
+
+@pytest.mark.spec("MAT-015")
+def test_gumball_reapoya_el_relieve_sobre_la_piel(browser, base_url):
+    from web_helpers import open_mate
+    pg = open_mate(browser, base_url)
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "sel-tipo").select_option("labio_grueso")
+    esperar(pg, b)
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "deco-texto").click()
+    esperar(pg, b)
+    prof = pg.evaluate("window.__mate.summary.deco.prof")
+    lo, hi = pg.evaluate(ALTURAS)
+    assert lo == pytest.approx(-0.8, abs=0.05) and hi == pytest.approx(prof, abs=0.05)
+    # arrastre hacia el labio (donde el mate cambia de ancho): el relieve sigue pegado
+    pg.evaluate("""() => { const g = window.__mateGizmo, pv = g.object;
+        g.dispatchEvent({type: 'dragging-changed', value: true});
+        pv.position.applyAxisAngle(new pv.position.constructor(0, 0, 1), 0.7); pv.position.z += 30;
+        g.dispatchEvent({type: 'objectChange'}); }""")
+    lo, hi = pg.evaluate(ALTURAS)
+    assert lo == pytest.approx(-0.8, abs=0.05) and hi == pytest.approx(prof, abs=0.05)
+    assert pg.evaluate("window.__mate.gizmo.moves") >= 1
+    b = pg.evaluate("window.__mate.builds")
+    pg.evaluate("() => window.__mateGizmo.dispatchEvent({type: 'dragging-changed', value: false})")
+    esperar(pg, b)
+    lo, hi = pg.evaluate(ALTURAS)
+    assert lo == pytest.approx(-0.8, abs=0.05) and hi == pytest.approx(prof, abs=0.05)
+    assert pg.evaluate("window.__mate.summary.deco.z") > 75
+    assert not pg.console_errors, pg.console_errors
+    pg.context.close()
+
+
+@pytest.mark.spec("MAT-020")
+def test_tipografias_y_medallon_en_la_web(browser, base_url):
+    from web_helpers import open_mate
+    pg = open_mate(browser, base_url)
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "deco-texto").click()
+    esperar(pg, b)
+    assert pg.locator(T % "sel-fuente" + " option").count() == 9
+    assert pg.evaluate("window.__mate.summary.deco.fuente") == "archivo_black"
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "sel-fuente").select_option("pacifico")
+    esperar(pg, b)
+    assert pg.evaluate("window.__mate.summary.deco.fuente") == "pacifico"
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "sl-d-grosor").fill("0.8")
+    pg.locator(T % "sl-d-grosor").dispatch_event("change")
+    esperar(pg, b)
+    assert pg.evaluate("window.__mate.summary.deco.grosor") == pytest.approx(0.8)
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "chk-medallon").check()
+    esperar(pg, b)
+    assert "MEDALLON" in pg.evaluate("window.__mate.viewer.meshes")
+    assert "juego" in pg.locator(T % "medallon-msg").inner_text()
+    with pg.expect_download(timeout=READY_MS) as dl:
+        pg.locator(T % "btn-stl-medallon").click()
+    assert dl.value.suggested_filename.endswith("_MEDALLON.stl")
+    assert not pg.console_errors, pg.console_errors
+    pg.context.close()

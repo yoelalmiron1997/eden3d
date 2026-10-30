@@ -13,7 +13,8 @@ const mm = (v, d = 1) => (v === undefined || v === null ? "—" : `${(+v).toFixe
 // estado visible para los tests e2e (window.__mate)
 const state = { ready: false, busy: false, info: null, summary: null, parts: [], builds: 0, errors: [],
   stl: null, auth: null, scene: "estudio", light: "estudio", marca: null, cuna: false,
-  deco: { tipo: "", texto: "TecnoBear", svg: null, angulo: -90, z: null, alto: 18, rot: 0, prof: 1.2 },
+  deco: { tipo: "", texto: "TecnoBear", svg: null, angulo: -90, z: null, alto: 18, rot: 0, prof: 1.2,
+    fuente: null, grosor: 0, medallon: false, diam: 36, holgura: 0.2 },
   gizmo: { mode: "translate", drags: 0 } };
 window.__mate = state;
 
@@ -44,6 +45,7 @@ Object.defineProperty(state, "viewer", { get: () => ({
   scene: viewer.sceneKey, light: viewer.lightKey, slicer: viewer.slicerInfo(),
   inserto: !!(viewer.model.getObjectByName("INSERTO") || {}).visible,
   relieve: !!viewer.model.getObjectByName("RELIEVE"), cuna: !!viewer.model.getObjectByName("CUNA"),
+  medallon: !!viewer.model.getObjectByName("MEDALLON"),
   gizmo: !!(gizmo && gizmo.object), gizmoMode: gizmo ? gizmo.mode : null,
 }) });
 
@@ -59,9 +61,12 @@ function opts() {
   if (o.inserto === "propio") o.stl_nombre = state.stl?.name || "";
   const d = state.deco;
   if (d.tipo === "texto" || (d.tipo === "svg" && d.svg)) {
-    o.deco = { tipo: d.tipo, texto: d.texto, angulo: d.angulo, alto: d.alto, rot: d.rot, prof: d.prof };
+    o.deco = { tipo: d.tipo, texto: d.texto, angulo: d.angulo, alto: d.alto, rot: d.rot, prof: d.prof,
+      grosor: d.grosor };
     if (d.z !== null) o.deco.z = d.z;
     if (d.tipo === "svg") o.deco.svg_nombre = d.svg;
+    if (d.tipo === "texto" && d.fuente) o.deco.fuente = d.fuente;
+    if (d.medallon) o.deco.medallon = { diam: d.diam, holgura: d.holgura };
   }
   // marca debajo de la base: la de Eden3D salvo para Pro / admin
   if (state.marca !== null && state.auth?.perms.brand) o.marca = state.marca;
@@ -88,7 +93,7 @@ function setBusy(on, text = "Calculando…") {
   $("busy-text").textContent = text;
   const ok = !on && state.ready && !!state.summary?.valid;
   $("build").disabled = on || !state.ready;
-  for (const id of ["dlstl", "dl3mf", "photo", "dlcuna"]) $(id).disabled = !ok;
+  for (const id of ["dlstl", "dl3mf", "photo", "dlcuna", "dlmedallon"]) $(id).disabled = !ok;
 }
 
 function showReport(s) {
@@ -134,6 +139,7 @@ async function build(refit = false) {
       marcaReport(r.summary.marca);
       montarGizmo(r.summary.deco);
       $("dlcuna").hidden = !r.summary.cuna;
+      $("dlmedallon").hidden = !r.summary.medallon;
     }
     state.triangles = viewer.triangles;
     state.meshes = viewer.meshNames();
@@ -282,6 +288,8 @@ async function main() {
     $("build-id").textContent = "web " + boot.version;
     for (const id of ["tipo", "inserto"]) $(id).disabled = false;
     state.ready = true;
+    fill($("deco-fuente"), boot.info.deco.fuentes, (f) => f.id, (f) => f.nombre);
+    state.deco.fuente = boot.info.deco.fuente;
     marcaUi();
     decoUi();
     state.bootSeconds = boot.seconds;
@@ -295,7 +303,7 @@ async function main() {
 
 $("tipo").addEventListener("change", () => {
   for (const k of AUTO0) { $(k).value = 0; $("o-" + k).textContent = sliderText(k); }
-  state.deco.z = null;                                   // el relieve va al medallón del modelo
+  state.deco.z = null;                                   // el relieve va a la altura del modelo
   build(true);
 });
 $("inserto").addEventListener("change", () => {
@@ -314,6 +322,7 @@ $("build").addEventListener("click", () => build(true));
 $("dlstl").addEventListener("click", () => download("stl"));
 $("dl3mf").addEventListener("click", () => download("3mf"));
 $("dlcuna").addEventListener("click", () => download("stl", "CUNA"));
+$("dlmedallon").addEventListener("click", () => download("stl", "MEDALLON"));
 $("photo").addEventListener("click", () => takePhoto());
 $("color").addEventListener("change", () => viewer.setColor($("color").value));
 $("cut").addEventListener("change", () => viewer.setCut($("cut").checked));
@@ -343,7 +352,8 @@ $("play-layers").addEventListener("click", () => { viewer.playSlicer(!viewer.sli
 
 // ------------------------------------------------------------------ relieve (texto / SVG) y gumball
 const DSL = { "d-alto": ["alto", 0, " mm"], "d-prof": ["prof", 1, " mm"], "d-angulo": ["angulo", 0, "°"],
-  "d-z": ["z", 1, " mm"], "d-rot": ["rot", 0, "°"] };
+  "d-z": ["z", 1, " mm"], "d-rot": ["rot", 0, "°"], "d-grosor": ["grosor", 1, " mm"],
+  "m-diam": ["diam", 0, " mm"], "m-holgura": ["holgura", 2, " mm"] };
 const fmtNum = (v, d) => (+v).toFixed(d).replace(".", ",");
 
 function decoUi() {
@@ -351,7 +361,11 @@ function decoUi() {
   for (const b of $("deco-tipo").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.t === d.tipo));
   $("deco-ui").hidden = !d.tipo;
   $("deco-texto-row").hidden = d.tipo !== "texto";
+  $("deco-fuente-row").hidden = d.tipo !== "texto";
+  if (d.fuente) $("deco-fuente").value = d.fuente;
   $("deco-svg-row").hidden = d.tipo !== "svg";
+  $("medallon").checked = !!d.medallon;
+  $("medallon-ui").hidden = !d.medallon;
   for (const [id, [k, dec, u]] of Object.entries(DSL)) {
     if (d[k] === null || d[k] === undefined) continue;
     $(id).value = d[k];
@@ -364,14 +378,22 @@ function decoSync(info) {
   if (!info) { if (state.deco.tipo) $("deco-msg").textContent = ""; return; }
   // el motor completa lo que faltaba (la altura del medallón, por ejemplo)
   Object.assign(state.deco, { angulo: info.angulo, z: info.z, alto: info.alto, rot: info.rot, prof: info.prof });
+  if (info.fuente) state.deco.fuente = info.fuente;
   $("d-z").max = Math.ceil(state.summary.altura_mm);
-  $("deco-msg").textContent = `${fmtNum(info.ancho, 0)} × ${fmtNum(info.alto, 0)} mm · sobresale ${fmtNum(info.prof, 1)} mm`;
+  $("deco-msg").textContent = `${fmtNum(info.ancho, 0)} × ${fmtNum(info.alto, 0)} mm · sobresale ${fmtNum(info.prof, 1)} mm`
+    + (info.ajustado ? " · achicado para entrar en el medallón" : "");
   $("deco-msg").classList.remove("err");
+  const m = state.summary.medallon;
+  if (m) {
+    $("medallon-msg").textContent = `Pieza de Ø ${fmtNum(m.diam_pieza_mm, 1)} × ${fmtNum(m.alto_pieza_mm, 1)} mm `
+      + `en un bolsillo de Ø ${fmtNum(m.diam_mm, 0)} mm: juego de ${fmtNum(m.juego_mm[0], 2)} a ${fmtNum(m.juego_mm[1], 2)} mm. `
+      + "Se imprime con la base plana en la cama.";
+  }
   decoUi();
 }
 
 async function aplicarTextoDeco() {
-  const r = await call("marca", { text: $("deco-txt").value });
+  const r = await call("texto", { text: $("deco-txt").value, fuente: state.deco.fuente });
   if (r.error || !r.text) {
     $("deco-msg").textContent = r.error || "Escribí un texto";
     $("deco-msg").classList.add("err");
@@ -408,6 +430,12 @@ $("deco-tipo").addEventListener("click", (ev) => {
   build();
 });
 $("deco-aplicar").addEventListener("click", () => aplicarTextoDeco());
+$("deco-fuente").addEventListener("change", () => { state.deco.fuente = $("deco-fuente").value; aplicarTextoDeco(); });
+$("medallon").addEventListener("change", () => {
+  state.deco.medallon = $("medallon").checked;
+  decoUi();
+  build();
+});
 $("deco-txt").addEventListener("keydown", (e) => { if (e.key === "Enter") aplicarTextoDeco(); });
 $("deco-file").addEventListener("change", () => subirSvg($("deco-file").files[0]));
 for (const [id, [k, dec, u]] of Object.entries(DSL)) {
@@ -417,11 +445,33 @@ for (const [id, [k, dec, u]] of Object.entries(DSL)) {
 
 // Gumball: un "pivote" en el centro del relieve, con X = tangente, Y = arriba y
 // Z = hacia afuera. Mover lo desliza por la superficie (giro y altura), Girar lo rota
-// sobre sí mismo y Escala lo agranda; al soltar, el motor lo vuelve a proyectar.
+// sobre sí mismo y Escala lo agranda. Mientras se arrastra, el relieve (y el medallón) se
+// vuelve a apoyar sobre la piel real del mate en cada cuadro (la tabla summary.piel); al
+// soltar, el motor lo proyecta de nuevo con toda la precisión.
 let gizmo = null;
 const pivote = new THREE.Object3D();
 pivote.name = "PIVOTE_RELIEVE";
-const base = { th: 0, z: 0, R: 0, rot: 0, alto: 18 };
+const base = { th: 0, z: 0, R0: 0, rot: 0, alto: 18, prof: 1.2 };
+let envolver = [];                         // [{mesh, local: Float32Array (a, b, h), diseño}]
+const TAU = Math.PI * 2;
+const angDif = (a) => ((a % TAU) + TAU + Math.PI) % TAU - Math.PI;
+
+function pielRadio(z, th) {
+  const P = state.summary?.piel;
+  if (!P) return base.R0;
+  const zs = P.z, m = P.m;
+  const zz = Math.min(zs[zs.length - 1], Math.max(zs[0], z));
+  let lo = 0, hi = zs.length - 1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (zs[mid] <= zz) lo = mid; else hi = mid; }
+  const t = zs[hi] === zs[lo] ? 0 : (zz - zs[lo]) / (zs[hi] - zs[lo]);
+  const x = (((th % TAU) + TAU) % TAU) / TAU * m;
+  const k0 = Math.floor(x) % m, k1 = (k0 + 1) % m, w = x - Math.floor(x);
+  const r0 = P.r[lo * m + k0] * (1 - w) + P.r[lo * m + k1] * w;
+  const r1 = P.r[hi * m + k0] * (1 - w) + P.r[hi * m + k1] * w;
+  return r0 * (1 - t) + r1 * t;
+}
+
+window.__matePiel = (z, th) => pielRadio(z, th);       // para los tests e2e
 
 function orientar(th, extra = 0) {
   const X = new THREE.Vector3(-Math.sin(th), Math.cos(th), 0);
@@ -429,6 +479,46 @@ function orientar(th, extra = 0) {
   const Z = new THREE.Vector3(Math.cos(th), Math.sin(th), 0);
   pivote.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z));
   if (extra) pivote.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), extra));
+}
+
+// coordenadas propias de cada vértice: (a, b) en el plano del diseño (sin giro) y h = altura
+// sobre la piel; así se puede volver a apoyar en cualquier lugar de la superficie
+function prepararEnvolver() {
+  envolver = [];
+  const ca = Math.cos(-base.rot * Math.PI / 180), sa = Math.sin(-base.rot * Math.PI / 180);
+  for (const [name, diseno] of [["RELIEVE", true], ["MEDALLON", false]]) {
+    const mesh = viewer.model.getObjectByName(name);
+    if (!mesh) continue;
+    const pos = mesh.geometry.attributes.position;
+    const local = new Float32Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+      const th = Math.atan2(y, x);
+      const u = angDif(th - base.th) * base.R0, v = z - base.z;
+      local[i * 3] = diseno ? u * ca - v * sa : u;
+      local[i * 3 + 1] = diseno ? u * sa + v * ca : v;
+      local[i * 3 + 2] = Math.hypot(x, y) - pielRadio(z, th);
+    }
+    envolver.push({ mesh, local, diseno });
+  }
+}
+
+function envolverEn(th0, z0, rotDeg, k) {
+  const R0 = pielRadio(z0, th0);
+  const ca = Math.cos(rotDeg * Math.PI / 180), sa = Math.sin(rotDeg * Math.PI / 180);
+  for (const { mesh, local, diseno } of envolver) {
+    const pos = mesh.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      let u = local[i * 3], v = local[i * 3 + 1];
+      if (diseno) { const a = u * k, b = v * k; u = a * ca - b * sa; v = a * sa + b * ca; }
+      const th = th0 + u / R0, z = z0 + v;
+      const r = pielRadio(z, th) + local[i * 3 + 2];
+      pos.setXYZ(i, r * Math.cos(th), r * Math.sin(th), z);
+    }
+    pos.needsUpdate = true;
+    mesh.geometry.computeVertexNormals();
+    mesh.geometry.computeBoundingSphere();
+  }
 }
 
 function montarGizmo(info) {
@@ -444,20 +534,26 @@ function montarGizmo(info) {
     window.__mateGizmo = gizmo;
   }
   const rel = viewer.model.getObjectByName("RELIEVE");
-  if (!rel || !info || viewer.slicer.on) { gizmo.detach(); return; }
+  if (!rel || !info || viewer.slicer.on) { gizmo.detach(); envolver = []; return; }
   base.th = info.angulo * Math.PI / 180;
   base.z = info.z;
-  base.R = info.radio + info.prof / 2;
+  base.R0 = info.radio;
   base.rot = info.rot;
   base.alto = info.alto;
+  base.prof = info.prof;
+  prepararEnvolver();
   viewer.model.add(pivote);
   pivote.scale.set(1, 1, 1);
-  pivote.position.set(base.R * Math.cos(base.th), base.R * Math.sin(base.th), base.z);
+  colocarPivote(base.th, base.z);
   orientar(base.th);
   pivote.updateMatrixWorld(true);
-  pivote.attach(rel);                      // el relieve viaja con el pivote
   gizmo.attach(pivote);
   modoGizmo(state.gizmo.mode);
+}
+
+function colocarPivote(th, z) {
+  const R = pielRadio(z, th) + base.prof / 2;
+  pivote.position.set(R * Math.cos(th), R * Math.sin(th), z);
 }
 
 function modoGizmo(m) {
@@ -471,36 +567,43 @@ function modoGizmo(m) {
   decoUi();
 }
 
+// parámetros del relieve según dónde quedó el pivote
+function lecturaGizmo() {
+  const th = Math.atan2(pivote.position.y, pivote.position.x);
+  const z = THREE.MathUtils.clamp(pivote.position.z, 0, state.summary.altura_mm);
+  const q0 = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+    new THREE.Vector3(-Math.sin(th), Math.cos(th), 0), new THREE.Vector3(0, 0, 1),
+    new THREE.Vector3(Math.cos(th), Math.sin(th), 0)));
+  const q = q0.invert().multiply(pivote.quaternion);
+  let rot = base.rot + THREE.MathUtils.radToDeg(2 * Math.atan2(q.z, q.w));
+  rot = ((rot + 180) % 360 + 360) % 360 - 180;
+  const k = THREE.MathUtils.clamp((pivote.scale.x + pivote.scale.y) / 2, 0.2, 5);
+  return { th, z, rot, k };
+}
+
 function moverGizmo() {
+  const L = lecturaGizmo();
   if (state.gizmo.mode === "translate") {
     // se queda pegado a la superficie: del punto movido sale el nuevo giro y la altura
-    const th = Math.atan2(pivote.position.y, pivote.position.x);
-    const z = THREE.MathUtils.clamp(pivote.position.z, 0, state.summary.altura_mm);
-    pivote.position.set(base.R * Math.cos(th), base.R * Math.sin(th), z);
-    orientar(th);
+    colocarPivote(L.th, L.z);
+    orientar(L.th, THREE.MathUtils.degToRad(L.rot - base.rot));
   } else if (state.gizmo.mode === "scale") {
-    const k = THREE.MathUtils.clamp((pivote.scale.x + pivote.scale.y) / 2, 0.2, 5);
-    pivote.scale.set(k, k, 1);
+    pivote.scale.set(L.k, L.k, 1);
   }
+  envolverEn(L.th, L.z, L.rot, state.gizmo.mode === "scale" ? L.k : 1);
+  state.gizmo.moves = (state.gizmo.moves || 0) + 1;
 }
 
 function soltarGizmo() {
   const d = state.deco;
+  const L = lecturaGizmo();
   if (state.gizmo.mode === "translate") {
-    const th = Math.atan2(pivote.position.y, pivote.position.x);
-    d.angulo = Math.round(THREE.MathUtils.radToDeg(th) * 10) / 10;
-    d.z = Math.round(pivote.position.z * 10) / 10;
+    d.angulo = Math.round(THREE.MathUtils.radToDeg(L.th) * 10) / 10;
+    d.z = Math.round(L.z * 10) / 10;
   } else if (state.gizmo.mode === "rotate") {
-    // giro extra alrededor del eje Z local (sale del mate)
-    const q0 = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
-      new THREE.Vector3(-Math.sin(base.th), Math.cos(base.th), 0), new THREE.Vector3(0, 0, 1),
-      new THREE.Vector3(Math.cos(base.th), Math.sin(base.th), 0)));
-    const q = q0.invert().multiply(pivote.quaternion);
-    let r = base.rot + THREE.MathUtils.radToDeg(2 * Math.atan2(q.z, q.w));
-    r = ((r + 180) % 360 + 360) % 360 - 180;
-    d.rot = Math.round(r);
+    d.rot = Math.round(L.rot);
   } else {
-    d.alto = Math.round(THREE.MathUtils.clamp(base.alto * pivote.scale.x, 4, 120) * 10) / 10;
+    d.alto = Math.round(THREE.MathUtils.clamp(base.alto * L.k, 4, 120) * 10) / 10;
   }
   state.gizmo.drags++;
   decoUi();

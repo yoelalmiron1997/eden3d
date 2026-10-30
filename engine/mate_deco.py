@@ -69,19 +69,30 @@ def _normalizar(forma, alto):
             "ancho": (x1 - x0) * k, "alto": float(alto)}
 
 
-def forma_texto(texto, alto):
-    """Texto con la fuente de trazos de Eden3D (A-Z, a-z, 0-9, acentos, ñ y signos)."""
-    t, err = eden_font.check(texto)
+def forma_texto(texto, alto, fuente=None):
+    """Texto en relieve. fuente: "eden" (trazos propios) o una de mate_fuentes.FUENTES."""
+    import mate_fuentes
+    fid = fuente or mate_fuentes.DEFECTO
+    if fid not in mate_fuentes.IDS:
+        raise ValueError("Tipografía desconocida: %s" % fid)
+    if fid == "eden":
+        t, err = eden_font.check(texto)
+    else:
+        t, err = mate_fuentes.limpiar(texto, fid)
     if err:
         raise ValueError(err)
     if not t:
         raise ValueError("Escribí el texto que querés poner en el mate")
-    cap = 10.0
-    loops, _, _, _ = eden_font.outlines(t, cap, mirror=False)
-    polys = []
-    for ext, holes in loops:
-        polys.append(list(ext))
-        polys.extend(list(h) for h in holes)
+    if fid == "eden":
+        loops, _, _, _ = eden_font.outlines(t, 10.0, mirror=False)
+        polys = []
+        for ext, holes in loops:
+            polys.append(list(ext))
+            polys.extend(list(h) for h in holes)
+    else:
+        polys = mate_fuentes.contornos(t, fid)
+        if not polys:
+            raise ValueError("El texto no tiene letras para poner en relieve")
     return _normalizar({"polys": polys, "lineas": [], "regla": "nonzero"}, alto)
 
 
@@ -386,14 +397,15 @@ def _dist_seg(px, py, ax, ay, bx, by):
     return math.sqrt(dx * dx + dy * dy)
 
 
-def campo(forma, u0, v0, nu, nv, res, rot=0.0):
+def campo(forma, u0, v0, nu, nv, res, rot=0.0, engorde=0.0):
     """f[i][j] > 0 adentro de la forma (rotada `rot` grados), en la grilla
-    u = u0 + i·res, v = v0 + j·res. |f| es la distancia al borde (hasta 3·res)."""
+    u = u0 + i·res, v = v0 + j·res. |f| es la distancia al borde (hasta 3·res).
+    engorde: mm que se agranda la forma hacia afuera (letras más gruesas)."""
     ca, sa = math.cos(math.radians(rot)), math.sin(math.radians(rot))
     R = lambda p: (p[0] * ca - p[1] * sa, p[0] * sa + p[1] * ca)
     polys = [[R(p) for p in P] for P in forma["polys"]]
     lineas = [([R(p) for p in L], hw) for L, hw in forma["lineas"]]
-    tope = 3.0 * res
+    tope = 3.0 * res + engorde
     segs = []
     for P in polys:
         for a, b in zip(P, P[1:] + P[:1]):
@@ -445,7 +457,7 @@ def campo(forma, u0, v0, nu, nv, res, rot=0.0):
                         d_linea = d - s[4]
             fr = d_borde if dentro_relleno else -d_borde
             fl = -max(-tope, min(tope, d_linea))
-            f[i][j] = max(fr, fl) if lineas else fr
+            f[i][j] = (max(fr, fl) if lineas else fr) + engorde
     return f
 
 
@@ -594,8 +606,11 @@ class Piel(object):
         return r0 * (1 - t) + r1 * t
 
 
-DECO_DEF = {"angulo": -90.0, "z": None, "alto": 18.0, "rot": 0.0, "prof": 1.2}
-DECO_LIM = {"alto": (4.0, 120.0), "prof": (0.4, 4.0), "rot": (-180.0, 180.0), "angulo": (-360.0, 360.0)}
+DECO_DEF = {"angulo": -90.0, "z": None, "alto": 18.0, "rot": 0.0, "prof": 1.2, "grosor": 0.0}
+DECO_LIM = {"alto": (4.0, 120.0), "prof": (0.4, 4.0), "rot": (-180.0, 180.0), "angulo": (-360.0, 360.0),
+            "grosor": (0.0, 1.5)}
+MEDALLON_DEF = {"diam": 36.0, "prof": 2.5, "holgura": 0.2}
+MEDALLON_LIM = {"diam": (16.0, 70.0), "prof": (1.6, 5.0), "holgura": (0.0, 0.8)}
 
 
 def _f(v, d, lo=None, hi=None):
@@ -616,21 +631,23 @@ def relieve(forma, filas, M, deco, H, calidad="preview"):
     zc = _f(deco.get("z"), 0.55 * H)
     prof = _f(deco.get("prof"), DECO_DEF["prof"], *DECO_LIM["prof"])
     rot = _f(deco.get("rot"), 0.0, *DECO_LIM["rot"])
+    grosor = _f(deco.get("grosor"), 0.0, *DECO_LIM["grosor"])
     R0 = piel.radio(zc, th0)
     res = 0.3 if calidad == "preview" else 0.2
     # caja de la forma rotada
     ca, sa = math.cos(math.radians(rot)), math.sin(math.radians(rot))
     bb = _bbox(forma)
     pts = [(x * ca - y * sa, x * sa + y * ca) for x in (bb[0], bb[2]) for y in (bb[1], bb[3])]
-    u_lo, u_hi = min(p[0] for p in pts) - 2 * res, max(p[0] for p in pts) + 2 * res
-    v_lo, v_hi = min(p[1] for p in pts) - 2 * res, max(p[1] for p in pts) + 2 * res
+    pad = 2 * res + grosor
+    u_lo, u_hi = min(p[0] for p in pts) - pad, max(p[0] for p in pts) + pad
+    v_lo, v_hi = min(p[1] for p in pts) - pad, max(p[1] for p in pts) + pad
     nu = int(math.ceil((u_hi - u_lo) / res)) + 1
     nv = int(math.ceil((v_hi - v_lo) / res)) + 1
     if nu * nv > 400000:                          # calcomanías gigantes: grilla más gruesa
         res *= math.sqrt(nu * nv / 400000.0)
         nu = int(math.ceil((u_hi - u_lo) / res)) + 1
         nv = int(math.ceil((v_hi - v_lo) / res)) + 1
-    f = campo(forma, u_lo, v_lo, nu, nv, res, rot)
+    f = campo(forma, u_lo, v_lo, nu, nv, res, rot, grosor)
     puntos, tris, bordes = triangular(f, u_lo, v_lo, res)
     if not tris:
         raise ValueError("La figura es muy chica para el relieve: agrandala")
@@ -661,8 +678,88 @@ def relieve(forma, filas, M, deco, H, calidad="preview"):
     F = orientar(V, F)
     info = {"angulo": round(math.degrees(th0), 1), "z": round(zc, 1), "alto": round(forma["alto"], 1),
             "ancho": round(forma["ancho"], 1), "rot": round(rot, 1), "prof": round(prof, 2),
-            "triangulos": len(F), "radio": round(R0, 1)}
+            "triangulos": len(F), "radio": round(R0, 1), "grosor": round(grosor, 2)}
     return (V, F), info, avisos
+
+
+def radio_forma(forma):
+    """Distancia máxima del centro de la forma a su borde (para que entre en un círculo)."""
+    r = 0.0
+    for P in forma["polys"]:
+        for x, y in P:
+            r = max(r, math.hypot(x, y))
+    for L, hw in forma["lineas"]:
+        for x, y in L:
+            r = max(r, math.hypot(x, y) + hw)
+    return r
+
+
+# ===========================================================================
+# MEDALLÓN ENCASTRABLE: pieza aparte con el diseño, que entra en un bolsillo del mate
+# ===========================================================================
+def medallon(piel, th0, zc, Rp, plano, paso=0.6, K=96):
+    """Disco que va en el bolsillo: atrás plano (a `plano` mm del eje, sobre el rayo th0),
+    adelante al ras de la piel original. Eje del disco = dirección radial en th0.
+    -> (V, F) cerrada, en su lugar sobre el mate."""
+    n = (math.cos(th0), math.sin(th0))
+    t = (-math.sin(th0), math.cos(th0))
+    J = max(3, int(math.ceil(Rp / paso)))
+
+    def frente(a, b):
+        c = piel.radio(zc + b, th0)
+        for _ in range(6):
+            th = th0 + math.atan2(a, c)
+            R = piel.radio(zc + b, th)
+            c = math.sqrt(max(R * R - a * a, 1e-6))
+        return c
+
+    def P(a, b, c):
+        return (c * n[0] + a * t[0], c * n[1] + a * t[1], zc + b)
+    V, F = [], []
+    cf = len(V)
+    V.append(P(0.0, 0.0, frente(0.0, 0.0)))
+    cb = len(V)
+    V.append(P(0.0, 0.0, plano))
+    anillos_f, anillos_b = [], []
+    for j in range(1, J + 1):
+        rho = Rp * j / float(J)
+        af, ab = [], []
+        for k in range(K):
+            ph = TAU * k / K
+            a, b = rho * math.cos(ph), rho * math.sin(ph)
+            af.append(len(V))
+            V.append(P(a, b, frente(a, b)))
+            ab.append(len(V))
+            V.append(P(a, b, plano))
+        anillos_f.append(af)
+        anillos_b.append(ab)
+    for k in range(K):
+        q = (k + 1) % K
+        F.append((cf, anillos_f[0][k], anillos_f[0][q]))
+        F.append((cb, anillos_b[0][q], anillos_b[0][k]))
+    for A, B in zip(anillos_f, anillos_f[1:]):
+        for k in range(K):
+            q = (k + 1) % K
+            F.append((A[k], B[k], B[q]))
+            F.append((A[k], B[q], A[q]))
+    for A, B in zip(anillos_b, anillos_b[1:]):
+        for k in range(K):
+            q = (k + 1) % K
+            F.append((A[k], B[q], B[k]))
+            F.append((A[k], A[q], B[q]))
+    A, B = anillos_f[-1], anillos_b[-1]
+    for k in range(K):
+        q = (k + 1) % K
+        F.append((A[k], B[k], B[q]))
+        F.append((A[k], B[q], A[q]))
+    return V, orientar(V, F)
+
+
+def a_cama(V, th0, zc, plano):
+    """Lleva una pieza del medallón a la cama: el fondo plano en z = 0, el diseño arriba."""
+    n = (math.cos(th0), math.sin(th0))
+    t = (-math.sin(th0), math.cos(th0))
+    return [(x * t[0] + y * t[1], z - zc, x * n[0] + y * n[1] - plano) for x, y, z in V]
 
 
 # ===========================================================================

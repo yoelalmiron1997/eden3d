@@ -89,6 +89,8 @@ export class Viewer {
       // relieve proyectado y cuña del mate
       RELIEVE: new THREE.MeshStandardMaterial({ color: 0xece9e2, roughness: 0.6, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
       CUNA: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.8, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
+      // medallón encastrable: pieza aparte, en otro tono para que se note
+      MEDALLON: new THREE.MeshStandardMaterial({ color: 0xc9a46a, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide, envMapIntensity: 0.9 }),
       AGUA: new THREE.MeshPhysicalMaterial({ color: 0x3f9fd8, roughness: 0.05, metalness: 0, transparent: true,
         opacity: 0.5, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.8, specularIntensity: 1, depthWrite: false, side: THREE.DoubleSide }),
     };

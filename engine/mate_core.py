@@ -53,8 +53,10 @@ INSERTOS_WEB = [("polimero", "Polímero escalonado"), ("adaptador", "Polímero b
 
 # ---------------------------------------------------------------------------
 # MODELOS: perfil de la panza normalizado (z 0..1, r / Rmax); "boca" = radio de boca.
-# extras: anillos (bandas en relieve), aletas, facetas, medallones (zonas rebajadas
-# para poner un relieve propio).
+# extras: anillos (bandas en relieve), aletas, facetas, lóbulos, poliedro, rombos y
+# medallones (zonas rebajadas; ningún modelo de fábrica las usa: los mates salen lisos y
+# el bolsillo lo hace el medallón encastrable). deco_z: altura (fracción) por defecto del
+# relieve.
 # ---------------------------------------------------------------------------
 TIPOS = [
     {"id": "imperial_clasico", "nombre": "Imperial clásico", "H": 120.0, "Dmax": 95.0,
@@ -90,7 +92,7 @@ TIPOS = [
      "Dboca": 86.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
      "panza": [(0.0, 0.80), (0.03, 0.93), (0.12, 0.995), (0.30, 1.0), (0.70, 0.96),
                (1.0, "boca")],
-     "extras": {"medallones": {"n": 1, "radio": 30.0, "z": 0.50, "prof": 1.2}}},
+     "deco_z": 0.50},
     {"id": "camionero_anillado", "nombre": "Camionero anillado", "H": 120.0, "Dmax": 92.0,
      "Dboca": 88.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
      "panza": [(0.0, 1.0), (0.08, 0.97), (0.35, 0.90), (0.70, 0.93), (0.90, 0.99),
@@ -99,8 +101,7 @@ TIPOS = [
     {"id": "facetado", "nombre": "Facetado", "H": 110.0, "Dmax": 104.0, "Dboca": 80.0,
      "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": True,
      "panza": [(0.0, 0.62), (0.42, 1.0), (1.0, "boca")],
-     "extras": {"facetas": {"n": 6, "alternado": True},
-                "medallones": {"n": 3, "radio": 14.0, "z": 0.27, "prof": 1.2}}},
+     "extras": {"facetas": {"n": 6, "alternado": True}}, "deco_z": 0.40},
     # --- modelos nuevos (fotos de referencia de Yoel, 2026-10-30)
     {"id": "triangular", "nombre": "Triangular", "H": 112.0, "Dmax": 92.0, "Dboca": 92.0,
      "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
@@ -111,8 +112,8 @@ TIPOS = [
      "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
      "panza": [(0.0, 0.66), (0.10, 0.80), (0.30, 0.98), (0.48, 1.0), (0.72, 0.90),
                (0.86, 0.82), (0.93, 0.86), (1.0, "boca")],
-     "extras": {"lobulos": {"n": 4, "amp": 0.16, "agudo": 3.0, "z1": 0.24, "fase": 0.5},
-                "medallones": {"n": 1, "radio": 24.0, "z": 0.55, "prof": 1.2}}},
+     "extras": {"lobulos": {"n": 4, "amp": 0.16, "agudo": 3.0, "z1": 0.24, "fase": 0.5}},
+     "deco_z": 0.55},
     {"id": "lowpoly_torcido", "nombre": "Low poly torcido", "H": 116.0, "Dmax": 100.0,
      "Dboca": 96.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": True,
      "panza": [(0.0, 0.74), (0.18, 0.93), (0.40, 1.0), (0.62, 0.95), (0.84, 0.86),
@@ -132,7 +133,7 @@ TIPOS = [
      "Dboca": 84.0, "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
      "panza": [(0.0, 0.70), (0.06, 0.86), (0.36, 1.0), (0.66, 0.93), (0.80, 0.82),
                (0.84, 0.90), (0.95, 0.90), (1.0, "boca")],
-     "extras": {"medallones": {"n": 1, "radio": 16.0, "z": 0.45, "prof": 1.2}}},
+     "deco_z": 0.45},
     {"id": "rombos", "nombre": "Cubos 3D", "H": 112.0, "Dmax": 92.0, "Dboca": 92.0,
      "Hpie": 0.0, "Dpie": 0.0, "Dtallo": 0.0, "lineal": False,
      "panza": [(0.0, 0.88), (0.30, 0.90), (0.70, 0.94), (1.0, "boca")],
@@ -515,6 +516,86 @@ def _radio_poligono(sec, th):
     return best or 0.0
 
 
+def _radio_en(filas, M, z, th):
+    """Radio de la piel en (z, θ) interpolando las filas."""
+    zs = [f[0] for f in filas]
+    z = max(zs[0], min(zs[-1], z))
+    lo, hi = 0, len(zs) - 1
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if zs[mid] <= z:
+            lo = mid
+        else:
+            hi = mid
+    t = 0.0 if zs[hi] == zs[lo] else (z - zs[lo]) / (zs[hi] - zs[lo])
+    x = (th % TAU) / TAU * M
+    k0 = int(math.floor(x)) % M
+    k1 = (k0 + 1) % M
+    w = x - math.floor(x)
+    r0 = filas[lo][1][k0] * (1 - w) + filas[lo][1][k1] * w
+    r1 = filas[hi][1][k0] * (1 - w) + filas[hi][1][k1] * w
+    return r0 * (1 - t) + r1 * t
+
+
+def _bolsillo(filas, M, b):
+    """Bolsillo del medallón encastrable (diferencia con un cilindro de eje radial):
+    fondo plano a `plano` mm del eje y pared recta de radio Rb alrededor del eje que sale
+    en (th0, zc). Las filas se densifican en la zona para que el borde quede justo.
+    Guarda en b la piel original de la zona ("_orig") y el plano ("_plano")."""
+    th0, zc, Rb, prof = float(b["th0"]), float(b["zc"]), float(b["radio"]), float(b["prof"])
+    # la piel es una grilla (M ángulos × filas): el borde del bolsillo cae entre muestras.
+    # Se agranda un paso entero para que en el fondo nunca quede más chico que Rb (la pieza
+    # siempre entra); el juego queda entre la holgura y holgura + paso.
+    paso = float(b.get("paso_z", 0.3))
+    r_c = _radio_en(filas, M, zc, th0)
+    b["_paso"] = max(TAU * r_c / M, paso)
+    Rb_ef = Rb + b["_paso"]
+    z_lo, z_hi = zc - Rb_ef - 1.0, zc + Rb_ef + 1.0
+    out = []
+    for (za, ra), (zb, rb) in zip(filas, filas[1:]):
+        out.append((za, ra))
+        if zb > z_lo and za < z_hi and zb - za > paso:
+            m = int(math.ceil((zb - za) / paso))
+            for j in range(1, m):
+                f = j / float(m)
+                out.append((za + f * (zb - za), [x + f * (y - x) for x, y in zip(ra, rb)]))
+    out.append(filas[-1])
+    filas = [(z, list(rs)) for z, rs in out]
+    # plano del fondo: deja al menos `prof` mm de bolsillo en todo el disco
+    c_min = None
+    K = 48
+    for j in range(0, 9):
+        rho = Rb_ef * j / 8.0
+        for k in range(K if j else 1):
+            ph = TAU * k / K
+            a, bb = rho * math.cos(ph), rho * math.sin(ph)
+            c = r_c
+            for _ in range(5):
+                R = _radio_en(filas, M, zc + bb, th0 + math.atan2(a, c))
+                c = math.sqrt(max(R * R - a * a, 1e-6))
+            c_min = c if c_min is None else min(c_min, c)
+    plano = c_min - prof
+    orig = {}
+    for i, (z, rs) in enumerate(filas):
+        dz = z - zc
+        if abs(dz) >= Rb_ef:
+            continue
+        for k in range(M):
+            d = (TAU * k / M - th0 + math.pi) % TAU - math.pi
+            if abs(d) >= math.pi / 2 - 1e-6:
+                continue
+            rf = plano / math.cos(d)
+            lat = plano * math.tan(d)
+            if lat * lat + dz * dz < Rb_ef * Rb_ef and rf < rs[k]:
+                if i not in orig:
+                    orig[i] = list(rs)
+                rs[k] = rf
+    b["_plano"] = plano
+    b["_orig"] = orig
+    b["_radio_ef"] = Rb_ef
+    return filas
+
+
 def _lobulos(filas, M, H, lb):
     """Panza con n lóbulos: r·(1 + amp·g(θ)·w(z)), g = ((1 + cos nθ)/2)^agudo (el primero,
     al frente, o corrido `fase` del período). w = 1 hasta z1·H y baja suave a 0 en los 6 mm siguientes (patitas)."""
@@ -684,6 +765,8 @@ def filas_exteriores(p, s, M, paso=1.5):
         _lobulos(filas, M, H, ex["lobulos"])
     if "rombos" in ex:
         _rombos(filas, M, H, p["Dmax"] / 2.0 * s, ex["rombos"])
+    if "bolsillo" in ex:
+        filas = _bolsillo(filas, M, ex["bolsillo"])
     med = ex.get("medallones")
     if med:
         n, rad, prof = int(med["n"]), float(med["radio"]), float(med["prof"])
@@ -913,9 +996,12 @@ def build_mate(opts=None):
     canon, nombres, info_propio = hueco_de(opts)
 
     p = parametros_tipo(T["id"], opts.get("altura"), opts.get("diam_max"), opts.get("diam_boca"))
+    bols = _pedido_medallon(opts, T, p["H"])
+    if bols:
+        p["extras"] = dict(p.get("extras") or {}, bolsillo=bols)
     p, s, w, fondo, rz, log = autoajustar(p, canon, holgura, pared, piso, hundir, auto)
 
-    M = 192 if calidad == "preview" else 288
+    M = (384 if bols else 192) if calidad == "preview" else (576 if bols else 288)
     ex = p.get("extras") or {}
     if "facetas" in ex:
         n2 = 2 * int(ex["facetas"]["n"])
@@ -928,7 +1014,14 @@ def build_mate(opts=None):
     if mesh_volume(V, F) < 0:
         F = [(a, c, b) for a, b, c in F]
     shells = [(V, F)] + malla_aletas(p, s, filas)
-    deco_shell, deco_rep = _deco(opts, filas, M, p["H"], calidad, errores, avisos)
+    piel_deco = filas
+    if bols:                                  # el relieve va sobre la piel sin el bolsillo
+        piel_deco = [(z, bols["_orig"].get(i, rs)) for i, (z, rs) in enumerate(filas)]
+    deco_shell, deco_rep = _deco(opts, piel_deco, M, p["H"], calidad, errores, avisos,
+                                 bols and bols["radio"] - bols["holgura"])
+    med_res = None
+    if bols and deco_shell:
+        med_res = _medallon(bols, piel_deco, M, deco_shell, deco_rep, avisos)
     cuna_res = _cuna(opts, filas)
 
     ins = [(0.0, 0.0)] + perfil_interior(filas) + [(0.0, p["H"])]
@@ -945,7 +1038,7 @@ def build_mate(opts=None):
     if ex.get("aletas"):
         avisos.append("Las aletas son piezas que se cruzan con el cuerpo: el laminador las une")
 
-    if deco_shell:
+    if deco_shell and not med_res:
         shells.append(deco_shell)
     Vt, Ft = [], []
     vol = 0.0
@@ -983,9 +1076,13 @@ def build_mate(opts=None):
     if cuna_res:
         rep["cuna"] = cuna_res[1]
         rep["cerrada"] = rep["cerrada"] and mesh_check(cuna_res[0][1])["closed"]
+    if med_res:
+        rep["medallon"] = med_res["info"]
+        rep["cerrada"] = rep["cerrada"] and all(mesh_check(Fs)["closed"] for _, Fs in med_res["shells"])
     return {"V": Vt, "F": Ft, "shells": shells, "report": rep, "params": p,
             "perfil_exterior": denso, "hueco_rz": rz, "deco": deco_shell,
-            "cuna": cuna_res[0] if cuna_res else None}
+            "cuna": cuna_res[0] if cuna_res else None,
+            "medallon": med_res, "filas": piel_deco, "M": M}
 
 
 # ===========================================================================
@@ -1015,39 +1112,103 @@ def _marca(opts, filas, avisos):
     return {"texto": t, "cap_mm": cap, "prof_mm": 0.6, "_loops": loops}
 
 
-def _deco(opts, filas, M, H, calidad, errores, avisos):
-    """Relieve proyectado (texto o SVG). -> (shell o None, reporte o None)."""
+def _deco_z(opts, T, H):
+    d = opts.get("deco") or {}
+    if d.get("z") not in (None, ""):
+        try:
+            return float(d["z"])
+        except (TypeError, ValueError):
+            pass
+    return float(T.get("deco_z", 0.55)) * H
+
+
+def _pedido_medallon(opts, T, H):
+    """Si el relieve va en un medallón encastrable: el bolsillo a cortar en el mate."""
+    import mate_deco
+    d = opts.get("deco") or {}
+    m = d.get("medallon")
+    if d.get("tipo") not in ("texto", "svg") or m is None or m is False:
+        return None
+    m = m if isinstance(m, dict) else {}
+    L, D = mate_deco.MEDALLON_LIM, mate_deco.MEDALLON_DEF
+    diam = mate_deco._f(m.get("diam"), D["diam"], *L["diam"])
+    prof = mate_deco._f(m.get("prof"), D["prof"], *L["prof"])
+    holg = mate_deco._f(m.get("holgura"), D["holgura"], *L["holgura"])
+    zc = _deco_z(opts, T, H)
+    zc = max(diam / 2.0 + 3.0, min(H - diam / 2.0 - 4.0, zc))
+    th0 = math.radians(mate_deco._f(d.get("angulo"), mate_deco.DECO_DEF["angulo"]))
+    return {"th0": th0, "zc": zc, "radio": diam / 2.0, "prof": prof, "holgura": holg}
+
+
+def _deco(opts, filas, M, H, calidad, errores, avisos, r_medallon=None):
+    """Relieve proyectado (texto o SVG). -> (shell o None, reporte o None).
+    r_medallon: si va en un medallón, el diseño se achica para entrar en ese radio."""
     import mate_deco
     d = opts.get("deco") or {}
     tipo_d = d.get("tipo")
     if tipo_d not in ("texto", "svg"):
         return None, None
     alto = mate_deco._f(d.get("alto"), mate_deco.DECO_DEF["alto"], *mate_deco.DECO_LIM["alto"])
+    grosor = mate_deco._f(d.get("grosor"), 0.0, *mate_deco.DECO_LIM["grosor"])
+    fuente = d.get("fuente") or None
+    ajustado = False
     try:
-        if tipo_d == "texto":
-            forma = mate_deco.forma_texto(d.get("texto") or "", alto)
-        else:
+        def hacer(a):
+            if tipo_d == "texto":
+                return mate_deco.forma_texto(d.get("texto") or "", a, fuente)
             datos = d.get("svg")
             if not datos and d.get("svg_path"):
                 with open(d["svg_path"], "rb") as fh:
                     datos = fh.read()
             if not datos:
                 raise ValueError("Subí un archivo SVG")
-            forma = mate_deco.forma_svg(datos, alto)
+            return mate_deco.forma_svg(datos, a)
+        forma = hacer(alto)
+        if r_medallon:
+            lim = r_medallon - 1.5
+            rf = mate_deco.radio_forma(forma) + grosor
+            if rf > lim:
+                alto = max(mate_deco.DECO_LIM["alto"][0], alto * lim / rf)
+                forma = hacer(alto)
+                ajustado = True
         dd = dict(d)
-        if dd.get("z") in (None, ""):
-            med = ((tipo(opts.get("tipo") or TIPOS[0]["id"]).get("extras") or {}).get("medallones"))
-            dd["z"] = (float(med["z"]) if med else 0.55) * H
+        T = tipo(opts.get("tipo") or TIPOS[0]["id"])
+        dd["z"] = _deco_z(opts, T, H)
+        if r_medallon:
+            dd["z"] = max(r_medallon + 3.0, min(H - r_medallon - 4.0, dd["z"]))
         shell, info, av = mate_deco.relieve(forma, filas, M, dd, H, calidad)
     except ValueError as e:
         errores.append("Relieve: %s" % e)
         return None, None
     avisos.extend(av)
     info["tipo"] = tipo_d
+    info["ajustado"] = ajustado            # se achicó para entrar en el medallón
     if tipo_d == "texto":
+        import mate_fuentes
         info["texto"] = d.get("texto")
+        info["fuente"] = fuente or mate_fuentes.DEFECTO
     info["cerrada"] = mesh_check(shell[1])["closed"]
     return shell, info
+
+
+def _medallon(b, piel, M, deco_shell, deco_rep, avisos):
+    """Pieza del medallón (disco + diseño) en su lugar y lista para la cama."""
+    import mate_deco
+    Rp = b["radio"] - b["holgura"]
+    disco = mate_deco.medallon(mate_deco.Piel(piel, M), b["th0"], b["zc"], Rp, b["_plano"])
+    shells = [disco, deco_shell]
+    cama = [(mate_deco.a_cama(V, b["th0"], b["zc"], b["_plano"]), F) for V, F in shells]
+    alto_pieza = max(v[2] for V, _ in cama for v in V)
+    r_c = _radio_en(piel, M, b["zc"], b["th0"])
+    paso_imp = max(TAU * r_c / 576.0, float(b.get("paso_z", 0.3)))     # en el archivo (normal)
+    info = {"diam_mm": round(2 * b["radio"], 1), "diam_pieza_mm": round(2 * Rp, 1),
+            "holgura_mm": round(b["holgura"], 2), "prof_mm": round(b["prof"], 2),
+            "juego_mm": [round(b["holgura"], 2), round(b["holgura"] + paso_imp, 2)],
+            "angulo": round(math.degrees(b["th0"]), 1),
+            "z": round(b["zc"], 1), "alto_pieza_mm": round(alto_pieza, 1),
+            "plano_mm": round(b["_plano"], 2)}
+    deco_rep["medallon"] = True
+    return {"shells": shells, "cama": cama, "info": info}
 
 
 def _cuna(opts, filas):

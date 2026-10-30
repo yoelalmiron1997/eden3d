@@ -45,10 +45,9 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
 Segunda herramienta: **mates imperiales para imprimir en 3D con el hueco exacto del
 inserto** (`web/mate.html`, motor `engine/mate_core.py`).
 
-* **17 modelos**: imperial clásico, camionero, torpedo, copa y pera, moderno
-  cilíndrico, **cohete** (con aletas y banda para la guarda), **vaso redondeado** (con
-  medallón para un relieve propio), **camionero anillado**, **facetado** (caras
-  triangulares alternadas con medallones), **triangular**, **con patitas**, **low poly
+* **17 modelos**, todos lisos: imperial clásico, camionero, torpedo, copa y pera, moderno
+  cilíndrico, **cohete** (con aletas y banda para la guarda), **vaso redondeado**,
+  **camionero anillado**, **facetado** (caras triangulares alternadas), **triangular**, **con patitas**, **low poly
   torcido** e **irregular** (caras planas de verdad), **vaso cónico**, **labio grueso** y
   **cubos 3D** (relieve de cubos en perspectiva).
 * **Hueco para** el **polímero escalonado**, el **polímero base**, **los dos juntos** o **un STL
@@ -61,7 +60,15 @@ inserto** (`web/mate.html`, motor `engine/mate_core.py`).
 * **Relieve de texto o SVG** proyectado sobre la piel (`engine/mate_deco.py`): el SVG se
   rellena sólido (paths, formas básicas, transform, fill-rule) y se apoya en el radio
   real del mate. En la web se acomoda con un **gumball** (mover sobre la superficie,
-  girar y escalar; atajos G, R y S).
+  girar y escalar; atajos G, R y S) que lo vuelve a apoyar sobre la piel mientras se
+  arrastra.
+* **9 tipografías** para el texto (`engine/mate_fuentes.py`): la de trazos de Eden3D y 8
+  libres y gruesas, fáciles de imprimir (Archivo Black, Anton, Fredoka, Lilita One, Russo
+  One, Bungee, Luckiest Guy y Pacifico; licencias en `engine/fuentes/LICENCIAS.md`,
+  convertidas con `tools/fuentes.py`), más un **grosor** para engordar letras y dibujos.
+* **Medallón encastrable**: el diseño va en una pieza circular aparte que entra en un
+  bolsillo del mate (fondo plano, proyectado sobre la piel). La pieza se imprime con la
+  base plana en la cama y se descarga como `_MEDALLON.stl` (o en el 3MF).
 * **Marca de agua grabada debajo de la base** ("Eden3D" por defecto; con **Pro** se cambia
   el texto o se saca).
 * **Cuña** opcional (10–45°, 45° por defecto) con un hueco para el pie, para dejar el

@@ -18,7 +18,9 @@ opts = {"tipo": "cohete", "inserto": "polimero" | "adaptador" | "ambos" | "propi
         "diam_boca": 0, "calidad": "preview",
         "marca": "Eden3D",                         # grabada debajo de la base ("" = sin)
         "deco": {"tipo": "texto" | "svg", "texto": "...", "svg_path": "/tmp/deco.svg",
-                 "angulo": -90, "z": 66, "alto": 18, "rot": 0, "prof": 1.2},
+                 "fuente": "archivo_black", "grosor": 0,
+                 "angulo": -90, "z": 66, "alto": 18, "rot": 0, "prof": 1.2,
+                 "medallon": {"diam": 36, "prof": 2.5, "holgura": 0.2}},  # pieza encastrable
         "cuna": {"angulo": 45}}                    # soporte inclinado (montañita)
 """
 import array
@@ -28,6 +30,7 @@ import time
 import eden_font
 import mate_core as mc
 import mate_deco
+import mate_fuentes
 from eden_core import write_3mf_multi, write_stl
 
 LICENSE_NOTE = ("© Eden3D — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
@@ -44,7 +47,11 @@ def info():
         "limites": dict(mc.LIMITES),
         "license": LICENSE_NOTE,
         "marca": mc.MARCA_DEFECTO,
-        "deco": {"defecto": dict(mate_deco.DECO_DEF), "limites": {k: list(v) for k, v in mate_deco.DECO_LIM.items()}},
+        "deco": {"defecto": dict(mate_deco.DECO_DEF), "limites": {k: list(v) for k, v in mate_deco.DECO_LIM.items()},
+                 "fuentes": [{"id": f, "nombre": n} for f, n in mate_fuentes.FUENTES],
+                 "fuente": mate_fuentes.DEFECTO,
+                 "medallon": {"defecto": dict(mate_deco.MEDALLON_DEF),
+                              "limites": {k: list(v) for k, v in mate_deco.MEDALLON_LIM.items()}}},
     }
 
 
@@ -52,6 +59,19 @@ def check_marca(text):
     """Para la web: valida el texto (marca o relieve) antes de calcular."""
     t, err = eden_font.check(text)
     return {"text": t, "error": err, "max_len": eden_font.MAX_LEN}
+
+
+def check_texto(text, fuente=None):
+    """Para la web: valida el texto del relieve en su tipografía."""
+    fid = fuente or mate_fuentes.DEFECTO
+    if fid == "eden":
+        t, err = eden_font.check(text)
+        return {"text": t, "error": err, "max_len": eden_font.MAX_LEN}
+    try:
+        t, err = mate_fuentes.limpiar(text, fid)
+    except ValueError as e:
+        t, err = str(text or ""), str(e)
+    return {"text": t, "error": err, "max_len": mate_fuentes.MAX_LEN}
 
 
 def _opts(opts):
@@ -124,6 +144,12 @@ def build(opts):
             pos, idx = _pack(Vd, Fd)
             parts.append({"name": "RELIEVE", "positions": pos, "indices": idx,
                           "vertices": len(Vd), "triangles": len(Fd)})
+            rep["piel"] = piel_web(res["filas"], res["M"])
+        if res.get("medallon"):
+            Vm, Fm = res["medallon"]["shells"][0]
+            pos, idx = _pack(Vm, Fm)
+            parts.append({"name": "MEDALLON", "positions": pos, "indices": idx,
+                          "vertices": len(Vm), "triangles": len(Fm)})
         if res.get("cuna"):
             Vc, Fc = res["cuna"]
             dx = rep["diam_max_mm"] / 2.0 + rep["cuna"]["diam_mm"] / 2.0 + 15.0
@@ -137,6 +163,22 @@ def build(opts):
                       "vertices": len(Vi), "triangles": len(Fi)})
     rep["seconds"] = round(time.time() - t0, 2)
     return {"summary": rep, "parts": parts}
+
+
+def piel_web(filas, M, m=96):
+    """La piel (sin bolsillo) en una grilla chica, para que la web vuelva a apoyar el
+    relieve sobre el mate mientras se arrastra el gumball: z de cada fila y m radios."""
+    paso = max(1, M // m)
+    m = M // paso
+    zs, rs = [], []
+    ult = None
+    for z, r in filas:
+        if ult is not None and z - ult < 0.7 and z < filas[-1][0]:
+            continue
+        ult = z
+        zs.append(round(z, 2))
+        rs.extend(round(r[k * paso], 2) for k in range(m))
+    return {"z": zs, "m": m, "r": rs}
 
 
 def _unir(shells):
@@ -164,6 +206,11 @@ def export_stl(opts, pieza="MATE"):
             raise ValueError("Activá la cuña para descargarla")
         V, F = res["cuna"]
         name = _nombre(rep, "stl", "_CUNA")
+    elif pieza == "MEDALLON":
+        if not res.get("medallon"):
+            raise ValueError("Activá el medallón encastrable para descargarlo")
+        V, F = _unir(res["medallon"]["cama"])
+        name = _nombre(rep, "stl", "_MEDALLON")
     else:
         V, F = res["V"], res["F"]
         name = _nombre(rep, "stl")
@@ -198,6 +245,10 @@ def export_3mf(opts):
         Vc, Fc = res["cuna"]
         dx = rep["diam_max_mm"] / 2.0 + rep["cuna"]["diam_mm"] / 2.0 + 10.0
         objs.append((rep["sku"] + "_CUNA", [(x + dx, y, z) for x, y, z in Vc], Fc))
+    if res.get("medallon"):
+        Vm, Fm = _unir(res["medallon"]["cama"])
+        dx = -(rep["diam_max_mm"] / 2.0 + rep["medallon"]["diam_mm"] / 2.0 + 10.0)
+        objs.append((rep["sku"] + "_MEDALLON", [(x + dx, y, z) for x, y, z in Vm], Fm))
     write_3mf_multi(path, objs, meta)
     with open(path, "rb") as fh:
         data = fh.read()

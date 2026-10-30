@@ -68,9 +68,12 @@
         </div>
         <div id="deco-ui" hidden>
           <div class="brand-row" id="deco-texto-row">
-            <input type="text" id="deco-txt" data-testid="deco-txt" maxlength="20" value="TecnoBear" autocomplete="off" spellcheck="false">
+            <input type="text" id="deco-txt" data-testid="deco-txt" maxlength="30" value="TecnoBear" autocomplete="off" spellcheck="false">
             <button type="button" id="deco-aplicar" data-testid="deco-aplicar">Aplicar</button>
           </div>
+          <label id="deco-fuente-row">Tipografía
+            <select id="deco-fuente" data-testid="sel-fuente"></select>
+          </label>
           <div id="deco-svg-row" class="file-row" hidden>
             <input type="file" id="deco-file" data-testid="deco-file" accept=".svg,image/svg+xml">
           </div>
@@ -86,6 +89,9 @@
           <label class="slider"><span>Relieve</span>
             <input type="range" id="d-prof" data-testid="sl-d-prof" min="0.4" max="4" step="0.1" value="1.2">
             <output id="o-d-prof">1,2 mm</output></label>
+          <label class="slider" title="Engorda las letras o el dibujo: más fácil de imprimir"><span>Grosor</span>
+            <input type="range" id="d-grosor" data-testid="sl-d-grosor" min="0" max="1.5" step="0.1" value="0">
+            <output id="o-d-grosor">0,0 mm</output></label>
           <label class="slider"><span>Giro</span>
             <input type="range" id="d-angulo" data-testid="sl-d-angulo" min="-180" max="180" step="1" value="-90">
             <output id="o-d-angulo">-90°</output></label>
@@ -96,6 +102,16 @@
             <input type="range" id="d-rot" data-testid="sl-d-rot" min="-180" max="180" step="1" value="0">
             <output id="o-d-rot">0°</output></label>
           <p class="hint small">Arrastrá el gumball sobre el mate: mueve, gira y escala el relieve.</p>
+          <label class="check"><input type="checkbox" id="medallon" data-testid="chk-medallon"> En un medallón encastrable</label>
+          <div id="medallon-ui" hidden>
+            <label class="slider"><span>Diámetro</span>
+              <input type="range" id="m-diam" data-testid="sl-m-diam" min="16" max="70" step="1" value="36">
+              <output id="o-m-diam">36 mm</output></label>
+            <label class="slider"><span>Holgura</span>
+              <input type="range" id="m-holgura" data-testid="sl-m-holgura" min="0" max="0.8" step="0.05" value="0.2">
+              <output id="o-m-holgura">0,20 mm</output></label>
+            <p class="hint small" id="medallon-msg" data-testid="medallon-msg">El diseño va en una pieza aparte que entra en un bolsillo del mate.</p>
+          </div>
         </div>
       </fieldset>
 
@@ -175,6 +191,7 @@
           <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
         </div>
         <button type="button" id="dlcuna" data-testid="btn-stl-cuna" hidden disabled>STL cuña</button>
+        <button type="button" id="dlmedallon" data-testid="btn-stl-medallon" hidden disabled>STL medallón</button>
       </div>
     </section>
 
