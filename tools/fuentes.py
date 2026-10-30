@@ -38,6 +38,19 @@ FUENTES = [
      "Astigmatic"),
     ("pacifico", "Pacifico (cursiva)", "pacifico-latin-400-normal.woff", "OFL-1.1",
      "Vernon Adams, Jacques Le Bailly, Botjo Nikoltchev, Ani Petrova"),
+    # cursivas para los toppers de torta
+    ("great_vibes", "Great Vibes", "great-vibes-latin-400-normal.woff", "OFL-1.1", "Robert Leuschke"),
+    ("dancing_script", "Dancing Script", "dancing-script-latin-700-normal.woff", "OFL-1.1",
+     "Pablo Impallari"),
+    ("lobster", "Lobster", "lobster-latin-400-normal.woff", "OFL-1.1", "Pablo Impallari"),
+    ("satisfy", "Satisfy", "satisfy-latin-400-normal.woff", "Apache-2.0", "Sideshow"),
+    ("allura", "Allura", "allura-latin-400-normal.woff", "OFL-1.1", "Robert Leuschke"),
+    ("cookie", "Cookie", "cookie-latin-400-normal.woff", "OFL-1.1", "Ania Kruk"),
+    ("yellowtail", "Yellowtail", "yellowtail-latin-400-normal.woff", "Apache-2.0", "Astigmatic"),
+    ("kaushan_script", "Kaushan Script", "kaushan-script-latin-400-normal.woff", "OFL-1.1",
+     "Impallari Type"),
+    ("parisienne", "Parisienne", "parisienne-latin-400-normal.woff", "OFL-1.1", "Astigmatic"),
+    ("alex_brush", "Alex Brush", "alex-brush-latin-400-normal.woff", "OFL-1.1", "Robert Leuschke"),
 ]
 
 CHARS = (" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"

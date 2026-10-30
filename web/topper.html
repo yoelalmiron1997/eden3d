@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Topper para tortas · TecnoBear</title>
+  <meta name="description" content="Armá un topper para tortas con tu texto y tipografía, todo en una pieza, y bajalo para imprimir en 3D.">
+  <meta name="copyright" content="© Eden3D — Yoel Almirón. Todos los derechos reservados.">
+  <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear, inicio" data-testid="link-home">
+      <img src="assets/tecnobear.svg" alt="" width="30" height="30"><span class="brand-sub">Topper para tortas</span>
+    </a>
+    <nav class="nav">
+      <a href="./" class="hide-sm">Herramientas</a>
+      <a href="calidad/" data-testid="link-calidad" class="solo-admin">Calidad</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset class="sec" data-sec="texto">
+        <legend>Texto <span class="hint">hasta 3 líneas</span></legend>
+        <div class="topper-linea">
+          <input type="text" id="linea-1" data-testid="linea-1" maxlength="24" value="Feliz" autocomplete="off" spellcheck="false" aria-label="Línea 1">
+          <select id="fuente-1" data-testid="sel-fuente-1" aria-label="Tipografía de la línea 1" disabled></select>
+          <input type="range" id="escala-1" data-testid="sl-escala-1" min="0.5" max="1.5" step="0.05" value="1" aria-label="Tamaño de la línea 1">
+        </div>
+        <div class="topper-linea">
+          <input type="text" id="linea-2" data-testid="linea-2" maxlength="24" value="Cumpleaños" autocomplete="off" spellcheck="false" aria-label="Línea 2">
+          <select id="fuente-2" data-testid="sel-fuente-2" aria-label="Tipografía de la línea 2" disabled></select>
+          <input type="range" id="escala-2" data-testid="sl-escala-2" min="0.5" max="1.5" step="0.05" value="1" aria-label="Tamaño de la línea 2">
+        </div>
+        <div class="topper-linea">
+          <input type="text" id="linea-3" data-testid="linea-3" maxlength="24" value="" placeholder="Nombre (opcional)" autocomplete="off" spellcheck="false" aria-label="Línea 3">
+          <select id="fuente-3" data-testid="sel-fuente-3" aria-label="Tipografía de la línea 3" disabled></select>
+          <input type="range" id="escala-3" data-testid="sl-escala-3" min="0.5" max="1.5" step="0.05" value="1.1" aria-label="Tamaño de la línea 3">
+        </div>
+        <p class="hint small">Cada línea con su tipografía y su tamaño. Todo sale <strong>unido en una sola pieza</strong>.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="forma">
+        <legend>Forma</legend>
+        <div class="row2">
+          <label>Estilo
+            <select id="estilo" data-testid="sel-estilo" disabled></select>
+          </label>
+          <label>Marco
+            <select id="marco" data-testid="sel-marco" disabled></select>
+          </label>
+        </div>
+        <div class="row2">
+          <label>Palitos
+            <select id="palitos" data-testid="sel-palitos">
+              <option value="2">Dos</option>
+              <option value="1">Uno</option>
+            </select>
+          </label>
+          <span></span>
+        </div>
+        <label class="slider"><span>Ancho</span>
+          <input type="range" id="ancho" data-testid="sl-ancho" min="60" max="220" step="5" value="140">
+          <output id="o-ancho">140 mm</output></label>
+        <label class="slider" title="Borde que une las letras"><span>Contorno</span>
+          <input type="range" id="contorno" data-testid="sl-contorno" min="0" max="6" step="0.1" value="1.2">
+          <output id="o-contorno">1,2 mm</output></label>
+        <label class="slider"><span>Grosor</span>
+          <input type="range" id="grosor" data-testid="sl-grosor" min="2" max="5" step="0.1" value="3">
+          <output id="o-grosor">3,0 mm</output></label>
+        <label class="slider" id="letras-row" hidden><span>Letras</span>
+          <input type="range" id="letras" data-testid="sl-letras" min="0.6" max="3" step="0.1" value="1.2">
+          <output id="o-letras">1,2 mm</output></label>
+        <label class="slider"><span>Palitos</span>
+          <input type="range" id="largo" data-testid="sl-largo" min="40" max="140" step="5" value="90">
+          <output id="o-largo">90 mm</output></label>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
+        <legend>Vista</legend>
+        <label class="check"><input type="checkbox" id="torta" data-testid="chk-torta" checked> Ver en la torta</label>
+        <div class="row2">
+          <label>Color
+            <select id="color" data-testid="sel-color">
+              <option value="#c9b6ec">Lila</option>
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#d9a441">Dorado</option>
+              <option value="#f2a7c3">Rosa</option>
+              <option value="#7fc4e8">Celeste</option>
+              <option value="#2c2c2c">Negro</option>
+            </select>
+          </label>
+          <label>Letras
+            <select id="color-letras" data-testid="sel-color-letras">
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#d9a441">Dorado</option>
+              <option value="#2c2c2c">Negro</option>
+              <option value="#c0392b">Rojo</option>
+              <option value="#c9b6ec">Lila</option>
+            </select>
+          </label>
+        </div>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <div class="row3 even">
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
+        </div>
+        <button type="button" id="dlletras" data-testid="btn-stl-letras" hidden disabled>STL letras</button>
+      </div>
+    </section>
+
+    <div class="column">
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings" data-testid="avisos"></ul>
+      </article>
+    </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Tipografías libres (OFL / Apache) de sus autores · motor de toppers <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="topper.js"></script>
+</body>
+</html>

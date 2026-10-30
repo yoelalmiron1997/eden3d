@@ -68,6 +68,19 @@
           <span>Escribí tus palabras y bajá la sopa para imprimir, cortada en piezas que encastran como un rompecabezas.</span>
         </span>
       </button>
+      <button type="button" class="tool-card" data-testid="tool-topper" aria-haspopup="dialog" data-modal="topper-modal">
+        <span class="tool-art photo">
+          <img src="assets/herramientas/topper_v_450.jpg" srcset="assets/herramientas/topper_v_450.jpg 450w, assets/herramientas/topper_v.jpg 900w"
+            sizes="340px" alt="Topper impreso en 3D que dice Feliz Cumpleaños Sofi, en lila y blanco, clavado en una torta"
+            width="450" height="563" data-testid="tool-imagen-topper">
+          <span class="art-title" aria-hidden="true">Topper <b>para tortas</b><small>con tu nombre, en una pieza</small></span>
+        </span>
+        <span class="tool-body">
+          <span class="tool-tag">Nueva</span>
+          <strong>Topper para tortas</strong>
+          <span>Escribí el texto y el nombre, elegí la tipografía y bajá el topper listo para imprimir, todo unido.</span>
+        </span>
+      </button>
     </section>
   </main>
 
@@ -133,6 +146,27 @@
       </ul>
       <div class="tm-actions">
         <a class="btn primary" href="sopa.html" data-testid="abrir-sopa">Abrir la sopa de letras</a>
+        <button type="button" class="btn" data-close>Ahora no</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal" id="topper-modal" data-testid="popup-topper" aria-labelledby="tp-title">
+    <div class="modal-box wide">
+      <div class="modal-hero"><img src="assets/herramientas/topper.jpg" alt="" width="1200" height="900"></div>
+      <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
+      <span class="tool-tag">Herramienta 4</span>
+      <h2 id="tp-title">Topper para tortas</h2>
+      <p>Escribí hasta tres líneas (por ejemplo Feliz / Cumpleaños / el nombre), elegí la tipografía de cada una y el motor arma el topper en una sola pieza, con los palitos para clavarlo en la torta.</p>
+      <ul class="tm-list">
+        <li>16 tipografías: 11 cursivas y 5 gruesas</li>
+        <li>Todo unido: las letras sueltas se unen solas al resto</li>
+        <li>Un color o dos (base y letras), con contorno ajustable</li>
+        <li>Marcos: círculo, corazón, flor, rombo o sol</li>
+        <li>Lo ves en la torta y lo bajás en 3MF o STL</li>
+      </ul>
+      <div class="tm-actions">
+        <a class="btn primary" href="topper.html" data-testid="abrir-topper">Abrir el topper</a>
         <button type="button" class="btn" data-close>Ahora no</button>
       </div>
     </div>

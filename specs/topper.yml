@@ -1,0 +1,64 @@
+area: Topper para tortas
+prefijo: TOP
+specs:
+  - id: TOP-001
+    titulo: El topper sale siempre en una sola pieza
+    descripcion: >
+      Las letras, el marco y los palitos quedan unidos: el contorno engorda las letras y lo
+      que queda suelto (tildes, puntos, palabras separadas) se une con puentes cortos.
+    criterio: >
+      Para varias combinaciones (tipografías cursivas y gruesas, 1 a 3 líneas, con y sin
+      marco, contorno 0 a 6 mm) la región del topper es UNA sola componente conectada y la
+      punta de arriba de cada palito queda adentro de esa región; con contorno 0 y palabras
+      separadas hay al menos un puente y se avisa en el reporte.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-002
+    titulo: Mallas cerradas y medidas pedidas
+    descripcion: El topper es imprimible acostado, del ancho y grosor elegidos, con palitos con punta.
+    criterio: >
+      Cada pieza es una malla cerrada; el ancho del topper (sin marco) es el pedido ±1,5 mm y
+      con marco no lo supera en más de 10 mm; el grosor es el pedido; hay 1 o 2 palitos
+      del largo pedido (±1 mm) que terminan en punta; en "dos colores" las letras van arriba
+      de la base (de grosor a grosor + letras) y la base asoma al menos 2 mm alrededor.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-003
+    titulo: Texto, tipografías y marcos
+    descripcion: >
+      Hasta 3 líneas de hasta 24 letras, cada una con su tipografía (16: 11 cursivas y 5
+      gruesas, con acentos y ñ) y su tamaño; marcos círculo, corazón, flor, rombo y sol.
+    criterio: >
+      Las 16 tipografías traen A–Z, a–z, 0–9, acentos y Ñ y están en LICENCIAS.md; cada
+      marco arma un topper válido; las líneas van centradas y una debajo de la otra
+      (encimadas un poco); un carácter que la tipografía no tiene, más de 3 líneas o más
+      de 24 letras se rechazan con un mensaje en español; sin texto da error.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-004
+    titulo: Descargas del topper
+    descripcion: STL de la base (y de las letras) y 3MF con base y letras como partes de un objeto.
+    criterio: >
+      export_stl da "Topper-<texto>_TOPPER.stl" (y _LETRAS.stl en dos colores); el 3MF tiene
+      un objeto con un componente por pieza (base y letras ya encastradas) y la licencia en
+      los metadatos; el nombre del archivo sale del texto sin acentos.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: TOP-005
+    titulo: Página del topper y tarjeta en el inicio
+    descripcion: >
+      topper.html arma el topper con tu texto y lo muestra clavado en una torta (o plano,
+      como se imprime); el inicio tiene la tarjeta "Topper para tortas" con su pop-up.
+    criterio: >
+      La página arranca con "Feliz / Cumpleaños" en Great Vibes, en una pieza y en la torta;
+      escribir un nombre en la línea 3, cambiar a dos colores (aparece la malla LETRAS y el
+      botón "STL letras") y elegir un marco recalculan; "Ver en la torta" alterna parado y
+      plano; las descargas STL y 3MF funcionan; la tarjeta del inicio abre el pop-up con el
+      link a topper.html; sin errores en la consola.
+    prioridad: alta
+    nivel: web
+    estado: activa

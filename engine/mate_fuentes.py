@@ -35,7 +35,8 @@ def ruta(fid):
 
 
 def cargar(fid):
-    if fid not in IDS or fid == "eden":
+    """Contornos de una tipografía convertida (las del mate y las cursivas del topper)."""
+    if fid == "eden" or not fid or not all(c.isalnum() or c == "_" for c in str(fid)):
         raise ValueError("Tipografía desconocida: %s" % fid)
     if fid not in _CACHE:
         try:

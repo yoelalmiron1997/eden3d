@@ -119,11 +119,30 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
 * **Web (home de herramientas):** https://yoelalmiron1997.github.io/eden3d/
 * **Sopa de letras 3D:** https://yoelalmiron1997.github.io/eden3d/sopa.html
 * **Mate con hueco:** https://yoelalmiron1997.github.io/eden3d/mate.html
+* **Topper para tortas:** https://yoelalmiron1997.github.io/eden3d/topper.html
 * **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
 
 > © 2026 Eden3D — Yoel Almirón. **Todos los derechos reservados.** El repositorio es
 > público para poder verse, pero no es código abierto: ver [LICENSE](LICENSE).
+
+### Topper para tortas
+
+Cuarta herramienta: **toppers para tortas en una sola pieza** (`web/topper.html`, motor
+`engine/topper_core.py`).
+
+* Hasta **3 líneas** (por ejemplo Feliz / Cumpleaños / el nombre), cada una con su
+  **tipografía** y su tamaño: 16 tipografías libres, 11 cursivas (Great Vibes, Dancing
+  Script, Lobster, Pacifico, Satisfy, Allura, Cookie, Yellowtail, Kaushan Script,
+  Parisienne, Alex Brush) y 5 gruesas. Licencias en `engine/fuentes/LICENCIAS.md`.
+* **Siempre unido**: el texto se dibuja en una grilla fina, se engorda con el
+  **contorno** (el borde que une las letras), se suma el **marco** (círculo, corazón,
+  flor, rombo o sol) y lo que queda suelto (tildes, puntos, palabras separadas) se une con
+  **puentes** cortos; un test verifica que la pieza es una sola región.
+* **Un color** o **dos colores** (base con contorno + letras en relieve arriba; el 3MF trae
+  las dos como partes de un objeto para asignar un filamento a cada una).
+* 1 o 2 **palitos** con punta, del largo elegido, clavados en material macizo.
+* Vista **en la torta** (parado y clavado) o plano, como se imprime; descarga en 3MF o STL.
 
 ## Cómo funciona
 
@@ -131,6 +150,7 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
 engine/          motor paramétrico en Python puro (el mismo que usa Grasshopper)
                  mate_core.py / mate_web.py: motor del Mate con hueco
                  sopa_core.py / sopa_web.py: motor de la Sopa de letras 3D
+                 topper_core.py / topper_web.py: motor del Topper para tortas
 web/             página estática: visor three.js + motor corriendo en el navegador (Pyodide)
 specs/           requisitos con ID (Spec-Driven Development)
 tests/motor/     pytest: geometría, autorriego (booleanas exactas), exportación, licencia

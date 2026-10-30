@@ -373,3 +373,9 @@ html.es-admin .solo-admin { display: revert !important; }
 .seg3 { grid-template-columns: repeat(3, 1fr); }
 #deco-ui { display: grid; gap: 8px; }
 #deco-ui[hidden], #cuna-row[hidden], #medallon-ui[hidden], #deco-fuente-row[hidden] { display: none; }
+
+/* topper: una línea de texto = texto + tipografía + tamaño */
+.topper-linea { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px; margin-bottom: 8px; }
+.topper-linea input[type=text], .topper-linea select { width: 100%; min-width: 0; }
+.topper-linea input[type=range] { grid-column: 1 / -1; }
+#letras-row[hidden] { display: none; }
