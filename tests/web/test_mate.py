@@ -101,3 +101,88 @@ def test_tarjeta_en_el_inicio(browser, base_url):
     assert pg.locator(T % "popup-mate").is_visible()
     assert pg.locator(T % "abrir-mate").get_attribute("href") == "mate.html"
     ctx.close()
+
+
+# ---------------------------------------------------------------- MAT-011..015
+@pytest.mark.spec("MAT-011")
+def test_nombres_de_insertos_en_la_web(mate_app):
+    ops = mate_app.locator(T % "sel-inserto" + " option").all_inner_texts()
+    assert ops[:2] == ["Polímero escalonado", "Polímero base"]
+
+
+@pytest.mark.spec("MAT-012")
+def test_marca_del_mate_solo_pro(browser, base_url):
+    from web_helpers import open_mate
+    pg = open_mate(browser, base_url, role="usuario")
+    assert pg.locator(T % "marca-texto").is_disabled()
+    assert pg.locator(T % "marca-candado").is_visible()
+    assert pg.evaluate("window.__mate.summary.marca.texto") == "Eden3D"
+    pg.context.close()
+    pg = open_mate(browser, base_url, role="pro")
+    assert not pg.locator(T % "marca-texto").is_disabled()
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "marca-texto").fill("TecnoBear")
+    pg.locator(T % "marca-aplicar").click()
+    esperar(pg, b)
+    assert pg.evaluate("window.__mate.summary.marca.texto") == "TecnoBear"
+    assert "TecnoBear" in pg.locator(T % "marca-msg").inner_text()
+    pg.context.close()
+
+
+@pytest.mark.spec("MAT-015")
+def test_relieve_con_gumball(browser, base_url, tmp_path):
+    from web_helpers import open_mate
+    pg = open_mate(browser, base_url)
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "deco-texto").click()
+    esperar(pg, b)
+    v = pg.evaluate("window.__mate.viewer")
+    assert v["relieve"] and v["gizmo"] and v["gizmoMode"] == "translate"
+    d0 = pg.evaluate("window.__mate.summary.deco")
+    assert d0["tipo"] == "texto" and d0["cerrada"]
+    # mover: el pivote gira 30° alrededor del mate y sube 6 mm (como arrastrar el gumball)
+    b = pg.evaluate("window.__mate.builds")
+    pg.evaluate("""() => { const g = window.__mateGizmo, pv = g.object;
+        pv.position.applyAxisAngle(new pv.position.constructor(0, 0, 1), Math.PI / 6); pv.position.z += 6;
+        g.dispatchEvent({type: 'objectChange'}); g.dispatchEvent({type: 'dragging-changed', value: false}); }""")
+    esperar(pg, b)
+    d1 = pg.evaluate("window.__mate.summary.deco")
+    assert d1["angulo"] == pytest.approx(d0["angulo"] + 30, abs=1)
+    assert d1["z"] == pytest.approx(d0["z"] + 6, abs=0.6)
+    # girar
+    pg.locator(T % "giz-girar").click()
+    assert pg.evaluate("window.__mate.viewer.gizmoMode") == "rotate"
+    b = pg.evaluate("window.__mate.builds")
+    pg.evaluate("""() => { const g = window.__mateGizmo, pv = g.object, Q = pv.quaternion.constructor;
+        pv.quaternion.multiply(new Q().setFromAxisAngle(new pv.position.constructor(0, 0, 1), Math.PI / 4));
+        g.dispatchEvent({type: 'objectChange'}); g.dispatchEvent({type: 'dragging-changed', value: false}); }""")
+    esperar(pg, b)
+    assert pg.evaluate("window.__mate.summary.deco.rot") == pytest.approx(45, abs=1)
+    # escalar
+    pg.locator(T % "giz-escala").click()
+    b = pg.evaluate("window.__mate.builds")
+    alto0 = pg.evaluate("window.__mate.summary.deco.alto")
+    pg.evaluate("""() => { const g = window.__mateGizmo, pv = g.object; pv.scale.set(1.5, 1.5, 1);
+        g.dispatchEvent({type: 'objectChange'}); g.dispatchEvent({type: 'dragging-changed', value: false}); }""")
+    esperar(pg, b)
+    assert pg.evaluate("window.__mate.summary.deco.alto") == pytest.approx(alto0 * 1.5, abs=0.2)
+    # SVG
+    svg = tmp_path / "logo.svg"
+    svg.write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>')
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "deco-svg").click()
+    pg.locator(T % "deco-file").set_input_files(str(svg))
+    pg.wait_for_function("(n) => window.__mate.builds > n && !window.__mate.busy && "
+                         "window.__mate.summary.deco && window.__mate.summary.deco.tipo === 'svg'", arg=b, timeout=READY_MS)
+    assert pg.evaluate("window.__mate.viewer.relieve")
+    # cuña: se ve y se descarga
+    b = pg.evaluate("window.__mate.builds")
+    pg.locator(T % "chk-cuna").check()
+    esperar(pg, b)
+    assert pg.evaluate("window.__mate.viewer.cuna")
+    assert pg.evaluate("window.__mate.summary.cuna.angulo") == 45
+    with pg.expect_download(timeout=READY_MS) as dl:
+        pg.locator(T % "btn-stl-cuna").click()
+    assert dl.value.suggested_filename.endswith("_CUNA.stl")
+    assert not pg.console_errors, pg.console_errors
+    pg.context.close()

@@ -31,11 +31,12 @@ def wait_build(page, before):
                            timeout=READY_MS)
 
 
-def open_mate(browser, base_url, viewport=(1360, 900)):
+def open_mate(browser, base_url, viewport=(1360, 900), role="sin-cuentas"):
     """Abre mate.html (Mate con hueco) y espera el primer mate."""
     ctx = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]},
                               accept_downloads=True)
-    ctx.add_init_script("window.__EDEN_AUTH_MOCK = %s;" % json.dumps({"role": "sin-cuentas"}))
+    ctx.add_init_script("window.__EDEN_AUTH_MOCK = %s;" % json.dumps(
+        {"role": role, "email": "%s@eden3d.test" % role}))
     page = ctx.new_page()
     page.console_errors = []
     page.on("console", lambda m: page.console_errors.append(m.text) if m.type == "error" else None)

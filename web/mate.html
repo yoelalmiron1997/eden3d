@@ -6,7 +6,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mate con hueco · TecnoBear</title>
-  <meta name="description" content="Diseñá un mate imperial para imprimir en 3D con el hueco exacto para tu vaso de polímero o adaptador.">
+  <meta name="description" content="Diseñá un mate imperial para imprimir en 3D con el hueco exacto para tu polímero escalonado o polímero base.">
   <meta name="copyright" content="© Eden3D — Yoel Almirón. Todos los derechos reservados.">
   <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
@@ -41,7 +41,7 @@
         </label>
         <div id="propio" class="file-row" hidden>
           <input type="file" id="stl" data-testid="stl-propio" accept=".stl,model/stl">
-          <p class="hint small" id="stl-msg" data-testid="stl-msg">Subí el STL de tu vaso o adaptador: tiene que ser
+          <p class="hint small" id="stl-msg" data-testid="stl-msg">Subí el STL de tu polímero: tiene que ser
             de revolución (redondo) y estar parado sobre el eje Z. La parte más ancha es la boca.</p>
         </div>
         <label>Color
@@ -57,6 +57,65 @@
             <option value="#d6c4a6">Arena</option>
           </select>
         </label>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="relieve">
+        <legend>Relieve <span class="hint">texto o SVG en el mate</span></legend>
+        <div class="seg seg3" id="deco-tipo" role="radiogroup" aria-label="Relieve" data-testid="deco-tipo">
+          <button type="button" data-t="" aria-pressed="true" data-testid="deco-ninguno">Nada</button>
+          <button type="button" data-t="texto" data-testid="deco-texto">Texto</button>
+          <button type="button" data-t="svg" data-testid="deco-svg">SVG</button>
+        </div>
+        <div id="deco-ui" hidden>
+          <div class="brand-row" id="deco-texto-row">
+            <input type="text" id="deco-txt" data-testid="deco-txt" maxlength="20" value="TecnoBear" autocomplete="off" spellcheck="false">
+            <button type="button" id="deco-aplicar" data-testid="deco-aplicar">Aplicar</button>
+          </div>
+          <div id="deco-svg-row" class="file-row" hidden>
+            <input type="file" id="deco-file" data-testid="deco-file" accept=".svg,image/svg+xml">
+          </div>
+          <p class="hint small" id="deco-msg" data-testid="deco-msg"></p>
+          <div class="seg seg3 small" id="gizmo" role="radiogroup" aria-label="Gumball" data-testid="gumball">
+            <button type="button" data-m="translate" aria-pressed="true" data-testid="giz-mover">Mover</button>
+            <button type="button" data-m="rotate" data-testid="giz-girar">Girar</button>
+            <button type="button" data-m="scale" data-testid="giz-escala">Escala</button>
+          </div>
+          <label class="slider"><span>Tamaño</span>
+            <input type="range" id="d-alto" data-testid="sl-d-alto" min="4" max="80" step="1" value="18">
+            <output id="o-d-alto">18 mm</output></label>
+          <label class="slider"><span>Relieve</span>
+            <input type="range" id="d-prof" data-testid="sl-d-prof" min="0.4" max="4" step="0.1" value="1.2">
+            <output id="o-d-prof">1,2 mm</output></label>
+          <label class="slider"><span>Giro</span>
+            <input type="range" id="d-angulo" data-testid="sl-d-angulo" min="-180" max="180" step="1" value="-90">
+            <output id="o-d-angulo">-90°</output></label>
+          <label class="slider"><span>Altura</span>
+            <input type="range" id="d-z" data-testid="sl-d-z" min="0" max="200" step="0.5" value="66">
+            <output id="o-d-z">66 mm</output></label>
+          <label class="slider"><span>Rotación</span>
+            <input type="range" id="d-rot" data-testid="sl-d-rot" min="-180" max="180" step="1" value="0">
+            <output id="o-d-rot">0°</output></label>
+          <p class="hint small">Arrastrá el gumball sobre el mate: mueve, gira y escala el relieve.</p>
+        </div>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="marca">
+        <legend>Marca de agua <span class="badge-pro" id="brand-lock" data-testid="marca-candado">Pro</span></legend>
+        <div class="brand-row">
+          <input type="text" id="brand" data-testid="marca-texto" maxlength="20" value="Eden3D"
+            autocomplete="off" spellcheck="false" disabled>
+          <button type="button" id="brand-apply" data-testid="marca-aplicar" disabled>Aplicar</button>
+        </div>
+        <p class="hint small" id="brand-msg" data-testid="marca-msg">Grabada debajo de la base.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="cuna">
+        <legend>Cuña</legend>
+        <label class="check"><input type="checkbox" id="cuna" data-testid="chk-cuna"> Cuña para la montañita</label>
+        <label class="slider" id="cuna-row" hidden><span>Inclinación</span>
+          <input type="range" id="cuna-ang" data-testid="sl-cuna" min="10" max="45" step="1" value="45">
+          <output id="o-cuna">45°</output></label>
+        <p class="hint small">Soporte con el hueco del pie: el mate queda inclinado para armar la montañita.</p>
       </fieldset>
 
       <fieldset class="sec" data-sec="medidas">
@@ -115,6 +174,7 @@
           <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
           <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
         </div>
+        <button type="button" id="dlcuna" data-testid="btn-stl-cuna" hidden disabled>STL cuña</button>
       </div>
     </section>
 

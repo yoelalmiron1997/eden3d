@@ -4,7 +4,7 @@ specs:
   - id: MAT-001
     titulo: El hueco es exacto para el inserto
     descripcion: >
-      El hueco del mate copia el vaso de polímero y el adaptador tal cual vienen en sus
+      El hueco del mate copia el polímero escalonado y el polímero base tal cual vienen en sus
       STL, para que el inserto entre justo.
     criterio: >
       El perfil que el motor lee de Polimero_Mate.stl y Adaptador_Polimero_2.stl coincide
@@ -97,5 +97,67 @@ specs:
       La tarjeta tool-mate tiene su imagen y al tocarla abre el pop-up con el link a
       mate.html.
     prioridad: media
+    nivel: web
+    estado: activa
+  - id: MAT-011
+    titulo: Nombres de los insertos
+    descripcion: Los insertos se llaman como en el negocio.
+    criterio: >
+      El vaso se llama "Polímero escalonado" y el adaptador "Polímero base", en el motor,
+      en el selector de la página y en el reporte.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: MAT-012
+    titulo: Marca de agua grabada debajo de la base
+    descripcion: >
+      Cada mate lleva grabada debajo de la base la marca Eden3D (se lee dando vuelta el
+      mate); con el paquete Pro se cambia por otro texto.
+    criterio: >
+      En los 10 modelos la marca por defecto es "Eden3D", queda hundida 0,6 mm en la
+      base (que sigue siendo una malla cerrada) y, si no entra, se avisa; un texto
+      propio (acentos, ñ, signos) se graba igual; "" la saca; un carácter que no se
+      puede grabar da error claro. En la web el campo está bloqueado con candado "Pro"
+      para usuarios y se aplica para Pro.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-013
+    titulo: Texto o SVG proyectado en relieve
+    descripcion: >
+      Se proyecta un texto o un SVG (rellenos y trazos: path, rect, circle, ellipse,
+      polygon, polyline, line, grupos y transform) sobre la piel del mate como un sólido
+      que sobresale, en la posición, tamaño, rotación y profundidad elegidos.
+    criterio: >
+      El relieve es una malla cerrada que sobresale la profundidad pedida (±0,1 mm) en el
+      ángulo y la altura pedidos (±1° y ±0,5 mm) y sigue la curvatura (su base queda
+      0,8 mm adentro de la pared); funciona en los 10 modelos; un SVG inválido, sin
+      figuras o demasiado grande se rechaza con un mensaje en español; el reporte del
+      mate sigue "válido" y "cerrado".
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: MAT-014
+    titulo: Cuña para armar la montañita
+    descripcion: >
+      Pieza extra que sostiene el mate inclinado (45° por defecto, de 10° a 45°) con un
+      hueco a la medida del pie, para armar la montañita de yerba.
+    criterio: >
+      La cuña es una malla cerrada con la cara de arriba inclinada el ángulo pedido
+      (±0,5°) y un hueco más ancho que el pie del mate; sale como objeto aparte en el
+      3MF y como "…_CUNA.stl".
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: MAT-015
+    titulo: Relieve con gumball en la web
+    descripcion: >
+      En mate.html se elige texto o SVG, se ve el relieve en el mate y se acomoda con un
+      gumball (mover sobre la superficie, girar y escalar) o con los controles.
+    criterio: >
+      Elegir "Texto" muestra la malla RELIEVE y el gumball; arrastrar el gumball (mover)
+      cambia el ángulo y la altura y recalcula; girar cambia la rotación; escalar cambia
+      el tamaño; subir un SVG lo proyecta; la cuña se ve y se descarga en STL.
+    prioridad: alta
     nivel: web
     estado: activa

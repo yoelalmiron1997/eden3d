@@ -7,7 +7,7 @@ Python puro (sin numpy ni Rhino): el mismo archivo corre en el navegador
 (Pyodide), en CPython para los tests y en Grasshopper.
 
 Genera el cuerpo de un mate (varios modelos) con el hueco exacto de un inserto
-(vaso de polímero, adaptador, los dos o un STL propio de revolución) como UNA
+(polímero escalonado, polímero base, los dos o un STL propio de revolución) como UNA
 malla cerrada, sin booleanas: piel exterior → borde de la boca → pared del hueco
 → fondo del hueco. El mate se agranda solo (autoajuste) hasta tener la pared y
 el fondo mínimos pedidos.
@@ -36,19 +36,19 @@ RAMPA_MEDALLON = 1.2   # mm en los que el medallón baja hasta su profundidad
 # ---------------------------------------------------------------------------
 INSERTOS = {
     "polimero": {
-        "nombre": "Vaso de polímero",
+        "nombre": "Polímero escalonado",
         "perfil": [(0.0, 70.3), (23.35, 70.3), (23.35, 65.8), (25.86, 63.3),
                    (25.86, 45.7), (28.34, 43.3), (28.34, 26.05), (31.12, 23.3),
                    (31.15, 8.0), (31.18, 4.0), (34.92, 4.0), (34.92, 0.0),
                    (0.0, 0.0)],
     },
     "adaptador": {
-        "nombre": "Adaptador (otro polímero)",
+        "nombre": "Polímero base",
         "perfil": [(0.0, 85.0), (14.5, 85.0), (14.5, 79.0), (28.0, 79.0),
                    (28.0, 20.0), (42.0, 20.0), (42.0, 0.0), (0.0, 0.0)],
     },
 }
-INSERTOS_WEB = [("polimero", "Vaso de polímero"), ("adaptador", "Adaptador (otro polímero)"),
+INSERTOS_WEB = [("polimero", "Polímero escalonado"), ("adaptador", "Polímero base"),
                 ("ambos", "Los dos juntos"), ("propio", "Mi archivo STL")]
 
 # ---------------------------------------------------------------------------
@@ -599,9 +599,10 @@ def _limpiar_rz(rows):
     return out
 
 
-def malla_mate(filas, hueco_rz, M):
+def malla_mate(filas, hueco_rz, M, marca=None):
     """Cuerpo: centro de la base -> piel (abajo->arriba) -> boca -> hueco
-    (arriba->abajo) -> centro del fondo del hueco. Una sola malla cerrada."""
+    (arriba->abajo) -> centro del fondo del hueco. Una sola malla cerrada.
+    marca = (contornos, profundidad): letras grabadas en la base (en vez del abanico)."""
     V, F = [], []
     cos_ = [math.cos(TAU * k / M) for k in range(M)]
     sin_ = [math.sin(TAU * k / M) for k in range(M)]
@@ -616,9 +617,12 @@ def malla_mate(filas, hueco_rz, M):
         V.append((0.0, 0.0, z))
         return len(V) - 1
 
-    cadena = [polo(filas[0][0])]
+    cadena = [] if marca else [polo(filas[0][0])]
     for z, rs in filas:
         cadena.append(anillo(z, rs))
+    if marca:
+        import mate_deco
+        mate_deco.base_grabada(V, F, cadena[0], filas[0][0], marca[0], marca[1])
     cav = _limpiar_rz(list(reversed(hueco_rz[1:-1])))   # abertura -> fondo
     for r, z in cav:
         cadena.append(anillo(z, [r] * M))
@@ -741,15 +745,18 @@ def build_mate(opts=None):
         M = int(math.ceil(M / float(n2))) * n2
     filas, denso = filas_exteriores(p, s, M, paso=1.5 if calidad == "preview" else 0.8)
     rz = colocar_hueco(perfil_hueco(canon, holgura, hundir, 0.0), p["H"], hundir)
-    V, F = malla_mate(filas, rz, M)
+    errores, avisos = [], list(log)
+    marca_rep = _marca(opts, filas, avisos)
+    V, F = malla_mate(filas, rz, M, marca_rep and (marca_rep.pop("_loops"), marca_rep["prof_mm"]))
     if mesh_volume(V, F) < 0:
         F = [(a, c, b) for a, b, c in F]
     shells = [(V, F)] + malla_aletas(p, s, filas)
+    deco_shell, deco_rep = _deco(opts, filas, M, p["H"], calidad, errores, avisos)
+    cuna_res = _cuna(opts, filas)
 
     ins = [(0.0, 0.0)] + perfil_interior(filas) + [(0.0, p["H"])]
     pared_med = pared_2d(ins, rz, p["H"])
     fondo = piso_2d(rz)
-    errores, avisos = [], list(log)
     if pared_med < 0:
         errores.append("El hueco se sale del mate: agrandá el diámetro o activá el autoajuste")
     elif pared_med < pared - 0.05:
@@ -761,6 +768,8 @@ def build_mate(opts=None):
     if ex.get("aletas"):
         avisos.append("Las aletas son piezas que se cruzan con el cuerpo: el laminador las une")
 
+    if deco_shell:
+        shells.append(deco_shell)
     Vt, Ft = [], []
     vol = 0.0
     for Vs, Fs in shells:
@@ -792,5 +801,82 @@ def build_mate(opts=None):
     }
     if info_propio:
         rep["inserto_propio"] = info_propio
+    rep["marca"] = marca_rep
+    rep["deco"] = deco_rep
+    if cuna_res:
+        rep["cuna"] = cuna_res[1]
+        rep["cerrada"] = rep["cerrada"] and mesh_check(cuna_res[0][1])["closed"]
     return {"V": Vt, "F": Ft, "shells": shells, "report": rep, "params": p,
-            "perfil_exterior": denso, "hueco_rz": rz}
+            "perfil_exterior": denso, "hueco_rz": rz, "deco": deco_shell,
+            "cuna": cuna_res[0] if cuna_res else None}
+
+
+# ===========================================================================
+# DECORACIÓN (mate_deco.py): marca en la base, relieve y cuña
+# ===========================================================================
+MARCA_DEFECTO = "Eden3D"
+
+
+def _marca(opts, filas, avisos):
+    """Marca grabada debajo de la base (la de Eden3D salvo que se pida otra; ""
+    = sin marca). Devuelve el reporte con los contornos en "_loops"."""
+    import eden_font
+    import mate_deco
+    texto = opts.get("marca", MARCA_DEFECTO)
+    if texto is None:
+        texto = MARCA_DEFECTO
+    t, err = eden_font.check(texto)
+    if err:
+        raise ValueError(err)
+    if not t:
+        return None
+    r_libre = min(filas[0][1]) - 3.0
+    loops, cap = mate_deco.ubicar_marca(t, r_libre)
+    if not loops:
+        avisos.append("Marca: \"%s\" no entra en la base, probá un texto más corto" % t)
+        return None
+    return {"texto": t, "cap_mm": cap, "prof_mm": 0.6, "_loops": loops}
+
+
+def _deco(opts, filas, M, H, calidad, errores, avisos):
+    """Relieve proyectado (texto o SVG). -> (shell o None, reporte o None)."""
+    import mate_deco
+    d = opts.get("deco") or {}
+    tipo_d = d.get("tipo")
+    if tipo_d not in ("texto", "svg"):
+        return None, None
+    alto = mate_deco._f(d.get("alto"), mate_deco.DECO_DEF["alto"], *mate_deco.DECO_LIM["alto"])
+    try:
+        if tipo_d == "texto":
+            forma = mate_deco.forma_texto(d.get("texto") or "", alto)
+        else:
+            datos = d.get("svg")
+            if not datos and d.get("svg_path"):
+                with open(d["svg_path"], "rb") as fh:
+                    datos = fh.read()
+            if not datos:
+                raise ValueError("Subí un archivo SVG")
+            forma = mate_deco.forma_svg(datos, alto)
+        dd = dict(d)
+        if dd.get("z") in (None, ""):
+            med = ((tipo(opts.get("tipo") or TIPOS[0]["id"]).get("extras") or {}).get("medallones"))
+            dd["z"] = (float(med["z"]) if med else 0.55) * H
+        shell, info, av = mate_deco.relieve(forma, filas, M, dd, H, calidad)
+    except ValueError as e:
+        errores.append("Relieve: %s" % e)
+        return None, None
+    avisos.extend(av)
+    info["tipo"] = tipo_d
+    if tipo_d == "texto":
+        info["texto"] = d.get("texto")
+    info["cerrada"] = mesh_check(shell[1])["closed"]
+    return shell, info
+
+
+def _cuna(opts, filas):
+    import mate_deco
+    c = opts.get("cuna")
+    if c is None or c is False:
+        return None
+    ang = c.get("angulo", 45.0) if isinstance(c, dict) else 45.0
+    return mate_deco.cuna(min(filas[0][1]), ang)

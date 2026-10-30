@@ -100,6 +100,9 @@ def test_piezas_encastran(piezas, holgura):
     assert info["lenguetas"] >= 2 * piezas * (piezas - 1)
     k = info["lengueta"]
     assert k["cabeza"] > k["cuello"] * 1.5             # la cabeza traba
+    # robusta: cuello de 3 mm o más (celda 15) y base gruesa; antes 2,25 mm × 3 mm
+    assert 2 * k["cuello"] >= 3.0 and k["filete"] > 0.5
+    assert p["base"] >= 4.5 and 2 * k["cuello"] * p["base"] > 2 * (2.25 * 3.0)
     cap = info["cap_mm"]
     for a in pz:
         # cada letra entera dentro de su pieza, sin tocar el borde

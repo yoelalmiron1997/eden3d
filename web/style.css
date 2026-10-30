@@ -370,3 +370,6 @@ html.es-admin .solo-admin { display: revert !important; }
 .sopa-palabras button { min-height: 30px; padding: 4px 10px; font-size: 13px; border-radius: 99px; }
 .sopa-palabras li.falta { padding: 4px 10px; font-size: 13px; color: #b3261e; text-decoration: line-through; }
 .sopa-palabras button[aria-pressed="true"] { background: #e8562a; border-color: #e8562a; color: #fff; text-decoration: line-through; }
+.seg3 { grid-template-columns: repeat(3, 1fr); }
+#deco-ui { display: grid; gap: 8px; }
+#deco-ui[hidden], #cuna-row[hidden] { display: none; }

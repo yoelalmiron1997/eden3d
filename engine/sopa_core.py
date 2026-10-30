@@ -48,8 +48,8 @@ NOMBRE_DIR = {(0, 1): "→", (1, 0): "↓", (1, 1): "↘", (-1, 1): "↗", (0, -
               (-1, 0): "↑", (-1, -1): "↖", (1, -1): "↙"}
 LIMITES = {"celda_min": 10.0, "celda_max": 30.0, "grilla_min": 5, "grilla_max": 24,
            "palabras_max": 40, "cama_min": 80.0, "cama_max": 400.0}
-DEFAULTS = {"celda": 15.0, "base": 3.0, "relieve": 1.2, "margen": 6.0, "holgura": 0.2,
-            "cama": 220.0, "letra": 0.48, "lista": True, "dificultad": "media",
+DEFAULTS = {"celda": 15.0, "base": 4.5, "relieve": 1.2, "margen": 6.0, "holgura": 0.2,
+            "cama": 220.0, "letra": 0.45, "lista": True, "dificultad": "media",
             "bloques": True, "ajuste": 0.1}
 PARED_BLOQUE = 1.4           # mm
 LUZ_LATERAL = 0.4            # mm a cada costado de la letra más ancha (no aprieta)
@@ -238,18 +238,29 @@ def _arco(cx, cy, r, a0, a1, n):
 def lengueta(u0, e, k):
     """Perfil de la lengüeta (en coordenadas del corte: u a lo largo, v hacia el
     vecino), corrido e mm (negativo = achicada, del lado dueño; positivo = agrandada,
-    del lado que la recibe). k = dict con cuello, cabeza y profundidad."""
+    del lado que la recibe). k = dict con cuello, cabeza, profundidad y filete.
+    El cuello arranca con filetes redondeados (sin esquinas vivas que se quiebren)."""
     a = k["cuello"] + e                     # medio ancho del cuello
     R = k["cabeza"] + e                     # radio de la cabeza
     vc = k["prof"] - k["cabeza"]            # centro de la cabeza (fijo)
     v0 = e                                  # línea de corte corrida
+    f = max(0.0, k.get("filete", 0.0) - e)  # filete en la base del cuello
     vn = vc - math.sqrt(max(R * R - a * a, 1e-9))
     ang0 = math.atan2(vn - vc, a)           # derecha del cuello (abajo de la cabeza)
     ang1 = math.pi - ang0                   # izquierda
-    pts = [(u0 + a, v0), (u0 + a, vn)]
-    arco = _arco(u0, vc, R, ang0, ang1 + (2 * math.pi if ang1 < ang0 else 0), 22)
+    if f > 1e-6:
+        # cuarto de círculo cóncavo: de la línea de corte (u0+a+f, v0) al cuello (u0+a, v0+f)
+        pts = _arco(u0 + a + f, v0 + f, f, -math.pi / 2, -math.pi, 6)
+    else:
+        pts = [(u0 + a, v0)]
+    pts += [(u0 + a, vn)]
+    arco = _arco(u0, vc, R, ang0, ang1 + (2 * math.pi if ang1 < ang0 else 0), 26)
     pts += arco[1:-1]
-    pts += [(u0 - a, vn), (u0 - a, v0)]
+    pts += [(u0 - a, vn)]
+    if f > 1e-6:
+        pts += _arco(u0 - a - f, v0 + f, f, 0.0, -math.pi / 2, 6)
+    else:
+        pts += [(u0 - a, v0)]
     return pts                              # de u creciente a u decreciente (sentido +)
 
 
@@ -307,42 +318,63 @@ def armar_piezas(sopa, p):
             _, (a0, b0, a1, b1) = glifo(sopa["grid"][r][c], cap)
             x, y = centro(r, c)
             caja_letra[(r, c)] = (x + a0 - 0.3, y + b0 - 0.3, x + a1 + 0.3, y + b1 + 0.3)
-    k = {"cuello": 0.075 * cel, "cabeza": 0.16 * cel, "prof": 0.42 * cel}
+    # Lengüeta robusta: la más grande que entra entre las letras (con 0,4 mm de aire),
+    # cabeza 1,5 veces el cuello (traba) y filetes en la base del cuello. Se calcula
+    # aparte para cortes verticales (la lengüeta va entre letras de arriba y abajo) y
+    # horizontales (entre letras de izquierda y derecha).
+    anchos = [glifo(ch, cap)[1] for ch in set(c for fila in sopa["grid"] for c in fila)]
+    w_max = max(b[2] - b[0] for b in anchos)
+    h_max = max(b[3] - b[1] for b in anchos)
+
+    def medida(libre):
+        R = max(0.12 * cel, min(0.25 * cel, libre / 2.0 - t - 0.4))
+        return {"cabeza": R, "cuello": R / 1.55, "prof": 2.0 * R + 0.22 * cel, "filete": 0.6 * R / 1.55}
+    k_v = medida(cel - h_max - 0.6)          # corte vertical: lugar entre letras en y
+    k_h = medida(cel - w_max - 0.6)          # corte horizontal: lugar entre letras en x
+    k = k_v
     rnd = random.Random(1000 + int(sopa.get("semilla") or 0))
 
     def lengueta_en(i0, i1, fijo, vertical):
+        k = k_v if vertical else k_h
         """Lengüetas de un borde interno entre las celdas i0..i1 a lo largo del corte:
-        una cada ~3 celdas, alternando el lado, en las franjas libres entre letras.
+        una cada ~3 celdas, alternando el lado, donde haya lugar entre las letras (se
+        busca cada 0,5 mm a lo largo del corte, no sólo en el borde de las celdas).
         Devuelve [(u, signo)]; signo + = hacia +x (vertical) o hacia abajo (horizontal)."""
-        validas = {}
-        for b in range(i0 + 1, i1):
-            u = Y(b) if vertical else X(b)
+        ext = k["prof"] + t
+        ancho = max(k["cabeza"], k["cuello"] + k["filete"]) + t
+        lo = (Y(i1) if vertical else X(i0)) + ancho + 0.5
+        hi = (Y(i0) if vertical else X(i1)) - ancho - 0.5
+        validas = []
+        u = lo
+        while u <= hi + 1e-9:
+            # celdas a los dos lados del corte que la lengüeta puede tocar
+            b0 = int(((Y(i0) - u) if vertical else (u - X(i0))) // cel) + i0
             for s in (1, -1):
-                ext = k["prof"] + t
-                ancho = k["cabeza"] + t
                 if vertical:
                     xs = (X(fijo), X(fijo) + ext) if s > 0 else (X(fijo) - ext, X(fijo))
                     rect = (xs[0], u - ancho, xs[1], u + ancho)
-                    vecinas = [(b - 1, fijo), (b, fijo), (b - 1, fijo - 1), (b, fijo - 1)]
+                    vecinas = [(b, c) for b in (b0 - 1, b0, b0 + 1) for c in (fijo, fijo - 1)]
                 else:
                     ys = (Y(fijo) - ext, Y(fijo)) if s > 0 else (Y(fijo), Y(fijo) + ext)
                     rect = (u - ancho, ys[0], u + ancho, ys[1])
-                    vecinas = [(fijo, b - 1), (fijo, b), (fijo - 1, b - 1), (fijo - 1, b)]
+                    vecinas = [(r, b) for b in (b0 - 1, b0, b0 + 1) for r in (fijo, fijo - 1)]
                 if not _choca(rect, [caja_letra[q] for q in vecinas if q in caja_letra]):
-                    validas.setdefault(b, []).append(s)
+                    validas.append((u, s))
+            u += 0.5
         n = max(1, int(round((i1 - i0) / 3.0)))
-        elegidas, usadas = [], set()
+        largo = (i1 - i0) * cel
+        elegidas = []
         primero = 1 if rnd.random() < 0.5 else -1
+        u_ini = Y(i0) if vertical else X(i0)
         for q in range(n):
-            meta = i0 + (i1 - i0) * (q + 0.5) / n
-            libres = [b for b in validas if all(abs(b - x) >= 2 for x in usadas)]
+            meta = u_ini + (-1 if vertical else 1) * largo * (q + 0.5) / n
+            quiero = primero if q % 2 == 0 else -primero
+            libres = [(uu, ss) for uu, ss in validas
+                      if all(abs(uu - x) >= 2 * ancho + cel for x, _ in elegidas)]
             if not libres:
                 break
-            b = min(libres, key=lambda x: (abs(x - meta), x))
-            quiero = primero if q % 2 == 0 else -primero
-            s = quiero if quiero in validas[b] else validas[b][0]
-            usadas.add(b)
-            elegidas.append((Y(b) if vertical else X(b), s))
+            uu, ss = min(libres, key=lambda c: (abs(c[0] - meta) + (0 if c[1] == quiero else cel * 0.6), c[0]))
+            elegidas.append((uu, ss))
         return elegidas
 
     # lengüetas de cada borde interno
@@ -364,8 +396,9 @@ def armar_piezas(sopa, p):
         tabs = [(u0, dueño)]: dueño = la lengüeta sale de esta pieza."""
         pts = [P0]
         segs = []
+        kk = k_v if eje == "x" else k_h
         for u0, duenio in tabs or []:
-            prof = lengueta(u0, -t / 2.0, k) if duenio else lengueta(u0, t / 2.0, k)
+            prof = lengueta(u0, -t / 2.0, kk) if duenio else lengueta(u0, t / 2.0, kk)
             sv = 1.0 if duenio else -1.0
             seg = [((cut + sale * sv * v, u) if eje == "x" else (u, cut + sale * sv * v))
                    for u, v in prof]
@@ -403,7 +436,8 @@ def armar_piezas(sopa, p):
             piezas.append({"nombre": "P%d" % (len(piezas) + 1), "i": i, "j": j,
                            "contorno": loop, "letras": letras, "rc": rc})
     info = {"piezas_x": px, "piezas_y": py, "ancho_mm": round(W, 1), "alto_mm": round(H, 1),
-            "sin_lengueta": sin_lengueta, "lenguetas": n_lenguetas, "cap_mm": round(cap, 2), "lengueta": k}
+            "sin_lengueta": sin_lengueta, "lenguetas": n_lenguetas, "cap_mm": round(cap, 2), "lengueta": min((k_v, k_h), key=lambda q: q["cuello"]),
+            "lengueta_v": k_v, "lengueta_h": k_h}
     return piezas, info
 
 
@@ -595,7 +629,7 @@ def parametros(opts):
     o = dict(opts or {})
     p = dict(DEFAULTS)
     p["celda"] = _clamp(o.get("celda"), LIMITES["celda_min"], LIMITES["celda_max"], DEFAULTS["celda"])
-    p["base"] = _clamp(o.get("base"), 1.6, 6.0, DEFAULTS["base"])
+    p["base"] = _clamp(o.get("base"), 3.0, 6.0, DEFAULTS["base"])   # < 3 mm las lengüetas se quiebran
     p["relieve"] = _clamp(o.get("relieve"), 0.6, 3.0, DEFAULTS["relieve"])
     p["margen"] = _clamp(o.get("margen"), 3.0, 20.0, DEFAULTS["margen"])
     p["holgura"] = _clamp(o.get("holgura"), 0.0, 0.6, DEFAULTS["holgura"])

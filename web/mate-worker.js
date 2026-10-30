@@ -6,13 +6,14 @@ importScripts("./vendor/pyodide/pyodide.js");
 let py = null;
 let api = null;
 const STL_PATH = "/tmp/inserto_propio.stl";
+const SVG_PATH = "/tmp/deco.svg";
 
 async function init() {
   const t0 = performance.now();
   py = await loadPyodide({ indexURL: "./vendor/pyodide/" });
   const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
   py.FS.mkdirTree("/eden/colecciones");
-  const need = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_core.py", "mate_web.py"];
+  const need = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_core.py", "mate_web.py", "mate_deco.py"];
   for (const f of manifest.files.filter((x) => need.includes(x))) {
     const txt = await (await fetch("./py/" + f + "?v=" + manifest.version)).text();
     py.FS.writeFile("/eden/" + f, txt);
@@ -34,7 +35,10 @@ function bytesOf(proxy) {
 }
 
 function withPath(opts) {
-  return opts && opts.inserto === "propio" ? { ...opts, stl_path: STL_PATH } : opts;
+  if (!opts) return opts;
+  let o = opts.inserto === "propio" ? { ...opts, stl_path: STL_PATH } : opts;
+  if (o.deco && o.deco.tipo === "svg") o = { ...o, deco: { ...o.deco, svg_path: SVG_PATH } };
+  return o;
 }
 
 function build(opts) {
@@ -57,9 +61,9 @@ function build(opts) {
   }
 }
 
-function exportFile(kind, opts) {
+function exportFile(kind, opts, pieza) {
   const o = py.toPy(withPath(opts));
-  const r = kind === "3mf" ? api.export_3mf(o) : api.export_stl(o);
+  const r = kind === "3mf" ? api.export_3mf(o) : api.export_stl(o, pieza || "MATE");
   try {
     return { name: r.get(0), data: bytesOf(r.get(1)) };
   } finally {
@@ -70,7 +74,7 @@ function exportFile(kind, opts) {
 const ready = init();
 
 self.onmessage = async (ev) => {
-  const { id, type, opts, data } = ev.data;
+  const { id, type, opts, data, pieza, text } = ev.data;
   try {
     const boot = await ready;
     if (type === "init") {
@@ -79,8 +83,16 @@ self.onmessage = async (ev) => {
       const r = build(opts);
       self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
     } else if (type === "3mf" || type === "stl") {
-      const r = exportFile(type, opts);
+      const r = exportFile(type, opts, pieza);
       self.postMessage({ id, ok: true, result: r }, [r.data]);
+    } else if (type === "svg") {
+      py.FS.writeFile(SVG_PATH, new Uint8Array(data));
+      self.postMessage({ id, ok: true, result: { ok: true } });
+    } else if (type === "marca") {
+      const r = api.check_marca(text || "");
+      const out = r.toJs({ dict_converter: Object.fromEntries });
+      r.destroy();
+      self.postMessage({ id, ok: true, result: out });
     } else if (type === "upload") {
       py.FS.writeFile(STL_PATH, new Uint8Array(data));
       const r = api.analizar_stl(STL_PATH);

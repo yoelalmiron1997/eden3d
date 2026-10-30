@@ -82,10 +82,13 @@ export class Viewer {
     this.mats = {
       MACETA: new THREE.MeshStandardMaterial({ color: 0xece9e2, roughness: 0.82, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
       PLATO: new THREE.MeshStandardMaterial({ color: 0xdedad2, roughness: 0.84, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
-      // inserto del mate con hueco (vaso de polímero), semitransparente
+      // inserto del mate con hueco (polímero escalonado / base), semitransparente
       INSERTO: new THREE.MeshStandardMaterial({ color: 0xb9c2c9, roughness: 0.35, metalness: 0.55, transparent: true,
         opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, envMapIntensity: 1.2,
         polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 }),
+      // relieve proyectado y cuña del mate
+      RELIEVE: new THREE.MeshStandardMaterial({ color: 0xece9e2, roughness: 0.6, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
+      CUNA: new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.8, metalness: 0, side: THREE.DoubleSide, envMapIntensity: 0.8 }),
       AGUA: new THREE.MeshPhysicalMaterial({ color: 0x3f9fd8, roughness: 0.05, metalness: 0, transparent: true,
         opacity: 0.5, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.8, specularIntensity: 1, depthWrite: false, side: THREE.DoubleSide }),
     };
@@ -198,6 +201,7 @@ export class Viewer {
 
   setColor(hex) {
     this.mats.MACETA.color.set(hex);
+    this.mats.RELIEVE.color.set(hex);
     this.mats.PLATO.color.set(hex).multiplyScalar(0.94);
   }
 

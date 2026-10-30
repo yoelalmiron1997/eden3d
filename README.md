@@ -49,13 +49,21 @@ inserto** (`web/mate.html`, motor `engine/mate_core.py`).
   cilíndrico, **cohete** (con aletas y banda para la guarda), **vaso redondeado** (con
   medallón para un relieve propio), **camionero anillado** y **facetado** (caras
   triangulares alternadas con medallones).
-* **Hueco para** el vaso de polímero, el adaptador, **los dos juntos** o **un STL
+* **Hueco para** el **polímero escalonado**, el **polímero base**, **los dos juntos** o **un STL
   propio** (de revolución: el motor lee el perfil y verifica el volumen).
 * El hueco sale del perfil exacto de los STL de los insertos, con **holgura** ajustable.
 * **Autoajuste**: el mate crece en alto y ancho hasta cumplir la **pared** y el **fondo**
   mínimos (medidos de verdad, incluso en las facetas y los medallones).
 * Una sola **malla cerrada** sin booleanas (piel → boca → hueco), descarga en **STL o
   3MF** con la licencia en los metadatos. Vista con el inserto adentro, corte y capas.
+* **Relieve de texto o SVG** proyectado sobre la piel (`engine/mate_deco.py`): el SVG se
+  rellena sólido (paths, formas básicas, transform, fill-rule) y se apoya en el radio
+  real del mate. En la web se acomoda con un **gumball** (mover sobre la superficie,
+  girar y escalar; atajos G, R y S).
+* **Marca de agua grabada debajo de la base** ("Eden3D" por defecto; con **Pro** se cambia
+  el texto o se saca).
+* **Cuña** opcional (10–45°, 45° por defecto) con un hueco para el pie, para dejar el
+  mate inclinado y armar la montañita; se descarga aparte (`_CUNA.stl`) o en el 3MF.
 * Componente de Grasshopper: `grasshopper/gh_mate_hueco.py` (mismo motor con
   booleanas de Rhino y mates propios en Brep/Mesh).
 
@@ -71,8 +79,9 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
   con la **lista de palabras**.
 * Se corta en **piezas de rompecabezas** según la cama de la impresora (mínimo 2 × 2):
   los cortes van entre celdas (ninguna letra queda partida) y las **lengüetas** van en
-  la franja libre entre filas de letras, una cada ~3 celdas y alternando el lado, con
-  **holgura** ajustable (cada lado se corre la mitad).
+  la franja libre entre letras, con **holgura** ajustable (cada lado se corre la mitad).
+  Las lengüetas son robustas: tamaño adaptado al espacio libre de cada corte (cuello de
+  ≥ 3 mm, cabeza 1,55 veces el cuello), filetes en la raíz y base de 4,5 mm.
 * **Bloques para marcar**: todos iguales, uno por letra (se imprimen tantos como letras
   tiene la palabra más larga). Cada bloque encastra en **cualquier** letra: todas las
   letras del tablero miden lo mismo de alto (la Ñ y la Q se aplastan un poco) y el

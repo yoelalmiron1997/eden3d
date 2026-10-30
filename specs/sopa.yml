@@ -21,14 +21,17 @@ specs:
     nivel: motor
     estado: activa
   - id: SOP-003
-    titulo: Las piezas encastran y ninguna letra queda cortada
+    titulo: Las piezas encastran firme y ninguna letra queda cortada
     descripcion: >
       El tablero se corta entre celdas en piezas de rompecabezas; las lengüetas van
-      entre letras y tienen la holgura pedida.
+      entre letras, son las más grandes que entran (cuello ancho con filetes, sin
+      esquinas vivas que se quiebren) y la base es de 3 mm o más.
     criterio: >
       Las piezas no se superponen y entre vecinas queda la holgura (±0,05 mm); cada
       letra está entera dentro de su pieza; cada borde interno tiene al menos una
-      lengüeta y la cabeza de la lengüeta es más ancha que su cuello (traba).
+      lengüeta; la cabeza es ≥ 1,5 veces el cuello (traba); el cuello mide al menos
+      3 mm de ancho con celda de 15 mm y la base por defecto es de 4,5 mm (sección del
+      cuello más del doble que la versión anterior).
     prioridad: alta
     nivel: motor
     estado: activa

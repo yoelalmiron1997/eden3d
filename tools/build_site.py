@@ -22,7 +22,7 @@ ENGINE = os.path.join(ROOT, "engine")
 WEB_MODULES = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py",
                "eden_catalog.py", "eden_web.py", "eden_selftest.py", "eden_escena.py",
                "eden_plantas.py", "colecciones/catalogo_eden3d.json",
-               "colecciones/plantas.json", "mate_core.py", "mate_web.py",
+               "colecciones/plantas.json", "mate_core.py", "mate_web.py", "mate_deco.py",
                "sopa_core.py", "sopa_web.py"]
 PYODIDE_FILES = ["pyodide.js", "pyodide.asm.js", "pyodide.asm.wasm", "python_stdlib.zip",
                  "pyodide-lock.json"]
@@ -62,8 +62,9 @@ def build(out, node_modules):
     shutil.copy2(os.path.join(node_modules, "three", "build", "three.module.js"), vt)
     shutil.copy2(os.path.join(node_modules, "three", "build", "three.core.js"), vt) \
         if os.path.isfile(os.path.join(node_modules, "three", "build", "three.core.js")) else None
-    shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "controls",
-                              "OrbitControls.js"), os.path.join(vt, "addons", "controls"))
+    for ctl in ("OrbitControls.js", "TransformControls.js"):     # TransformControls: gumball
+        shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "controls", ctl),
+                     os.path.join(vt, "addons", "controls"))
     os.makedirs(os.path.join(vt, "addons", "environments"), exist_ok=True)
     shutil.copy2(os.path.join(node_modules, "three", "examples", "jsm", "environments",
                               "RoomEnvironment.js"), os.path.join(vt, "addons", "environments"))
