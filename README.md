@@ -135,21 +135,31 @@ Cuarta herramienta: **toppers para tortas en una sola pieza** (`web/topper.html`
   **tipografía** y su tamaño: 16 tipografías libres, 11 cursivas (Great Vibes, Dancing
   Script, Lobster, Pacifico, Satisfy, Allura, Cookie, Yellowtail, Kaushan Script,
   Parisienne, Alex Brush) y 5 gruesas. Licencias en `engine/fuentes/LICENCIAS.md`.
-* **Siempre unido**: el texto se dibuja en una grilla fina, se engorda con el
-  **contorno** (el borde que une las letras), se suma el **marco** (círculo, corazón,
-  flor, rombo o sol) y lo que queda suelto (tildes, puntos, palabras separadas) se une con
-  **puentes** cortos; un test verifica que la pieza es una sola región.
-* **Un color** o **dos colores** (base con contorno + letras en relieve arriba; el 3MF trae
-  las dos como partes de un objeto para asignar un filamento a cada una).
-* **Más de un punto de apoyo**: las líneas se enciman y cada una se apoya en la de abajo
-  en al menos dos lugares (si no se tocan, un pilar corto en la columna de menos luz); las
-  piezas sueltas grandes se unen con dos puentes.
-* 1 o 2 **palitos** con punta, del largo elegido, que salen de abajo de la última línea y
-  se clavan en material macizo.
-* Vista **en la torta** (`web/torta.js`: bizcochuelo, cobertura, chorreado, granas y
-  velitas, apoyada en la mesa; el topper entra desde arriba y se clava) o plano, como se
-  imprime. **🎉 Cumpleaños**: velitas prendidas, ráfagas y lluvia de confeti que se apoya
-  en la torta y la mesa, y la cámara girando. Descarga en 3MF o STL.
+* **Siempre unido**: el texto se dibuja en una grilla fina, se le pone el **contorno**
+  (primero se cierran las luces entre letras y después se engorda sólo lo pedido, así no
+  quedan gordas), se suma el **marco** (círculo, corazón, flor, rombo o sol) y lo que
+  queda suelto (tildes, puntos, palabras separadas) se une con **puentes** cortos; un test
+  verifica que la pieza es una sola región.
+* **Los huecos de las letras quedan abiertos** (la panza de la a, el ojo de la e, el 8):
+  el contorno no los tapa.
+* **Colores**: un color; **dos alturas** (letras en relieve arriba de la base: en cualquier
+  impresora, pausa y cambio de filamento a mano en esa capa, que el reporte indica); o
+  **misma altura** (letras al ras, de color en las últimas capas, para AMS / multicolor).
+  El 3MF trae base y letras como partes de un objeto para asignar un filamento a cada una.
+* **Más de un punto de apoyo**: las líneas se apilan por su perfil (se tocan donde se
+  cruzan las letras) y cada una se apoya en la de abajo en al menos dos lugares (si no se
+  tocan, un pilar corto en la columna de menos luz); las piezas sueltas grandes se unen
+  con dos puentes.
+* 1 o 2 **palitos** con punta que bajan `largo` mm por debajo de lo más bajo de la pieza
+  (en un corazón se clavan cerca de la punta) y se clavan en material macizo.
+* **Años**: el número que cumple (1 a 3 cifras) en cualquier tipografía, solo o con
+  estrellas, corazones, corona o "años" abajo; en una pieza aparte, con sus palitos y los
+  mismos colores. El 3MF trae el topper y el número uno al lado del otro.
+* Vista **en la torta** (`web/torta.js`): crema, chocolate, chocotorta, Oreo, pasta frola,
+  rogel, frutillas o selva negra, con texturas dibujadas en el navegador, apoyada en la
+  mesa; el topper y el número entran desde arriba y se clavan. O plano, como se imprime.
+  **🎉 Cumpleaños**: velitas prendidas, ráfagas y lluvia de confeti que se apoya en la
+  torta y la mesa, y la cámara girando. Descarga en 3MF o STL.
 
 ## Cómo funciona
 

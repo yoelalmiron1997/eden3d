@@ -37,6 +37,11 @@ async function fuente(id) {
 }
 async function fuentesDe(opts) {
   for (const L of (opts && opts.lineas) || []) await fuente(L.fuente);
+  const n = opts && opts.numero;
+  if (n && n.activo) {
+    await fuente(n.fuente);
+    if (n.estilo === "anios") await fuente("great_vibes");     // el "años" de abajo
+  }
 }
 
 function bytesOf(proxy) {
@@ -49,8 +54,8 @@ function bytesOf(proxy) {
   }
 }
 
-function build(opts) {
-  const res = api.build(py.toPy(opts));
+function build(opts, numero) {
+  const res = numero ? api.build_numero(py.toPy(opts)) : api.build(py.toPy(opts));
   try {
     const sp = res.get("summary");
     const summary = sp.toJs({ dict_converter: Object.fromEntries });
@@ -87,9 +92,9 @@ self.onmessage = async (ev) => {
     const boot = await ready;
     if (type === "init") {
       self.postMessage({ id, ok: true, result: boot });
-    } else if (type === "build") {
+    } else if (type === "build" || type === "build_numero") {
       await fuentesDe(opts);
-      const r = build(opts);
+      const r = build(opts, type === "build_numero");
       self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
     } else if (type === "3mf" || type === "stl") {
       await fuentesDe(opts);

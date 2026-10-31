@@ -45,9 +45,13 @@ def test_una_sola_pieza(i):
     o = tc.opciones(CASOS[i])
     palos = r["reporte"]["palos"]
     assert len(palos) == o["palitos"]
+    jmin = next(j for j in range(g.ny) if any(S[j]))
+    ymin = g.y0 + jmin * g.res
     for p in palos:
         assert p["adentro_mm"] >= 1.0
-        assert p["arriba"] - p["adentro_mm"] - p["punta"] == pytest.approx(o["largo"], abs=0.2)
+        # todos terminan `largo` mm por debajo de lo más bajo de la pieza (y arrancan cerca)
+        assert p["punta"] == pytest.approx(ymin - o["largo"], abs=0.05)
+        assert p["desde_abajo_mm"] <= max(8.0, 0.2 * r["reporte"]["medidas_mm"][1]) + 0.5
         i_ = int((p["x"] - g.x0) / g.res)
         j_ = int((p["arriba"] - 0.5 - g.y0) / g.res)
         assert S[j_][i_], "el palito no entra en la pieza"
@@ -185,3 +189,118 @@ def test_palabras_sueltas_con_dos_puentes():
     assert r["reporte"]["puentes"] >= 2
     g, S = r["grilla"], r["region"]
     assert tc.componentes(S, g.nx, g.ny)[1] == 1
+
+
+@pytest.mark.spec("TOP-002")
+def test_palitos_del_corazon_cerca_de_la_punta():
+    r = tc.construir({"marco": "corazon", "lineas": [{"texto": "Feliz"}, {"texto": "Cumpleaños"}, {"texto": "Yoel"}]})
+    g, S = r["grilla"], r["region"]
+    jmin = next(j for j in range(g.ny) if any(S[j]))
+    alto = (max(j for j in range(g.ny) if any(S[j])) - jmin) * g.res
+    palos = r["reporte"]["palos"]
+    assert len(palos) == 2 and len({p["punta"] for p in palos}) == 1          # misma punta
+    for p in palos:
+        assert p["desde_abajo_mm"] <= max(8.0, 0.2 * alto) + 0.5            # no en los costados altos
+        assert p["arriba"] - p["punta"] >= 90.0                              # largos, no cortitos
+
+
+# ----------------------------------------------------------------- TOP-008
+@pytest.mark.spec("TOP-008")
+@pytest.mark.parametrize("lineas", [
+    [{"texto": "Happy", "fuente": "lobster"}, {"texto": "Birthday", "fuente": "lobster"}, {"texto": "Martina", "fuente": "pacifico"}],
+    [{"texto": "Feliz", "fuente": "great_vibes"}, {"texto": "Cumpleaños", "fuente": "great_vibes"}],
+])
+def test_huecos_de_las_letras_abiertos(lineas):
+    r = tc.construir({"lineas": lineas})
+    rep = r["reporte"]
+    assert rep["contorno_mm"] == pytest.approx(0.8)
+    assert rep["huecos"] > 0 and rep["huecos_abiertos"] == rep["huecos"]
+    g, S, T = r["grilla"], r["region"], r["letras"]
+    A = tc.afuera(T, g)
+    tapados = sum(1 for j in range(g.ny) for i in range(g.nx) if not T[j][i] and not A[j][i] and S[j][i])
+    libres = sum(1 for j in range(g.ny) for i in range(g.nx) if not T[j][i] and not A[j][i])
+    assert tapados <= 0.05 * libres                     # sólo algún pilar o puente los cruza
+    assert tc.componentes(S, g.nx, g.ny)[1] == 1
+
+
+@pytest.mark.spec("TOP-008")
+def test_lineas_se_tocan_sin_encimarse():
+    polys, info, caja, grupos = tc.maquetar([{"texto": "Happy", "fuente": "lobster"},
+                                            {"texto": "Birthday", "fuente": "lobster"}], 140, True)
+    pa, pb = tc._perfiles(grupos[0]), tc._perfiles(grupos[1])
+    cruce = [pb[c][1] - pa[c][0] for c in pa if c in pb]
+    assert max(cruce) > 0                                 # se tocan
+    assert sum(1 for d in cruce if d > 0) <= 0.35 * len(cruce)   # sin encimarse las panzas
+
+
+# ----------------------------------------------------------------- TOP-009
+NUM_CASOS = [("lleno", "1", "luckiest_guy"), ("estrellas", "5", "lilita_one"), ("corazones", "18", "fredoka"),
+             ("corona", "40", "bungee"), ("anios", "3", "pacifico"), ("estrellas", "100", "great_vibes")]
+
+
+@pytest.mark.spec("TOP-009")
+@pytest.mark.parametrize("estilo,n,fuente", NUM_CASOS)
+def test_numero_en_una_pieza(estilo, n, fuente):
+    r = tc.construir_numero({"numero": {"numero": n, "estilo": estilo, "fuente": fuente, "alto": 60}})
+    g, S = r["grilla"], r["region"]
+    assert tc.componentes(S, g.nx, g.ny)[1] == 1
+    rep = r["reporte"]
+    assert rep["numero"] == n and rep["alto_mm"] == pytest.approx(60)
+    for nombre, V, F in r["piezas"]:
+        assert ew.mesh_check(F)["closed"], nombre
+    assert [p[0] for p in r["piezas"]] == ["NUMERO"]
+    assert len(rep["palos"]) == 1 and rep["huecos_abiertos"] == rep["huecos"]
+    jmin = next(j for j in range(g.ny) if any(S[j]))
+    assert rep["palos"][0]["punta"] == pytest.approx(g.y0 + jmin * g.res - 90.0, abs=0.05)
+
+
+@pytest.mark.spec("TOP-009")
+@pytest.mark.parametrize("malo", ["", "12a", "1234", "-3"])
+def test_numero_errores(malo):
+    with pytest.raises(ValueError) as e:
+        tc.construir_numero({"numero": {"numero": malo}})
+    assert "años" in str(e.value)
+    s = tw.build_numero({"numero": {"numero": malo}})["summary"]
+    assert not s["valid"] and "años" in s["errors"][0]
+
+
+@pytest.mark.spec("TOP-009")
+def test_numero_descargas():
+    o = {"estilo": "doble", "lineas": [{"texto": "Feliz"}, {"texto": "Cumple"}],
+         "numero": {"activo": True, "numero": "7", "estilo": "corona", "palitos": 2}}
+    n, d = tw.export_stl(o, "NUMERO")
+    assert n == "Numero-7_NUMERO.stl" and len(d) > 84
+    n, d = tw.export_stl(o, "NUMERO_LETRAS")
+    assert n == "Numero-7_NUMERO_LETRAS.stl"
+    n, d = tw.export_3mf(o)
+    assert n == "Topper-Feliz-Cumple-7.3mf"
+    with zipfile.ZipFile(io.BytesIO(d)) as z:
+        m = z.read("3D/3dmodel.model").decode("utf-8")
+    assert m.count("<item ") == 2 and m.count("<component ") == 4 and "Numero-7" in m
+    assert tw.build_numero(o)["summary"]["palitos"] == 2
+
+
+# ----------------------------------------------------------------- TOP-010
+@pytest.mark.spec("TOP-010")
+@pytest.mark.parametrize("fn", ["topper", "numero"])
+def test_dos_colores_dos_alturas_y_ams(fn):
+    base = {"lineas": [{"texto": "Feliz", "fuente": "lobster"}, {"texto": "Sofi", "fuente": "pacifico"}],
+            "numero": {"numero": "8", "estilo": "estrellas"}, "grosor": 3.0, "letras": 1.0}
+    hacer = tc.construir if fn == "topper" else tc.construir_numero
+    d = hacer(dict(base, estilo="doble"))
+    a = hacer(dict(base, estilo="ams"))
+    for r in (d, a):
+        assert len(r["piezas"]) == 2
+        for nombre, V, F in r["piezas"]:
+            assert ew.mesh_check(F)["closed"], nombre
+    zs = lambda r, k: [v[2] for v in r["piezas"][k][1]]
+    # dos alturas: letras arriba de la base, cambio de filamento al grosor
+    assert max(zs(d, 0)) == pytest.approx(3.0) and min(zs(d, 1)) == pytest.approx(2.99)
+    assert max(zs(d, 1)) == pytest.approx(4.0) and d["reporte"]["cambio_mm"] == pytest.approx(3.0)
+    # misma altura: todo de 3 mm; las letras en el último milímetro, al ras
+    assert max(zs(a, 0)) == pytest.approx(3.0) and max(zs(a, 1)) == pytest.approx(3.0)
+    assert min(zs(a, 1)) == pytest.approx(2.0) and a["reporte"]["capa_color_mm"] == pytest.approx(1.0)
+    assert a["reporte"]["medidas_mm"][2] == pytest.approx(3.0)
+    # el borde de las últimas capas tiene las letras como agujeros: con el mismo largo de
+    # borde que las letras de afuera más el contorno de la pieza
+    assert a["reporte"]["cambio_mm"] is None and d["reporte"]["capa_color_mm"] is None

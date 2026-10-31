@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.
-"""Topper para tortas en la web (TOP-005)."""
+"""Topper para tortas en la web (TOP-005, TOP-007, TOP-011)."""
 import json
 
 import pytest
@@ -47,6 +47,16 @@ def test_topper_en_la_web(browser, base_url):
     esperar(pg, b)
     assert pg.evaluate("window.__topper.viewer.meshes") == ["TOPPER", "LETRAS"]
     assert pg.locator(T % "btn-stl-letras").is_visible() and pg.locator(T % "sl-letras").is_visible()
+    assert pg.evaluate("window.__topper.viewer.numero") == ["NUMERO", "NUMERO_LETRAS"]
+    assert "cambiá el filamento" in pg.locator(T % "f-colores").inner_text()
+    # misma altura (AMS)
+    b = pg.evaluate("window.__topper.builds")
+    pg.locator(T % "sel-estilo").select_option("ams")
+    esperar(pg, b)
+    assert "AMS" in pg.locator(T % "f-colores").inner_text()
+    b = pg.evaluate("window.__topper.builds")
+    pg.locator(T % "sel-estilo").select_option("doble")
+    esperar(pg, b)
     # marco
     b = pg.evaluate("window.__topper.builds")
     pg.locator(T % "sel-marco").select_option("corazon")
@@ -59,11 +69,15 @@ def test_topper_en_la_web(browser, base_url):
     pg.locator(T % "chk-torta").check()
     assert pg.evaluate("window.__topper.viewer.parado")
     # descargas
-    for btn, fin in (("btn-stl", "_TOPPER.stl"), ("btn-stl-letras", "_LETRAS.stl"), ("btn-3mf", ".3mf")):
+    for btn, fin in (("btn-stl", "_TOPPER.stl"), ("btn-stl-letras", "_LETRAS.stl"), ("btn-3mf", "-1.3mf")):
         with pg.expect_download(timeout=READY_MS) as dl:
             pg.locator(T % btn).click()
         assert dl.value.suggested_filename.startswith("Topper-Feliz-Cumpleanos-Sofi")
         assert dl.value.suggested_filename.endswith(fin)
+    for btn, nombre in (("btn-stl-numero", "Numero-1_NUMERO.stl"), ("btn-stl-numero-letras", "Numero-1_NUMERO_LETRAS.stl")):
+        with pg.expect_download(timeout=READY_MS) as dl:
+            pg.locator(T % btn).click()
+        assert dl.value.suggested_filename == nombre
     # un carácter que la tipografía no tiene: error en español, sin romper la página
     b = pg.evaluate("window.__topper.builds")
     pg.locator(T % "linea-3").fill("Sofi ☃")
@@ -100,8 +114,8 @@ def test_torta_y_modo_cumpleanos(browser, base_url):
     b = pg.evaluate("window.__topper.builds")
     pg.locator(T % "linea-3").fill("Sofi")
     esperar(pg, b)
-    assert pg.evaluate("window.__topper.viewer.entrando")                   # el topper entra desde arriba
-    assert pg.evaluate("window.__topper.viewer.topperZ") > pg.evaluate("window.__topper.viewer.zFinal")
+    v = pg.evaluate("window.__topper.viewer")
+    assert v["entrando"] and v["topperZ"] > v["zFinal"]                    # el topper entra desde arriba
     pg.wait_for_function("!window.__topper.viewer.entrando", timeout=READY_MS)
     m1 = pg.evaluate("window.__topperMedir()")
     assert m1["tortaPiso"] == pytest.approx(m0["tortaPiso"], abs=0.5)
@@ -116,5 +130,41 @@ def test_torta_y_modo_cumpleanos(browser, base_url):
     pg.locator(T % "btn-fiesta").click()
     v = pg.evaluate("window.__topper.viewer")
     assert not v["fiesta"] and v["confeti"] == 0 and v["llamas"] == 0
+    assert not pg.console_errors, pg.console_errors
+    pg.context.close()
+
+
+@pytest.mark.spec("TOP-011")
+def test_tortas_con_topper_y_numero(browser, base_url):
+    pg = abrir(browser, base_url)
+    assert pg.evaluate("window.__topper.viewer.numero") == ["NUMERO"]          # el número, por defecto
+    opciones = pg.locator(T % "sel-torta-tipo" + " option").evaluate_all("os => os.map(o => o.value)")
+    assert opciones == ["crema", "chocolate", "chocotorta", "oreo", "pastafrola", "rogel", "frutillas", "selva"]
+    largo = pg.evaluate("+document.getElementById('largo').value")
+    for tipo in opciones:
+        pg.locator(T % "sel-torta-tipo").select_option(tipo)
+        pg.wait_for_function("!window.__topper.viewer.entrando", timeout=READY_MS)
+        v = pg.evaluate("window.__topper.viewer")
+        assert v["tortaTipo"] == tipo and v["clavadas"] == 2
+        m = pg.evaluate("window.__topperMedir()")
+        prof = min(0.6 * largo, m["tortaArriba"] - 7 - 6)
+        assert m["tortaPiso"] == pytest.approx(0, abs=0.5), tipo
+        assert m["topperAbajo"] == pytest.approx(m["tortaArriba"] - prof, abs=1.0), tipo
+        assert m["numeroAbajo"] == pytest.approx(m["tortaArriba"] - prof, abs=1.0), tipo
+        assert m["numeroX"][0] > m["topperX"][1], tipo                        # al lado, sin encimarse
+    # el número cambia sólo (no se recalcula el topper)
+    b, nb = pg.evaluate("[window.__topper.builds, window.__topper.numBuilds]")
+    pg.locator(T % "inp-numero").fill("18")
+    esperar(pg, b)
+    assert pg.evaluate("window.__topper.summaryNum.numero") == "18"
+    assert pg.evaluate("window.__topper.numBuilds") == nb + 1
+    # modo cumpleaños en la chocotorta (rectangular): el confeti se apoya
+    pg.locator(T % "sel-torta-tipo").select_option("chocotorta")
+    pg.locator(T % "btn-fiesta").click()
+    pg.wait_for_function("window.__topper.viewer.apoyados > 100", timeout=READY_MS)
+    # sin número
+    pg.locator(T % "chk-numero").uncheck()
+    assert pg.evaluate("window.__topper.viewer.numero") == []
+    assert not pg.locator(T % "btn-stl-numero").is_visible()
     assert not pg.console_errors, pg.console_errors
     pg.context.close()

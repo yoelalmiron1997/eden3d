@@ -51,10 +51,40 @@
         <p class="hint small">Cada línea con su tipografía y su tamaño. Todo sale <strong>unido en una sola pieza</strong>.</p>
       </fieldset>
 
+      <fieldset class="sec" data-sec="anios">
+        <legend>Años <span class="badge-nuevo">nuevo</span></legend>
+        <label class="check"><input type="checkbox" id="numero-on" data-testid="chk-numero" checked> Agregar el número de años</label>
+        <div id="numero-opts">
+          <div class="row2">
+            <label>Cumple
+              <input type="text" id="numero" data-testid="inp-numero" inputmode="numeric" maxlength="3" value="1" autocomplete="off" aria-label="Años que cumple">
+            </label>
+            <label>Estilo
+              <select id="estilo-num" data-testid="sel-estilo-num" disabled></select>
+            </label>
+          </div>
+          <div class="row2">
+            <label>Tipografía
+              <select id="fuente-num" data-testid="sel-fuente-num" disabled></select>
+            </label>
+            <label>Palitos
+              <select id="palitos-num" data-testid="sel-palitos-num">
+                <option value="1">Uno</option>
+                <option value="2">Dos</option>
+              </select>
+            </label>
+          </div>
+          <label class="slider"><span>Alto</span>
+            <input type="range" id="alto-num" data-testid="sl-alto-num" min="30" max="120" step="5" value="60">
+            <output id="o-alto-num">60 mm</output></label>
+          <p class="hint small">Sale aparte, en una pieza, con los mismos colores y grosor que el topper.</p>
+        </div>
+      </fieldset>
+
       <fieldset class="sec" data-sec="forma">
         <legend>Forma</legend>
         <div class="row2">
-          <label>Estilo
+          <label>Colores
             <select id="estilo" data-testid="sel-estilo" disabled></select>
           </label>
           <label>Marco
@@ -74,12 +104,13 @@
           <input type="range" id="ancho" data-testid="sl-ancho" min="60" max="220" step="5" value="140">
           <output id="o-ancho">140 mm</output></label>
         <label class="slider" title="Borde que une las letras"><span>Contorno</span>
-          <input type="range" id="contorno" data-testid="sl-contorno" min="0" max="6" step="0.1" value="1.2">
-          <output id="o-contorno">1,2 mm</output></label>
+          <input type="range" id="contorno" data-testid="sl-contorno" min="0" max="6" step="0.1" value="0.8">
+          <output id="o-contorno">0,8 mm</output></label>
         <label class="slider"><span>Grosor</span>
           <input type="range" id="grosor" data-testid="sl-grosor" min="2" max="5" step="0.1" value="3">
           <output id="o-grosor">3,0 mm</output></label>
-        <label class="slider" id="letras-row" hidden><span>Letras</span>
+        <p class="hint small" id="colores-hint" hidden></p>
+        <label class="slider" id="letras-row" hidden><span id="letras-lbl">Letras</span>
           <input type="range" id="letras" data-testid="sl-letras" min="0.6" max="3" step="0.1" value="1.2">
           <output id="o-letras">1,2 mm</output></label>
         <label class="slider"><span>Palitos</span>
@@ -89,6 +120,9 @@
 
       <fieldset class="sec" data-sec="vista" data-closed-mobile>
         <legend>Vista</legend>
+        <label>Torta
+          <select id="torta-tipo" data-testid="sel-torta-tipo"></select>
+        </label>
         <div class="row2">
           <label class="check"><input type="checkbox" id="torta" data-testid="chk-torta" checked> Ver en la torta</label>
           <button type="button" id="fiesta" data-testid="btn-fiesta" aria-pressed="false"
@@ -125,7 +159,11 @@
           <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL</button>
           <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
         </div>
-        <button type="button" id="dlletras" data-testid="btn-stl-letras" hidden disabled>STL letras</button>
+        <div class="row2 even">
+          <button type="button" id="dlletras" data-testid="btn-stl-letras" hidden disabled>STL letras</button>
+          <button type="button" id="dlnum" data-testid="btn-stl-numero" disabled>STL número</button>
+          <button type="button" id="dlnumletras" data-testid="btn-stl-numero-letras" hidden disabled>STL nº letras</button>
+        </div>
       </div>
     </section>
 

@@ -20,8 +20,9 @@ specs:
     criterio: >
       Cada pieza es una malla cerrada; el ancho del topper (sin marco) es el pedido ±1,5 mm y
       con marco no lo supera en más de 10 mm; el grosor es el pedido; hay 1 o 2 palitos
-      del largo pedido (±1 mm) que terminan en punta; en "dos colores" las letras van arriba
-      de la base (de grosor a grosor + letras) y la base asoma al menos 2 mm alrededor.
+      que terminan en punta y bajan todos hasta `largo` mm por debajo de lo más bajo de la
+      pieza (en un corazón se clavan cerca de la punta, no en los costados altos); en
+      "dos colores" la base asoma al menos 2 mm alrededor.
     prioridad: alta
     nivel: motor
     estado: activa
@@ -85,9 +86,68 @@ specs:
     criterio: >
       La base de la torta queda en la mesa (y = 0) y su cobertura a la misma altura con y
       sin nombre; con el nombre el topper es más alto; el topper baja (entrada animada) y
-      termina con los palitos clavados un 60 %; "🎉 Cumpleaños" prende 4 velas, tira 2
+      termina con los palitos clavados un 60 % (menos en una torta baja, sin atravesarla);
+      "🎉 Cumpleaños" prende 4 velas, tira 2
       ráfagas y el confeti cae y se apoya; al terminar se borra el confeti y se apagan las
       velas; sin errores en la consola.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: TOP-008
+    titulo: Los huecos de las letras quedan abiertos y el contorno es fino
+    descripcion: >
+      El contorno une las letras cerrando primero las luces entre ellas (cierre) y después
+      engordándolas sólo lo pedido; los ojos de las letras (a, e, o, p, d, 8…) y lo que
+      queda encerrado entre letras no se tapan. Las líneas se apilan por su perfil: se
+      tocan donde se cruzan las letras, no se enciman las panzas.
+    criterio: >
+      Con "Happy / Birthday / Martina" en Lobster y "Feliz / Cumpleaños" en Great Vibes,
+      todos los huecos de 0,5 mm² o más de las letras siguen abiertos en la pieza
+      (huecos_abiertos == huecos > 0); el contorno por defecto es 0,8 mm; la pieza sigue
+      siendo una sola.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-009
+    titulo: Número de años en distintos estilos
+    descripcion: >
+      Un número de 1 a 3 cifras (los años que cumple) en cualquier tipografía, solo o con
+      estrellas, corazones, corona o "años" abajo; sale aparte, en una pieza, con palitos,
+      y comparte grosor, contorno, colores y largo de palitos con el topper.
+    criterio: >
+      Cada estilo arma una sola región con mallas cerradas, del alto pedido (el número),
+      con 1 o 2 palitos con punta; letras o más de 3 cifras dan un error en español;
+      export_stl da "Numero-<n>_NUMERO.stl" y el 3MF con el número activo trae dos objetos
+      (topper y número) uno al lado del otro, cada uno con sus partes de color.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-010
+    titulo: Dos colores en dos alturas o a la misma altura (AMS)
+    descripcion: >
+      "Dos alturas": la base entera y las letras en relieve arriba, para cualquier
+      impresora pausando y cambiando el filamento a mano en esa capa. "Misma altura": las
+      letras al ras de la base, de color en las últimas capas, para Bambu Lab con AMS u
+      otra multicolor.
+    criterio: >
+      En dos alturas las letras van de grosor a grosor + letras y el reporte da la altura
+      del cambio (= grosor); en misma altura todo mide el grosor pedido, las letras van de
+      grosor − letras a grosor y el borde de esas capas tiene un agujero por cada letra;
+      las mallas son cerradas en los dos modos, para el topper y para el número.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-011
+    titulo: Distintas tortas, con el topper y el número clavados
+    descripcion: >
+      Se elige la torta (crema, chocolate, chocotorta, Oreo, pasta frola, rogel, frutillas
+      o selva negra), con texturas dibujadas; el número de años va al lado del topper y
+      los dos entran desde arriba y se clavan; el confeti se apoya en cualquier torta.
+    criterio: >
+      Cada tipo de torta apoya en la mesa con el topper y el número clavados (la parte de
+      abajo de cada uno a la altura de la torta menos lo que entran los palitos), sin
+      encimarse (el número a la derecha del topper); el modo cumpleaños en una torta
+      rectangular apoya el confeti; sin errores en la consola.
     prioridad: media
     nivel: web
     estado: activa
