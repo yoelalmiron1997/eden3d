@@ -481,7 +481,7 @@ label { color: var(--muted); }
 .warnings li, .compat li { border-radius: 2px; }
 .login-msg, #brand-msg.err, #stl-msg.err { color: var(--err-ink); }
 .report { background: color-mix(in srgb, var(--surface) 94%, transparent); border-top-color: var(--line); }
-.report h2 { font: 700 20px/1.1 "Barlow Condensed", sans-serif; letter-spacing: .03em; color: var(--ink); }
+.report h2 { font: 700 20px/1.1 "Barlow Condensed", sans-serif; letter-spacing: .03em; color: var(--ink); text-transform: none; }  /* el código del archivo, tal cual */
 .report dt { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
 .care-h h2, .care-grid h4, .care-more > summary, .card h1, .card h2 { color: var(--ink); }
 .care-grid section { border-radius: 0; background: var(--surface-2); border: 1px solid var(--line-2); }
