@@ -11,3 +11,8 @@ out_v2/
 *.stl
 !engine/colecciones/
 !tests/motor/insertos/*.stl
+
+# Impeccable (skills de diseño): archivos que genera en cada máquina
+**/skills/impeccable/scripts/bin/
+**/.impeccable/hook.cache.json
+.impeccable/live/
