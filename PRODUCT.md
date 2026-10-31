@@ -42,7 +42,7 @@ Playwright y specs SDD en `specs/`.
 ## Brand Commitments
 - Nombre: TecnoBear. Lema: "Despertá tu tecnología". Voz: español rioplatense, directa.
 - Logo: el isotipo original (silueta amarilla pálida #E9EB9F con dos antenas, sobre
-  círculo oscuro), archivo `web/assets/logo-tecnobear-original.png`. No se redibuja, no se
+  círculo oscuro), archivo `web/assets/marca/logo-tecnobear-original.png`. No se redibuja, no se
   reinterpreta, no se cambia por emoji ni ícono. Sólo el isotipo puede girar; el texto no.
 - Redes reales: YouTube https://www.youtube.com/@TecnoBearARG e Instagram
   https://www.instagram.com/tecnobearr/. No inventar otras.

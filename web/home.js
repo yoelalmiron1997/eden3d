@@ -73,11 +73,11 @@ function menu() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && head.dataset.abierto === "true") { set(false); btn.focus(); }
   });
-  matchMedia("(min-width: 961px)").addEventListener("change", (m) => { if (m.matches) set(false); });
+  matchMedia("(min-width: 1081px)").addEventListener("change", (m) => { if (m.matches) set(false); });
 }
 
 // ------------------------------------------------------------------ giro del isotipo
-// El giro es CSS (18 s por vuelta); al pasar el mouse acelera sin saltar, cambiando la
+// El giro es CSS (19 s por vuelta); al pasar el mouse acelera sin saltar, cambiando la
 // velocidad de la misma animación. Con movimiento reducido no hay animación.
 function giro() {
   for (const el of document.querySelectorAll(".tb-iso:not(.tb-iso-quieto)")) {
