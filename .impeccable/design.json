@@ -1,0 +1,657 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T19:46:00+00:00",
+  "title": "Design System: TecnoBear",
+  "extensions": {
+    "colorMeta": {
+      "lima": {
+        "role": "primary",
+        "displayName": "Lathe Lime",
+        "canonical": "oklch(89.6% 0.180 124)",
+        "tonalRamp": [
+          "#070e00",
+          "#1c2b00",
+          "#344c00",
+          "#4d6f00",
+          "#6d9200",
+          "#94b349",
+          "#bdd490",
+          "#e8f4d2"
+        ]
+      },
+      "lima-hover": {
+        "role": "primary",
+        "displayName": "Lime Hot",
+        "canonical": "oklch(92.8% 0.146 122)",
+        "tonalRamp": [
+          "#080d00",
+          "#1f2a00",
+          "#384a00",
+          "#536d00",
+          "#738f06",
+          "#99b05e",
+          "#c0d29b",
+          "#eaf3d7"
+        ]
+      },
+      "lima-ink": {
+        "role": "primary",
+        "displayName": "Lime Ink",
+        "canonical": "oklch(17.0% 0.031 129)",
+        "tonalRamp": [
+          "#0a0c08",
+          "#23271e",
+          "#3e4537",
+          "#5c6552",
+          "#7c8673",
+          "#a0a898",
+          "#c6cbc0",
+          "#edf0ea"
+        ]
+      },
+      "acento-light": {
+        "role": "primary",
+        "displayName": "Deep Lime Stroke",
+        "canonical": "oklch(44.2% 0.118 130)",
+        "tonalRamp": [
+          "#070e02",
+          "#1b2b06",
+          "#324b0d",
+          "#4b6e18",
+          "#6b903e",
+          "#93b173",
+          "#bcd2a8",
+          "#e8f3dd"
+        ]
+      },
+      "logo-yellow": {
+        "role": "secondary",
+        "displayName": "Isotipo Yellow",
+        "canonical": "oklch(92.1% 0.097 109)",
+        "tonalRamp": [
+          "#0c0c02",
+          "#272706",
+          "#45450d",
+          "#656517",
+          "#86873d",
+          "#a8a973",
+          "#cbcca7",
+          "#eff0dd"
+        ]
+      },
+      "floor": {
+        "role": "neutral",
+        "displayName": "Machined Floor",
+        "canonical": "oklch(15.9% 0.008 211)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232626",
+          "#3e4344",
+          "#5c6364",
+          "#7d8485",
+          "#a1a6a7",
+          "#c6cacb",
+          "#edefef"
+        ]
+      },
+      "plate": {
+        "role": "neutral",
+        "displayName": "Plate",
+        "canonical": "oklch(19.8% 0.011 217)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#222627",
+          "#3d4345",
+          "#5a6365",
+          "#7b8487",
+          "#9fa6a8",
+          "#c5cacb",
+          "#eceff0"
+        ]
+      },
+      "plate-sunken": {
+        "role": "neutral",
+        "displayName": "Sunken Plate",
+        "canonical": "oklch(17.6% 0.010 209)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#222626",
+          "#3e4344",
+          "#5b6364",
+          "#7c8485",
+          "#a0a6a7",
+          "#c6cacb",
+          "#edefef"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(37.1% 0.020 211)",
+        "tonalRamp": [
+          "#090c0c",
+          "#1f2628",
+          "#394447",
+          "#556568",
+          "#758689",
+          "#9ba8aa",
+          "#c2cbcd",
+          "#ebeff0"
+        ]
+      },
+      "rule-faint": {
+        "role": "neutral",
+        "displayName": "Faint Rule",
+        "canonical": "oklch(26.4% 0.014 211)",
+        "tonalRamp": [
+          "#090c0c",
+          "#212627",
+          "#3b4445",
+          "#586466",
+          "#798587",
+          "#9ea7a9",
+          "#c4cacc",
+          "#eceff0"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Bright Text",
+        "canonical": "oklch(97.7% 0.003 146)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#eeeeee"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Graphite Text",
+        "canonical": "oklch(74.9% 0.016 182)",
+        "tonalRamp": [
+          "#090c0b",
+          "#212625",
+          "#3b4442",
+          "#586462",
+          "#788683",
+          "#9da8a5",
+          "#c4cbc9",
+          "#ecefee"
+        ]
+      },
+      "error": {
+        "role": "error",
+        "displayName": "Warning Coral",
+        "canonical": "oklch(78.7% 0.125 33)",
+        "tonalRamp": [
+          "#170604",
+          "#3f170f",
+          "#6c2b1e",
+          "#9b412f",
+          "#c1634f",
+          "#da8f7e",
+          "#f0bbae",
+          "#ffe7e1"
+        ]
+      },
+      "floor-light": {
+        "role": "neutral",
+        "displayName": "Machined Floor (light)",
+        "canonical": "oklch(95.4% 0.007 132)",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#242524",
+          "#414340",
+          "#60625e",
+          "#81837f",
+          "#a4a6a2",
+          "#c8cac7",
+          "#eeefed"
+        ]
+      },
+      "plate-light": {
+        "role": "neutral",
+        "displayName": "Plate (light)",
+        "canonical": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "plate-sunken-light": {
+        "role": "neutral",
+        "displayName": "Sunken Plate (light)",
+        "canonical": "oklch(97.4% 0.006 129)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252524",
+          "#414240",
+          "#60625e",
+          "#81837f",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefed"
+        ]
+      },
+      "rule-light": {
+        "role": "neutral",
+        "displayName": "Rule (light)",
+        "canonical": "oklch(80.1% 0.014 179)",
+        "tonalRamp": [
+          "#0a0c0b",
+          "#212625",
+          "#3c4442",
+          "#596461",
+          "#7a8582",
+          "#9ea7a5",
+          "#c4cbc9",
+          "#ecefee"
+        ]
+      },
+      "rule-faint-light": {
+        "role": "neutral",
+        "displayName": "Faint Rule (light)",
+        "canonical": "oklch(89.7% 0.010 172)",
+        "tonalRamp": [
+          "#0a0b0b",
+          "#232625",
+          "#3e4341",
+          "#5c6360",
+          "#7d8482",
+          "#a1a7a4",
+          "#c6cac9",
+          "#edefee"
+        ]
+      },
+      "text-light": {
+        "role": "neutral",
+        "displayName": "Bright Text (light)",
+        "canonical": "oklch(18.1% 0.009 209)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#222626",
+          "#3e4344",
+          "#5b6364",
+          "#7c8485",
+          "#a0a6a7",
+          "#c6cacb",
+          "#edefef"
+        ]
+      },
+      "text-muted-light": {
+        "role": "neutral",
+        "displayName": "Graphite Text (light)",
+        "canonical": "oklch(42.7% 0.016 179)",
+        "tonalRamp": [
+          "#090c0b",
+          "#212625",
+          "#3b4442",
+          "#586461",
+          "#798682",
+          "#9da8a5",
+          "#c4cbc9",
+          "#ecefee"
+        ]
+      },
+      "error-light": {
+        "role": "error",
+        "displayName": "Warning Coral (light)",
+        "canonical": "oklch(42.5% 0.138 32)",
+        "tonalRamp": [
+          "#180503",
+          "#41150d",
+          "#702719",
+          "#a13c29",
+          "#c75e4a",
+          "#df8c7a",
+          "#f4b9ac",
+          "#ffe6df"
+        ]
+      },
+      "grid-line": {
+        "role": "neutral",
+        "displayName": "Grid Line",
+        "canonical": "rgba(197, 240, 91, 0.045)",
+        "purpose": "Background technical grid only."
+      },
+      "grid-line-light": {
+        "role": "neutral",
+        "displayName": "Grid Line (light)",
+        "canonical": "rgba(13, 19, 20, 0.05)",
+        "purpose": "Background technical grid only, light theme."
+      }
+    },
+    "themes": {
+      "default": "dark",
+      "light": {
+        "selector": "html[data-theme=\"light\"] body.tb",
+        "source": "web/home.css",
+        "overrides": {
+          "--tb-bg": "floor-light",
+          "--tb-surf": "plate-light",
+          "--tb-surf-2": "plate-sunken-light",
+          "--tb-line": "rule-light",
+          "--tb-line-2": "rule-faint-light",
+          "--tb-txt": "text-light",
+          "--tb-muted": "text-muted-light",
+          "--tb-acento": "acento-light",
+          "--tb-grid": "grid-line-light"
+        },
+        "unchanged": [
+          "lima",
+          "lima-hover",
+          "lima-ink",
+          "logo-yellow"
+        ]
+      },
+      "cssVariables": {
+        "--tb-bg": "floor",
+        "--tb-surf": "plate",
+        "--tb-surf-2": "plate-sunken",
+        "--tb-line": "rule",
+        "--tb-line-2": "rule-faint",
+        "--tb-txt": "text",
+        "--tb-muted": "text-muted",
+        "--tb-lima": "lima",
+        "--tb-lima-ink": "lima-ink",
+        "--tb-acento": "lima (dark) / acento-light (light)",
+        "--tb-logo": "logo-yellow",
+        "--tb-grid": "grid-line"
+      },
+      "scope": "Tokens are declared on body.tb (home page only, web/home.css). Tool pages still use web/style.css; this system is their migration target."
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero title only, uppercase, max 11ch; one accent word may take the lime stroke."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles, uppercase."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Tool card names (1.75rem), benefit titles (1.6rem), modal titles (2rem)."
+      },
+      "title-sm": {
+        "displayName": "Title Small",
+        "purpose": "Rows of the hero tool index."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "TecnoBear text beside the isotipo; never rotates."
+      },
+      "engraving": {
+        "displayName": "Engraving",
+        "purpose": "Brand motto on the dial ring, under the hero plate, and in the footer; tracking 0.28-0.32em."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text; hero lead at clamp(1rem, 1.25vw, 1.125rem), max 54ch."
+      },
+      "body-sm": {
+        "displayName": "Body Small",
+        "purpose": "Card descriptions, benefit copy, footer links."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, filter chips, account buttons; uppercase 0.06-0.1em."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Category lines, photo tag, modal tool tag; uppercase 0.1-0.14em."
+      }
+    },
+    "fonts": [
+      {
+        "family": "Inter",
+        "file": "web/fonts/inter-latin-wght-normal.woff2",
+        "weights": "100 900",
+        "features": "cv11, ss01"
+      },
+      {
+        "family": "Barlow Condensed",
+        "file": "web/fonts/barlow-condensed-latin-600-normal.woff2",
+        "weights": "600"
+      },
+      {
+        "family": "Barlow Condensed",
+        "file": "web/fonts/barlow-condensed-latin-700-normal.woff2",
+        "weights": "700"
+      }
+    ],
+    "shadows": [
+      {
+        "name": "plate-drop",
+        "value": "0 18px 40px -18px rgba(0, 0, 0, .7)",
+        "light": "0 18px 40px -22px rgba(13, 19, 20, .35)",
+        "purpose": "Hero plate only."
+      },
+      {
+        "name": "isotipo-seat",
+        "value": "0 0 0 10px var(--tb-surf), 0 0 0 11px var(--tb-line)",
+        "purpose": "Plate-colored collar with a 1px rule seating the spinning isotipo (6px/7px under 640px)."
+      },
+      {
+        "name": "modal-drop",
+        "value": "0 24px 48px -16px rgba(0, 0, 0, .7)",
+        "purpose": "Open dialogs, over a flat rgba(5, 8, 9, .78) backdrop without blur."
+      },
+      {
+        "name": "menu-drop",
+        "value": "0 24px 40px -20px rgba(0, 0, 0, .7)",
+        "purpose": "Collapsed-nav panel."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-machined",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Hover slides, index indent, card photo zoom, entrance."
+      },
+      {
+        "name": "isotipo-spin",
+        "value": "19s linear infinite rotate(360deg)",
+        "purpose": "The only rotating element; playback rate 3x on hover/focus of its brand area or the hero plate; footer isotipo still."
+      },
+      {
+        "name": "entrance",
+        "value": "opacity .7s, translate .9s (18px rise), 70ms stagger in groups of four",
+        "purpose": "Below-the-fold cards and benefit cells, once; skipped under reduced motion or without IntersectionObserver."
+      },
+      {
+        "name": "state-color",
+        "value": ".2s",
+        "purpose": "Border, text and fill color changes on controls."
+      },
+      {
+        "name": "press",
+        "value": "translateY(1px)",
+        "purpose": "Button :active."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1180px",
+        "purpose": "Cards and benefits to 2 columns; filters 4-up grid; search stacks."
+      },
+      {
+        "name": "nav",
+        "value": "1080px",
+        "purpose": "Hamburger nav; hero stacks with plate first (max 420px)."
+      },
+      {
+        "name": "phone",
+        "value": "640px",
+        "purpose": "Single column; 60px nav; 32px grid; plate 220px; full-width CTAs."
+      },
+      {
+        "name": "tiny",
+        "value": "380px",
+        "purpose": "Wordmark hides; isotipo remains."
+      }
+    ],
+    "geometry": {
+      "background-grid": "48px (32px under 640px), 1px lines",
+      "bevels": {
+        "button-primary": "12px bottom-right",
+        "tool-card": "18px top-right",
+        "hero-plate": "28px top-right + bottom-left (16px under 640px)"
+      },
+      "bevel-rule": "1px line rotated 45deg along each cut, length bevel*1.4142",
+      "corner-brackets": "22px, 2px lime, top-left and bottom-right of the hero plate",
+      "icons": "inline SVG sprite, stroke 1.6 (1.4 in benefit strip), square caps, miter joins, 16-20px (30px benefits)",
+      "focus": "2px solid lima, offset 3px"
+    },
+    "brandAssets": {
+      "logo": "web/assets/marca/logo-tecnobear-original.png",
+      "rule": "Original file, never redrawn or recolored; only the isotipo image rotates."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Lime fill with a bottom-right 45° bevel; one per view region.",
+      "html": "<a class=\"ds-btn-lima\" href=\"#\">Explorar herramientas<svg class=\"ds-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></a>",
+      "css": ".ds-btn-lima{display:inline-flex;align-items:center;gap:10px;min-height:50px;padding:0 22px;background:var(--tb-lima, #c5f05b);color:var(--tb-lima-ink, #0b1204);border:1px solid var(--tb-lima, #c5f05b);border-radius:2px;text-decoration:none;font:600 13px/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);transition:background-color .2s,border-color .2s}.ds-btn-lima:hover{background:#d6f784;border-color:#d6f784}.ds-btn-lima:hover .ds-ico{transform:translateX(3px)}.ds-btn-lima:active{transform:translateY(1px)}.ds-btn-lima:focus-visible{outline:2px solid var(--tb-lima, #c5f05b);outline-offset:3px}.ds-ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:square;stroke-linejoin:miter;transition:transform .3s cubic-bezier(.16,1,.3,1)}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ruled transparent button; hover turns border and text to the accent stroke.",
+      "html": "<a class=\"ds-btn\" href=\"#\">Abrir herramienta<svg class=\"ds-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></a>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:10px;min-height:50px;padding:0 22px;background:transparent;color:var(--tb-txt, #f6f8f6);border:1px solid var(--tb-line, #344346);border-radius:2px;text-decoration:none;font:600 13px/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;transition:border-color .2s,color .2s}.ds-btn:hover{border-color:var(--tb-acento, #c5f05b);color:var(--tb-acento, #c5f05b)}.ds-btn:hover .ds-ico{transform:translateX(3px)}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid var(--tb-lima, #c5f05b);outline-offset:3px}.ds-ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:square;stroke-linejoin:miter;transition:transform .3s cubic-bezier(.16,1,.3,1)}"
+    },
+    {
+      "name": "Category Filter",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Square ruled toggle; pressed state is a solid lime fill.",
+      "html": "<div class=\"ds-filtros\"><button type=\"button\" class=\"ds-filtro\" aria-pressed=\"true\">Todas</button><button type=\"button\" class=\"ds-filtro\" aria-pressed=\"false\">Impresión 3D</button></div>",
+      "css": ".ds-filtros{display:flex;gap:8px;flex-wrap:wrap}.ds-filtro{min-height:44px;padding:0 16px;border:1px solid var(--tb-line, #344346);border-radius:2px;background:transparent;color:var(--tb-muted, #a3b1ae);cursor:pointer;font:600 13px/1 Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;transition:color .2s,border-color .2s,background-color .2s}.ds-filtro:hover{color:var(--tb-txt, #f6f8f6);border-color:var(--tb-muted, #a3b1ae)}.ds-filtro[aria-pressed=true]{background:var(--tb-lima, #c5f05b);border-color:var(--tb-lima, #c5f05b);color:var(--tb-lima-ink, #0b1204)}.ds-filtro:focus-visible{outline:2px solid var(--tb-lima, #c5f05b);outline-offset:3px}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-input",
+      "description": "Plate-colored ruled field with inset magnifier and lime caret.",
+      "html": "<label class=\"ds-buscar\"><svg class=\"ds-lupa\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"M15.5 15.5 21 21\"/></svg><input type=\"search\" placeholder=\"Buscar por nombre o descripción\"></label>",
+      "css": ".ds-buscar{position:relative;display:block;max-width:380px}.ds-lupa{position:absolute;left:14px;top:50%;translate:0 -50%;width:20px;height:20px;fill:none;stroke:var(--tb-muted, #a3b1ae);stroke-width:1.6;stroke-linecap:square}.ds-buscar input{width:100%;height:48px;padding:0 14px 0 44px;border:1px solid var(--tb-line, #344346);border-radius:2px;background:var(--tb-surf, #101719);color:var(--tb-txt, #f6f8f6);font:400 15px/1 Inter,sans-serif;caret-color:var(--tb-lima, #c5f05b);box-sizing:border-box}.ds-buscar input::placeholder{color:var(--tb-muted, #a3b1ae)}.ds-buscar input:focus{outline:none;border-color:var(--tb-acento, #c5f05b);box-shadow:0 0 0 1px var(--tb-acento, #c5f05b)}"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Sticky 64px bar: isotipo and wordmark, muted links, lime underline on the current link, ruled YouTube button.",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-marca\"><span class=\"ds-iso\"></span>TecnoBear</span><nav class=\"ds-menu\"><a href=\"#\" aria-current=\"page\">Inicio</a><a href=\"#\">Herramientas</a><a href=\"#\">Beneficios</a><a class=\"ds-yt\" href=\"#\">YouTube</a></nav></header>",
+      "css": ".ds-nav{height:64px;display:flex;align-items:center;gap:24px;padding:0 24px;background:var(--tb-bg, #090e0f);border-bottom:1px solid var(--tb-line-2, #1d2729)}.ds-marca{display:inline-flex;align-items:center;gap:12px;font:700 24px/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;color:var(--tb-txt, #f6f8f6)}.ds-iso{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#e9eb9f 0 30%,#101719 31%)}.ds-menu{display:flex;align-items:center;gap:2px;margin-left:auto}.ds-menu a{position:relative;padding:10px 12px;color:var(--tb-muted, #a3b1ae);text-decoration:none;font:500 14px/1 Inter,sans-serif;transition:color .2s}.ds-menu a:hover,.ds-menu a[aria-current]{color:var(--tb-txt, #f6f8f6)}.ds-menu a[aria-current]::after{content:'';position:absolute;left:12px;right:12px;bottom:2px;height:2px;background:var(--tb-lima, #c5f05b)}.ds-menu a:focus-visible{outline:2px solid var(--tb-lima, #c5f05b);outline-offset:3px}.ds-menu .ds-yt{margin-left:10px;border:1px solid var(--tb-line, #344346);border-radius:2px;color:var(--tb-txt, #f6f8f6);padding:8px 12px}.ds-menu .ds-yt:hover{border-color:var(--tb-acento, #c5f05b);color:var(--tb-acento, #c5f05b)}",
+      "note": "The .ds-iso circle is a placeholder swatch for the panel only; real surfaces use the original logo PNG."
+    },
+    {
+      "name": "Tool Card",
+      "kind": "card",
+      "refersTo": "tool-card",
+      "description": "Flat plate with an 18px top-right bevel whose diagonal rule turns lime on hover.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-foto\"></div><div class=\"ds-card-cuerpo\"><h3>Mate con hueco</h3><p>Elegí el modelo de mate y el motor le hace el hueco exacto.</p><p class=\"ds-cat\">Impresión 3D</p><a class=\"ds-card-btn\" href=\"#\">Abrir herramienta<svg class=\"ds-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></a></div></article>",
+      "css": ".ds-card{position:relative;max-width:320px;display:flex;flex-direction:column;background:var(--tb-surf, #101719);border:1px solid var(--tb-line-2, #1d2729);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);transition:border-color .25s}.ds-card::after{content:'';position:absolute;top:0;left:calc(100% - 18px);width:25.5px;height:1px;background:var(--tb-line-2, #1d2729);transform-origin:0 0;transform:rotate(45deg);transition:background-color .25s}.ds-card:hover,.ds-card:focus-within{border-color:var(--tb-line, #344346)}.ds-card:hover::after,.ds-card:focus-within::after{background:var(--tb-acento, #c5f05b)}.ds-card-foto{aspect-ratio:1;background:var(--tb-surf-2, #0c1213);border-bottom:1px solid var(--tb-line-2, #1d2729)}.ds-card-cuerpo{display:flex;flex-direction:column;gap:10px;padding:18px 20px 20px}.ds-card h3{margin:0;font:700 1.75rem/.95 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.01em;color:var(--tb-txt, #f6f8f6)}.ds-card p{margin:0;font:400 14.5px/1.55 Inter,sans-serif;color:var(--tb-muted, #a3b1ae)}.ds-card .ds-cat{padding-top:12px;border-top:1px solid var(--tb-line-2, #1d2729);font:600 12px/1.3 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase}.ds-card-btn{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 22px;border:1px solid var(--tb-line, #344346);border-radius:2px;color:var(--tb-txt, #f6f8f6);text-decoration:none;font:600 13px/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;transition:border-color .2s,color .2s}.ds-card:hover .ds-card-btn{border-color:var(--tb-acento, #c5f05b);color:var(--tb-acento, #c5f05b)}.ds-card-btn:focus-visible{outline:2px solid var(--tb-lima, #c5f05b);outline-offset:3px}.ds-ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:square;stroke-linejoin:miter;transition:transform .3s cubic-bezier(.16,1,.3,1)}"
+    },
+    {
+      "name": "Tool Index Row",
+      "kind": "custom",
+      "refersTo": "title-sm",
+      "description": "Ruled list row under the hero CTAs: name, category, arrow; hover indents and turns lime.",
+      "html": "<ol class=\"ds-indice\"><li><a href=\"#\"><span class=\"ds-n\">Macetas con autorriego</span><span class=\"ds-c\">Impresión 3D</span><svg class=\"ds-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></a></li><li><a href=\"#\"><span class=\"ds-n\">Topper para tortas</span><span class=\"ds-c\">Personalización</span><svg class=\"ds-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></a></li></ol>",
+      "css": ".ds-indice{list-style:none;margin:0;padding:0;max-width:560px;border-top:1px solid var(--tb-line, #344346)}.ds-indice li{border-bottom:1px solid var(--tb-line-2, #1d2729)}.ds-indice a{display:grid;grid-template-columns:1fr auto 20px;align-items:center;gap:16px;padding:14px 2px;color:var(--tb-txt, #f6f8f6);text-decoration:none;transition:padding .3s cubic-bezier(.16,1,.3,1),color .2s}.ds-n{font:600 20px/1.1 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.02em}.ds-c{font:400 12px/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--tb-muted, #a3b1ae)}.ds-indice a:hover{padding-left:10px;color:var(--tb-acento, #c5f05b)}.ds-indice a:hover .ds-ico{transform:translateX(4px)}.ds-indice a:focus-visible{outline:2px solid var(--tb-lima, #c5f05b);outline-offset:3px}.ds-ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:square;stroke-linejoin:miter;transition:transform .3s cubic-bezier(.16,1,.3,1)}"
+    },
+    {
+      "name": "Hero Plate with Dial",
+      "kind": "custom",
+      "refersTo": "hero-plate",
+      "description": "Square plate, two-corner bevel, lime corner brackets, graduated dial; the isotipo spins at the center.",
+      "html": "<div class=\"ds-placa\"><span class=\"ds-esq ds-esq-a\"></span><span class=\"ds-esq ds-esq-b\"></span><svg class=\"ds-dial\" viewBox=\"0 0 400 400\"><circle class=\"b\" cx=\"200\" cy=\"200\" r=\"190\"/><circle class=\"mn\" cx=\"200\" cy=\"200\" r=\"182\" pathLength=\"360\"/><circle class=\"mj\" cx=\"200\" cy=\"200\" r=\"180\" pathLength=\"360\"/><circle class=\"b\" cx=\"200\" cy=\"200\" r=\"170\"/><path class=\"x\" d=\"M200 8v26M200 366v26M8 200h26M366 200h26\"/></svg><span class=\"ds-iso-hero\"></span></div>",
+      "css": ".ds-placa{position:relative;width:320px;aspect-ratio:1;display:grid;place-items:center;background:radial-gradient(circle,color-mix(in srgb,var(--tb-lima, #c5f05b) 7%,transparent) 0 34%,transparent 62%),var(--tb-surf, #101719);border:1px solid var(--tb-line, #344346);clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}.ds-esq{position:absolute;width:22px;height:22px;border:solid var(--tb-lima, #c5f05b)}.ds-esq-a{top:14px;left:14px;border-width:2px 0 0 2px}.ds-esq-b{right:14px;bottom:14px;border-width:0 2px 2px 0}.ds-dial{position:absolute;inset:5%;width:90%;height:90%}.ds-dial circle,.ds-dial path{fill:none}.ds-dial .b{stroke:var(--tb-line, #344346)}.ds-dial .mn{stroke:var(--tb-line, #344346);stroke-width:8;stroke-dasharray:.35 2.65}.ds-dial .mj{stroke:var(--tb-acento, #c5f05b);stroke-width:18;stroke-dasharray:.7 29.3;opacity:.85}.ds-dial .x{stroke:var(--tb-acento, #c5f05b);stroke-width:1.5}.ds-iso-hero{width:52%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#e9eb9f 0 28%,#101719 29%);box-shadow:0 0 0 10px var(--tb-surf, #101719),0 0 0 11px var(--tb-line, #344346);animation:ds-giro 19s linear infinite}.ds-placa:hover .ds-iso-hero{animation-duration:6.33s}@keyframes ds-giro{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.ds-iso-hero{animation:none}}",
+      "note": "The center swatch stands in for the original logo PNG, which is never redrawn."
+    }
+  ],
+  "narrative": {
+    "northStar": "The Workbench Faceplate",
+    "overview": "TecnoBear's interface is the faceplate of a digital-fabrication bench. The page is a dark machined floor ruled with a near-invisible 1px technical grid; content sits on flat plates bounded by 1px rules, each plate with a single 45° bevel cut into one corner. The tools read as machine cards, the hero object is a graduated turntable dial with the original TecnoBear isotipo spinning at its center, and the brand motto is engraved around the ring. Nothing floats, glows or rounds into a pill; structure comes from rules, tonal plates and condensed stamped capitals.\n\nThe system is dark by default and supports a light variant (`html[data-theme=\"light\"]`) because the site-wide theme toggle must keep working; both variants share every rule below and differ only in the neutral and accent-stroke tokens. Density is calm: one 1360px container, generous section breaks, and grids of four that collapse to two and then one.\n\nScope: this industrial system currently applies to the home page (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`). It is the target system for the tool pages (macetas, mate, sopa, topper, admin), which still carry the older shared `web/style.css` look; that older look is not an authority for new work.",
+    "keyCharacteristics": [
+      "Dark machined floor (dark default) with a 48px technical grid of 1px lime-tinted lines at 4.5% opacity (32px cells under 640px).",
+      "Flat plates, 1px rules, one 45° bevel per plate with the diagonal rule drawn on the cut.",
+      "Lime as the single action/active color and the color of instrument markings; the logo's pale yellow reserved for the brand.",
+      "Barlow Condensed uppercase for every heading; Inter for everything else.",
+      "Square corners: 2px on controls, 0 on plates; no pills.",
+      "One moving signature: the isotipo rotates like a lathe chuck; text never moves."
+    ],
+    "rules": [
+      {
+        "name": "The Two-Lime Rule",
+        "body": "Lime has two jobs and two tokens: `lima` is a fill (always #c5f05b, always with `lima-ink` on it); the accent used as text or stroke follows the theme (`lima` in dark, `acento-light` in light). Never put lime text on a light plate.",
+        "section": "colors"
+      },
+      {
+        "name": "The Instrument-Marking Rule",
+        "body": "Lime appears only on actions, active/pressed/focused states, and small instrument markings. It never fills a section, a card or a large surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The Brand-Yellow Rule",
+        "body": "Isotipo Yellow belongs to the brand (motto, Pro badge, the logo itself). It never signals UI state.",
+        "section": "colors"
+      },
+      {
+        "name": "The Stamped Title Rule",
+        "body": "Every h1–h3 is Barlow Condensed uppercase with balanced wrapping; nothing else uses Barlow Condensed except the wordmark, index rows, the results count numeral and the engraving.",
+        "section": "typography"
+      },
+      {
+        "name": "The Engraving Rule",
+        "body": "Wide tracking (0.28em and up) is reserved for the brand motto. Labels track at 0.06–0.14em, never wider.",
+        "section": "typography"
+      },
+      {
+        "name": "The Ruled-Not-Raised Rule",
+        "body": "Cards and controls never gain a shadow or lift on hover; they answer with a brighter rule, a lime bevel line, or a lime stroke. A 1px press (`translateY(1px)`) on buttons is the only movement.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Bevel Rule",
+        "body": "One cut corner per object (the hero plate's diagonal pair is the single exception), always 45°, always with its diagonal rule. No pills, no rounded cards, no radius above 2px except the isotipo.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do build every new surface on the dark floor with the 48px grid, flat Plate containers and 1px Rule borders, and wire the light variant through the same tokens under `html[data-theme=\"light\"]`.",
+      "Do cut exactly one 45° bevel per plate with `clip-path` and draw its 1px diagonal rule.",
+      "Do keep lime to actions, active/pressed/focus states and small instrument markings; use `lima-ink` on lime fills and the theme's accent stroke for lime text.",
+      "Do set every heading in Barlow Condensed uppercase and everything else in Inter, both self-hosted.",
+      "Do use the original logo file (`web/assets/marca/logo-tecnobear-original.png`) untouched; only the isotipo image rotates.",
+      "Do use 1.6px square-capped, miter-joined line icons from the inline sprite, 16–20px (30px in the benefit strip).",
+      "Do keep text AA on its plate in both themes and show the 2px lime focus outline on every control."
+    ],
+    "donts": [
+      "Don't use pills, rounded cards or any radius above 2px; the only circles are the isotipo and its dial.",
+      "Don't lift cards with shadows or translate them on hover; answer hover with a brighter rule or lime stroke.",
+      "Don't add outer glows, neon halos or backdrop blur.",
+      "Don't fill large areas with lime, or use Isotipo Yellow for UI state.",
+      "Don't redraw, recolor, rotate the text of, or replace the logo with an emoji or icon.",
+      "Don't treat the older `web/style.css` look of the tool pages as a reference for new work."
+    ]
+  }
+}

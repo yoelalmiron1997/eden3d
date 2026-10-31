@@ -496,12 +496,12 @@ def test_cambio_de_modelo_mientras_calcula(browser, base_url):
 @pytest.mark.spec("WEB-012")
 def test_home_tecnobear(browser, base_url):
     page = open_app(browser, base_url, path="")
-    assert page.locator(T % "home-titulo").inner_text() == "Herramientas de TecnoBear"
+    assert " ".join(page.locator(T % "home-titulo").inner_text().lower().split()) == "herramientas para crear en 3d"
     page.wait_for_function("(() => { const e = document.querySelector('[data-testid=tool-imagen]');"
                            " return e.complete && e.naturalWidth > 0 && e.currentSrc.includes('macetas_v'); })()", timeout=15_000)
     pop = page.locator(T % "popup-macetas")
     pop.wait_for(state="visible", timeout=10_000)              # primera visita: se abre solo
-    assert "Generador de macetas" in pop.inner_text()
+    assert "generador de macetas" in pop.inner_text().lower()
     pop.locator("[data-close]").last.click()
     assert not pop.is_visible()
     page.reload()
@@ -651,3 +651,58 @@ def test_calidad_solo_admin(browser, base_url):
     page = open_app(browser, base_url, path="")                 # sin cuentas configuradas
     assert not page.locator(T % "link-calidad").is_visible()
     page.context.close()
+
+
+@pytest.mark.spec("WEB-014")
+def test_inicio_catalogo_buscador_y_filtros(browser, base_url):
+    page = open_app(browser, base_url, path="", role="visitante")
+    page.evaluate("try { localStorage.setItem('tb-popup-macetas', '1') } catch (e) {}")
+    page.reload()
+    rutas = {h: page.locator(T % ("ir-" + h)).get_attribute("href") for h in ("macetas", "mate", "sopa", "topper")}
+    assert rutas == {"macetas": "macetas.html", "mate": "mate.html", "sopa": "sopa.html", "topper": "topper.html"}
+    assert page.locator(T % "indice" + " a").count() == 4
+    visibles = lambda: page.locator(".tb-card:not([hidden])").count()
+    assert visibles() == 4 and page.locator(T % "contador").inner_text() == "4"
+    page.locator(T % "filtro-impresion").click()
+    assert visibles() == 2 and page.locator(T % "filtro-impresion").get_attribute("aria-pressed") == "true"
+    page.locator(T % "buscar").fill("polimero")                  # sin tilde, con filtro: sólo el mate
+    assert visibles() == 1 and page.locator(T % "contador").inner_text() == "1"
+    page.locator(T % "filtro-entretenimiento").click()
+    assert visibles() == 0 and page.locator(T % "sin-resultados").is_visible()
+    page.locator("#tb-limpiar").click()
+    assert visibles() == 4 and not page.locator(T % "sin-resultados").is_visible()
+    # logo original: sólo el isotipo gira
+    for t in ("logo-nav", "logo-hero"):
+        img = page.locator(T % t)
+        assert img.get_attribute("src") == "assets/marca/logo-tecnobear-original.png"
+        assert page.evaluate("(e) => getComputedStyle(e).animationName", img.element_handle()) == "tb-giro"
+    assert page.evaluate("getComputedStyle(document.querySelector('.tb-marca-txt')).animationName") == "none"
+    # redes reales
+    assert page.locator(T % "red-youtube").get_attribute("href") == "https://www.youtube.com/@TecnoBearARG"
+    assert page.locator(T % "red-instagram").get_attribute("href") == "https://www.instagram.com/tecnobearr/"
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    page.locator(T % "ir-topper").click()
+    page.wait_for_url("**/topper.html")
+    assert not page.console_errors, page.console_errors
+    page.context.close()
+
+
+@pytest.mark.spec("WEB-014")
+def test_inicio_celular_y_tablet(browser, base_url):
+    for w, h in ((390, 844), (768, 1024)):
+        ctx = browser.new_context(viewport={"width": w, "height": h}, reduced_motion="reduce")
+        ctx.add_init_script("window.__EDEN_AUTH_MOCK = {role: 'visitante'};"
+                            "try { localStorage.setItem('tb-popup-macetas', '1') } catch (e) {}")
+        page = ctx.new_page()
+        page.goto(base_url)
+        page.wait_for_function("document.querySelectorAll('.tb-card').length === 4")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), w
+        assert page.evaluate("getComputedStyle(document.querySelector('.tb-iso')).animationName") == "none"
+        menu = page.locator("#tb-menu")
+        assert not menu.is_visible()
+        page.locator(T % "btn-menu").click()
+        assert menu.is_visible() and page.locator(T % "btn-menu").get_attribute("aria-expanded") == "true"
+        page.keyboard.press("Escape")
+        assert not menu.is_visible()
+        assert page.locator(T % "btn-ingresar").is_visible() and page.locator(T % "btn-tema").is_visible()
+        ctx.close()

@@ -3,92 +3,133 @@
 <head>
   <meta charset="utf-8">
   <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
-
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Herramientas de TecnoBear</title>
-  <meta name="description" content="Herramientas gratis de TecnoBear para la comunidad: diseño e impresión 3D desde el navegador.">
+  <meta name="description" content="Generadores gratis de TecnoBear para diseñar, personalizar y preparar proyectos de impresión 3D desde el navegador.">
   <meta name="copyright" content="© TecnoBear — Yoel Almirón. Todos los derechos reservados.">
-  <link rel="icon" href="assets/tecnobear.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#090E0F">
+  <link rel="icon" href="assets/marca/logo-tecnobear-original.png" type="image/png">
+  <link rel="preload" href="fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/marca/logo-tecnobear-original.png" as="image">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="home.css">
 </head>
-<body class="home">
-  <header class="top">
-    <a class="brand" href="./" aria-label="Herramientas de TecnoBear">
-      <img src="assets/tecnobear.svg" alt="" width="34" height="34"><span class="brand-sub tb">TecnoBear</span>
-    </a>
-    <nav class="nav">
-      <a href="calidad/" class="solo-admin hide-sm" data-testid="link-calidad">Calidad</a>
-      <span id="account" class="account"></span>
-    </nav>
+<body class="home tb">
+  <svg class="tb-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
+    <symbol id="i-lupa" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></symbol>
+    <symbol id="i-todas" viewBox="0 0 24 24"><path d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z"/></symbol>
+    <symbol id="i-cubo" viewBox="0 0 24 24"><path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3z"/><path d="M4 7.3l8 4.5 8-4.5M12 11.8v9.4"/></symbol>
+    <symbol id="i-lapiz" viewBox="0 0 24 24"><path d="M15.2 4.8l4 4L8.6 19.4 3.8 20.2l.8-4.8z"/><path d="M13 7l4 4"/></symbol>
+    <symbol id="i-pieza" viewBox="0 0 24 24"><path d="M4 9h3.2a2.3 2.3 0 1 1 4.6 0H15v3.2a2.3 2.3 0 1 1 0 4.6V20H4z"/><path d="M15 9V4h5v5h-2.3"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/></symbol>
+    <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M5.5 5.5l13 13M18.5 5.5l-13 13"/></symbol>
+    <symbol id="i-gratis" viewBox="0 0 24 24"><path d="M3.5 12.5 11.5 4.5H20v8.5l-8 8z"/><circle cx="15.8" cy="8.2" r="1.5"/></symbol>
+    <symbol id="i-rayo" viewBox="0 0 24 24"><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z"/></symbol>
+    <symbol id="i-capas" viewBox="0 0 24 24"><path d="M12 3.5 21 8l-9 4.5L3 8z"/><path d="M3 12l9 4.5 9-4.5M3 16l9 4.5 9-4.5"/></symbol>
+    <symbol id="i-comunidad" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.6-3.3 3-5.2 6-5.2s5.4 1.9 6 5.2"/><path d="M15.5 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.6c1.8.6 3 2.4 3.5 4.9"/></symbol>
+    <symbol id="i-youtube" viewBox="0 0 24 24"><path d="M21.2 8.2a2.6 2.6 0 0 0-1.8-1.9C17.8 5.9 12 5.9 12 5.9s-5.8 0-7.4.4a2.6 2.6 0 0 0-1.8 1.9C2.4 9.8 2.4 12 2.4 12s0 2.2.4 3.8a2.6 2.6 0 0 0 1.8 1.9c1.6.4 7.4.4 7.4.4s5.8 0 7.4-.4a2.6 2.6 0 0 0 1.8-1.9c.4-1.6.4-3.8.4-3.8s0-2.2-.4-3.8z"/><path d="M10 9.2v5.6l4.8-2.8z"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></symbol>
+    <symbol id="i-externo" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></symbol>
+  </svg>
+
+  <a class="tb-saltar" href="#herramientas">Ir a las herramientas</a>
+
+  <header class="tb-nav" data-abierto="false">
+    <div class="tb-nav-in">
+      <a class="tb-marca" href="./" aria-label="TecnoBear, inicio">
+        <span class="tb-iso-caja"><img class="tb-iso" src="assets/marca/logo-tecnobear-original.png" alt="" width="40" height="40" data-testid="logo-nav"></span>
+        <span class="tb-marca-txt">TecnoBear</span>
+      </a>
+      <nav class="tb-menu" id="tb-menu" aria-label="Principal">
+        <a href="#inicio" aria-current="page">Inicio</a>
+        <a href="#herramientas">Herramientas</a>
+        <a href="#categorias">Categorías</a>
+        <a href="#beneficios">Beneficios</a>
+        <a href="#contacto">Contacto</a>
+        <a href="calidad/" class="solo-admin" data-testid="link-calidad">Calidad</a>
+        <a class="tb-yt" href="https://www.youtube.com/@TecnoBearARG" target="_blank" rel="noopener noreferrer">
+          <svg class="tb-ico" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube<span class="tb-sr"> (abre en otra pestaña)</span></a>
+      </nav>
+      <div class="tb-cuenta"><span id="account" class="account"></span></div>
+      <button type="button" class="tb-hamb" aria-expanded="false" aria-controls="tb-menu" data-testid="btn-menu">
+        <svg class="tb-ico" aria-hidden="true"><use href="#i-menu"/></svg><span class="tb-sr">Abrir menú</span>
+      </button>
+    </div>
   </header>
 
-  <main class="home-main">
-    <section class="hero">
-      <h1 data-testid="home-titulo">Herramientas de TecnoBear</h1>
-      <p>Herramientas gratis para la comunidad de YouTube. Corren en tu navegador: no hay nada que instalar.</p>
+  <main id="contenido">
+    <section class="tb-hero" id="inicio" aria-labelledby="home-titulo">
+      <div class="tb-hero-txt">
+        <h1 id="home-titulo" data-testid="home-titulo">Herramientas para crear <span>en 3D</span></h1>
+        <p class="tb-lead">Generadores gratis online para diseñar, personalizar y preparar tus proyectos de impresión&nbsp;3D. Ajustás todo en el navegador y bajás el archivo listo para imprimir.</p>
+        <div class="tb-ctas">
+          <a class="tb-btn tb-btn-lima" href="#herramientas" data-testid="cta-explorar">Explorar herramientas<svg class="tb-ico" aria-hidden="true"><use href="#i-flecha"/></svg></a>
+          <a class="tb-btn" href="https://www.youtube.com/@TecnoBearARG/videos" target="_blank" rel="noopener noreferrer" data-testid="cta-tutoriales">
+            <svg class="tb-ico" aria-hidden="true"><use href="#i-play"/></svg>Ver tutoriales<span class="tb-sr"> en YouTube (abre en otra pestaña)</span></a>
+        </div>
+        <nav class="tb-indice" aria-label="Abrir una herramienta">
+          <ol id="tb-indice" data-testid="indice"></ol>
+        </nav>
+      </div>
+      <div class="tb-placa" aria-hidden="true">
+        <span class="tb-placa-esq tb-placa-esq--a"></span><span class="tb-placa-esq tb-placa-esq--b"></span>
+        <svg class="tb-dial" viewBox="0 0 400 400">
+          <defs><path id="tb-anillo" d="M200 200m-158 0a158 158 0 1 1 316 0a158 158 0 1 1-316 0"/></defs>
+          <circle class="tb-dial-borde" cx="200" cy="200" r="190"/>
+          <circle class="tb-dial-menor" cx="200" cy="200" r="182" pathLength="360"/>
+          <circle class="tb-dial-mayor" cx="200" cy="200" r="180" pathLength="360"/>
+          <circle class="tb-dial-borde" cx="200" cy="200" r="170"/>
+          <text class="tb-dial-txt"><textPath href="#tb-anillo" startOffset="0">DESPERTÁ TU TECNOLOGÍA · TECNOBEAR · DESPERTÁ TU TECNOLOGÍA · TECNOBEAR ·</textPath></text>
+          <circle class="tb-dial-borde tb-dial-fino" cx="200" cy="200" r="146"/>
+          <path class="tb-dial-cruz" d="M200 8v26M200 366v26M8 200h26M366 200h26"/>
+        </svg>
+        <img class="tb-iso tb-iso-hero" src="assets/marca/logo-tecnobear-original.png" alt="" width="240" height="240" data-testid="logo-hero">
+      </div>
+      <p class="tb-lema">Despertá tu tecnología</p>
     </section>
 
-    <section class="tools" aria-label="Herramientas">
-      <button type="button" class="tool-card" data-testid="tool-macetas" aria-haspopup="dialog" data-modal="tool-modal">
-        <span class="tool-art photo">
-          <img src="assets/herramientas/macetas_v_450.jpg" srcset="assets/herramientas/macetas_v_450.jpg 450w, assets/herramientas/macetas_v.jpg 900w"
-            sizes="340px" alt="Maceta con autorriego desarmada: planta, tierra, maceta y plato con agua, sobre una mesa de jardín"
-            width="450" height="563" data-testid="tool-imagen">
-          <span class="art-title" aria-hidden="true">Maceta con <b>autorriego</b><small>impresa en 3D</small></span>
-        </span>
-        <span class="tool-body">
-          <span class="tool-tag">Nueva</span>
-          <strong>Generador de macetas</strong>
-          <span>Diseñá macetas con autorriego para imprimir en 3D, con plantas y su guía de cuidados.</span>
-        </span>
-      </button>
-      <button type="button" class="tool-card" data-testid="tool-mate" aria-haspopup="dialog" data-modal="mate-modal">
-        <span class="tool-art photo">
-          <img src="assets/herramientas/mate_v_450.jpg" srcset="assets/herramientas/mate_v_450.jpg 450w, assets/herramientas/mate_v.jpg 900w"
-            sizes="340px" alt="Mate impreso en 3D con yerba y bombilla, al lado del polímero escalonado y el polímero base, sobre una mesa de jardín"
-            width="450" height="563" data-testid="tool-imagen-mate">
-          <span class="art-title" aria-hidden="true">Mate <b>con hueco</b><small>impreso en 3D</small></span>
-        </span>
-        <span class="tool-body">
-          <span class="tool-tag">Nueva</span>
-          <strong>Mate con hueco</strong>
-          <span>Elegí el modelo de mate y el motor le hace el hueco exacto para tu polímero escalonado o polímero base.</span>
-        </span>
-      </button>
-      <button type="button" class="tool-card" data-testid="tool-sopa" aria-haspopup="dialog" data-modal="sopa-modal">
-        <span class="tool-art photo">
-          <img src="assets/herramientas/sopa_v_450.jpg" srcset="assets/herramientas/sopa_v_450.jpg 450w, assets/herramientas/sopa_v.jpg 900w"
-            sizes="340px" alt="Sopa de letras impresa en 3D, en piezas de rompecabezas que encastran, con letras rojas en relieve"
-            width="450" height="563" data-testid="tool-imagen-sopa">
-          <span class="art-title" aria-hidden="true">Sopa de <b>letras 3D</b><small>en piezas que encastran</small></span>
-        </span>
-        <span class="tool-body">
-          <span class="tool-tag">Nueva</span>
-          <strong>Sopa de letras 3D</strong>
-          <span>Escribí tus palabras y bajá la sopa para imprimir, cortada en piezas que encastran como un rompecabezas.</span>
-        </span>
-      </button>
-      <button type="button" class="tool-card" data-testid="tool-topper" aria-haspopup="dialog" data-modal="topper-modal">
-        <span class="tool-art photo">
-          <img src="assets/herramientas/topper_v_450.jpg" srcset="assets/herramientas/topper_v_450.jpg 450w, assets/herramientas/topper_v.jpg 900w"
-            sizes="340px" alt="Topper impreso en 3D que dice Feliz Cumpleaños Sofi y el número 5 con estrellas, en lila y blanco, clavados en una torta de crema"
-            width="450" height="563" data-testid="tool-imagen-topper">
-          <span class="art-title" aria-hidden="true">Topper <b>para tortas</b><small>con tu nombre, en una pieza</small></span>
-        </span>
-        <span class="tool-body">
-          <span class="tool-tag">Nueva</span>
-          <strong>Topper para tortas</strong>
-          <span>Escribí el texto y el nombre, elegí la tipografía y bajá el topper listo para imprimir, todo unido.</span>
-        </span>
-      </button>
+    <section class="tb-catalogo" id="herramientas" aria-labelledby="h-herr">
+      <div class="tb-sec-cab">
+        <h2 id="h-herr">Herramientas disponibles</h2>
+        <p class="tb-cuenta-res" aria-live="polite"><output id="tb-n" data-testid="contador">4</output> <span id="tb-n-txt">herramientas</span></p>
+      </div>
+      <div class="tb-barra" id="categorias">
+        <label class="tb-buscar">
+          <span class="tb-sr">Buscar herramientas</span>
+          <svg class="tb-ico" aria-hidden="true"><use href="#i-lupa"/></svg>
+          <input type="search" id="tb-q" placeholder="Buscar por nombre o descripción" autocomplete="off" data-testid="buscar">
+        </label>
+        <div class="tb-filtros" role="group" aria-label="Filtrar por categoría" id="tb-filtros" data-testid="filtros"></div>
+      </div>
+      <ul class="tb-grilla" id="tb-grilla" data-testid="grilla"></ul>
+      <div class="tb-vacio" id="tb-vacio" hidden data-testid="sin-resultados">
+        <p><strong>No hay herramientas con esa búsqueda.</strong> Probá con otra palabra o mirá todas las categorías.</p>
+        <button type="button" class="tb-btn" id="tb-limpiar">Ver todas</button>
+      </div>
+    </section>
+
+    <section class="tb-beneficios" id="beneficios" aria-labelledby="h-ben">
+      <h2 id="h-ben">Hechas para imprimir</h2>
+      <ul class="tb-ben">
+        <li><svg class="tb-ico" aria-hidden="true"><use href="#i-gratis"/></svg><h3>100% gratis</h3>
+          <p>Usás todas las herramientas sin pagar. Para bajar los archivos creás una cuenta gratis.</p></li>
+        <li><svg class="tb-ico" aria-hidden="true"><use href="#i-rayo"/></svg><h3>Simple y rápido</h3>
+          <p>Funciona desde el navegador, también en el celular. No hay nada que instalar.</p></li>
+        <li><svg class="tb-ico" aria-hidden="true"><use href="#i-capas"/></svg><h3>Listo para imprimir</h3>
+          <p>Archivos 3MF y STL con piezas cerradas y encastres con holgura, preparados para tu impresora.</p></li>
+        <li><svg class="tb-ico" aria-hidden="true"><use href="#i-comunidad"/></svg><h3>Para la comunidad</h3>
+          <p>Herramientas creadas por TecnoBear para la gente del canal.</p></li>
+      </ul>
     </section>
   </main>
 
   <dialog class="modal" id="tool-modal" data-testid="popup-macetas" aria-labelledby="tm-title">
     <div class="modal-box wide">
-      <div class="modal-hero"><img src="assets/herramientas/macetas.jpg" alt="" width="1200" height="900"></div>
+      <div class="modal-hero"><img loading="lazy" src="assets/herramientas/macetas.jpg" alt="" width="1200" height="900"></div>
       <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
-      <span class="tool-tag">Herramienta 1</span>
       <h2 id="tm-title">Generador de macetas</h2>
       <p>Elegí un diseño, el tamaño y el plato con autorriego. Lo ves en 3D y bajás el archivo listo para imprimir.</p>
       <ul class="tm-list">
@@ -108,9 +149,8 @@
 
   <dialog class="modal" id="mate-modal" data-testid="popup-mate" aria-labelledby="mm-title">
     <div class="modal-box wide">
-      <div class="modal-hero"><img src="assets/herramientas/mate.jpg" alt="" width="1200" height="900"></div>
+      <div class="modal-hero"><img loading="lazy" src="assets/herramientas/mate.jpg" alt="" width="1200" height="900"></div>
       <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
-      <span class="tool-tag">Herramienta 2</span>
       <h2 id="mm-title">Mate con hueco</h2>
       <p>Elegí un modelo de mate imperial y el inserto. El motor calcula el hueco exacto, agranda el mate si hace falta y lo bajás listo para imprimir.</p>
       <ul class="tm-list">
@@ -132,9 +172,8 @@
 
   <dialog class="modal" id="sopa-modal" data-testid="popup-sopa" aria-labelledby="sm-title">
     <div class="modal-box wide">
-      <div class="modal-hero"><img src="assets/herramientas/sopa.jpg" alt="" width="1200" height="900"></div>
+      <div class="modal-hero"><img loading="lazy" src="assets/herramientas/sopa.jpg" alt="" width="1200" height="900"></div>
       <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
-      <span class="tool-tag">Herramienta 3</span>
       <h2 id="sm-title">Sopa de letras 3D</h2>
       <p>Escribí tus palabras: el motor arma la sopa, la corta en piezas que encastran para que entre en tu impresora y la bajás lista para imprimir.</p>
       <ul class="tm-list">
@@ -153,9 +192,8 @@
 
   <dialog class="modal" id="topper-modal" data-testid="popup-topper" aria-labelledby="tp-title">
     <div class="modal-box wide">
-      <div class="modal-hero"><img src="assets/herramientas/topper.jpg" alt="" width="1200" height="900"></div>
+      <div class="modal-hero"><img loading="lazy" src="assets/herramientas/topper.jpg" alt="" width="1200" height="900"></div>
       <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
-      <span class="tool-tag">Herramienta 4</span>
       <h2 id="tp-title">Topper para tortas</h2>
       <p>Escribí hasta tres líneas (por ejemplo Feliz / Cumpleaños / el nombre), elegí la tipografía de cada una y el motor arma el topper en una sola pieza, con los palitos para clavarlo en la torta.</p>
       <ul class="tm-list">
@@ -173,26 +211,36 @@
     </div>
   </dialog>
 
-  <footer class="foot">
-    <p>© 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados. <a href="licencia.html">Licencia</a>.</p>
+
+  <footer class="tb-pie" id="contacto">
+    <div class="tb-pie-in">
+      <div class="tb-pie-marca">
+        <a class="tb-marca" href="./" aria-label="TecnoBear, inicio">
+          <span class="tb-iso-caja"><img class="tb-iso tb-iso-quieto" src="assets/marca/logo-tecnobear-original.png" alt="" width="48" height="48" loading="lazy"></span>
+          <span class="tb-marca-txt">TecnoBear</span>
+        </a>
+        <p class="tb-pie-lema">Despertá tu tecnología</p>
+        <p>Herramientas web gratis para diseñar, personalizar y crear proyectos de impresión 3D.</p>
+      </div>
+      <nav class="tb-pie-col" aria-label="Secciones">
+        <h2>Navegación</h2>
+        <a href="#inicio">Inicio</a><a href="#herramientas">Herramientas</a><a href="#categorias">Categorías</a><a href="#beneficios">Beneficios</a>
+      </nav>
+      <nav class="tb-pie-col" aria-label="Herramientas">
+        <h2>Herramientas</h2>
+        <div id="tb-pie-herr"></div>
+      </nav>
+      <div class="tb-pie-col">
+        <h2>Contacto</h2>
+        <p class="tb-pie-nota">Escribinos por las redes del canal.</p>
+        <div class="tb-redes" id="tb-redes" data-testid="redes"></div>
+      </div>
+    </div>
+    <div class="tb-pie-legal">
+      <p>© <span id="tb-anio">2026</span> TecnoBear — Yoel Almirón. Todos los derechos reservados. <a href="licencia.html">Licencia</a>.</p>
+    </div>
   </footer>
 
-  <script type="module">
-    import { mountAccount } from "./auth-ui.js";
-    mountAccount(document.getElementById("account"));
-    for (const d of document.querySelectorAll("dialog.modal")) {
-      d.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => d.close()));
-      d.addEventListener("click", (e) => { if (e.target === d) d.close(); });
-    }
-    for (const c of document.querySelectorAll(".tool-card[data-modal]")) {
-      c.addEventListener("click", () => document.getElementById(c.dataset.modal).showModal());
-    }
-    const dlg = document.getElementById("tool-modal");
-    const open = () => dlg.showModal();
-    // la primera visita muestra la herramienta en un pop-up
-    let visto = false;
-    try { visto = localStorage.getItem("tb-popup-macetas") === "1"; localStorage.setItem("tb-popup-macetas", "1"); } catch (e) {}
-    if (!visto) setTimeout(open, 500);
-  </script>
+  <script type="module" src="home.js"></script>
 </body>
 </html>

@@ -106,15 +106,15 @@ specs:
     nivel: web
     estado: activa
   - id: WEB-012
-    titulo: Home "Herramientas de TecnoBear"
+    titulo: Home "Herramientas para crear en 3D"
     descripcion: >
       La portada presenta las herramientas de TecnoBear para la comunidad de YouTube;
-      por ahora, el generador de macetas, que se presenta en un pop-up.
+      la tarjeta del generador de macetas abre su pop-up.
     criterio: >
-      La portada dice "Herramientas de TecnoBear" y tiene la tarjeta del generador de
+      La portada dice "Herramientas para crear en 3D" y tiene la tarjeta del generador de
       macetas con su imagen (render real de la maceta desarmada en el jardín); en la
-      primera visita se abre el pop-up (después, al tocar la tarjeta) y "Abrir el
-      generador" lleva a macetas.html.
+      primera visita se abre el pop-up (después, al tocar la imagen de la tarjeta) y
+      "Abrir el generador" lleva a macetas.html.
     prioridad: media
     nivel: web
     estado: activa
@@ -127,5 +127,22 @@ specs:
       Cada toque pasa automático → claro → oscuro → automático; claro y oscuro cambian
       los colores de la página; al recargar se mantiene el elegido.
     prioridad: media
+    nivel: web
+    estado: activa
+  - id: WEB-014
+    titulo: Inicio industrial con catálogo, buscador y filtros
+    descripcion: >
+      Inicio rediseñado (estilo industrial, oscuro, acentos lima): navbar fijo con el logo
+      original cuyo isotipo gira (el texto TecnoBear no), hero con las cuatro herramientas,
+      catálogo con buscador y filtros por categoría, beneficios y footer con YouTube e
+      Instagram; responsive sin scroll horizontal.
+    criterio: >
+      Las cuatro tarjetas llevan a sus rutas reales (macetas, mate, sopa, topper); el
+      buscador (sin tildes) y los filtros funcionan juntos y el contador y el mensaje de
+      "sin resultados" se actualizan; el logo es assets/marca/logo-tecnobear-original.png
+      y sólo el isotipo tiene la animación de giro (ninguna con movimiento reducido); en
+      390 px el menú hamburguesa abre y cierra y no hay scroll horizontal en 390, 768 y
+      1440 px; el login y el tema siguen andando; sin errores en la consola.
+    prioridad: alta
     nivel: web
     estado: activa
