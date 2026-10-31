@@ -37,8 +37,9 @@ Playwright y specs SDD en `specs/`.
 - Usar las herramientas es gratis; para descargar los archivos se crea una cuenta gratis
   (cuando las cuentas están configuradas). Las piezas del plan gratis salen con la marca
   de agua ("Eden3D" grabada).
-- Plan Premium para la comunidad (rol Pro): actualizaciones más directas y sin marca de
-  agua (la cuenta Pro saca o cambia la marca). Se pide por Instagram; no hay precio ni
+- Plan Premium para la comunidad (rol Pro): actualizaciones más directas, sin marca de
+  agua (la cuenta Pro saca o cambia la marca) y render y colecciones preseteadas para
+  mandar a clientes (el plan gratis no las tiene). Se pide por Instagram; no hay precio ni
   pago online definidos: no inventarlos.
 - HTML/CSS/JS sin framework, módulos ES; sin dependencias nuevas en el inicio.
 - Los `data-testid` existentes son contrato con los tests.
@@ -46,7 +47,8 @@ Playwright y specs SDD en `specs/`.
 ## Brand Commitments
 - Nombre: TecnoBear. Lema: "Despertá tu tecnología". Voz: español rioplatense, directa.
 - Logo: el isotipo original (silueta amarilla pálida #E9EB9F con dos antenas, sobre
-  círculo oscuro), archivo `web/assets/marca/logo-tecnobear-original.png`. No se redibuja, no se
+  círculo oscuro). Se usa `web/assets/marca/logo-tecnobear.svg`, calcado a vector del original
+  `logo-tecnobear-original.png` (coincide en un 99,4 %; pedido del usuario). No se redibuja, no se
   reinterpreta, no se cambia por emoji ni ícono. El logo no gira: en el navbar y el footer
   está quieto y en el hero flota suave (pedido del usuario).
 - Redes reales: YouTube https://www.youtube.com/@TecnoBearARG e Instagram

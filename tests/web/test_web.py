@@ -686,13 +686,15 @@ def test_inicio_catalogo_buscador_y_filtros(browser, base_url):
     # logo original: no gira; el del navbar quieto y el del hero flota
     anim = lambda t: page.evaluate("(e) => getComputedStyle(e).animationName", page.locator(T % t).element_handle())
     for t in ("logo-nav", "logo-hero"):
-        assert page.locator(T % t).get_attribute("src") == "assets/marca/logo-tecnobear-original.png"
+        assert page.locator(T % t).get_attribute("src") == "assets/marca/logo-tecnobear.svg"
     assert anim("logo-nav") == "none" and anim("logo-hero") == "tb-flota"
     assert "rotate(360" not in open_css()
     # planes: Premium por Instagram, "Crear cuenta gratis" abre el registro
     assert page.locator(T % "plan-premium").is_visible()
     premium = page.locator(T % "plan-premium").inner_text().lower()
     assert "actualizaciones más directas" in premium and "sin marca de agua" in premium
+    assert "render y colecciones preseteadas" in premium
+    assert "sin render ni colecciones preseteadas" in page.locator(T % "plan-gratis").inner_text().lower()
     assert page.locator(T % "plan-premium-cta").get_attribute("href") == "https://www.instagram.com/tecnobearr/"
     cta = page.locator(T % "plan-gratis-cta")
     assert "crear cuenta gratis" in cta.inner_text().lower()
@@ -739,7 +741,7 @@ def test_herramientas_con_el_encabezado_nuevo(browser, base_url):
         page = ctx.new_page()
         page.goto(base_url + path)
         logo = page.locator(T % "link-home" + " img")
-        assert logo.get_attribute("src") == "assets/marca/logo-tecnobear-original.png", path
+        assert logo.get_attribute("src") == "assets/marca/logo-tecnobear.svg", path
         assert page.locator(T % "btn-tema").is_visible() and page.locator(T % "btn-ingresar").is_visible()
         page.wait_for_timeout(300)
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), path
@@ -759,7 +761,9 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         carga.wait_for(state="attached", timeout=10_000)
         assert carga.locator("svg .carga-pieza").count() == 1 and carga.locator(".carga-cabezal").count() == 1
         assert page.evaluate("getComputedStyle(document.querySelector('[data-testid=carga]')).pointerEvents") == "none"
-        assert carga.locator("[data-paso]").count() == 3
+        assert carga.locator(".carga-barra").is_visible()
+        # sólo la impresora y la barra: el texto queda para lectores de pantalla (1 px)
+        assert page.evaluate("document.querySelector('.carga-titulo').getBoundingClientRect().width") <= 1
         page.wait_for_function("window.%s && window.%s.builds >= 1" % (st, st), timeout=READY_MS)
         carga.wait_for(state="detached", timeout=5_000)                 # se va sola
         assert not errores, (path, errores)

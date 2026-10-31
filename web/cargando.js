@@ -1,7 +1,8 @@
 // © 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados.
 // Pantalla de carga de cada motor: una impresora 3D (vector propio) imprime la pieza de
-// la herramienta capa por capa mientras se baja Python, se carga el motor y se arma la
-// primera vista previa. No bloquea clics y se va sola cuando aparece la vista previa.
+// la herramienta capa por capa, con una barra de carga, mientras se baja Python, se carga
+// el motor y se arma la primera vista previa (el texto sólo lo leen los lectores de
+// pantalla, o se ve si falla). No bloquea clics y se va sola con la vista previa.
 //
 //   pantallaCarga({ motor: "macetas" | "mate" | "sopa" | "topper", worker, estado })
 //
@@ -64,13 +65,8 @@ export function pantallaCarga({ motor, worker, estado, contenedor }) {
   el.innerHTML = `
     <div class="carga-caja">
       ${impresora(motor)}
-      <p class="carga-titulo">Encendiendo el motor ${NOMBRES[motor]}</p>
-      <ol class="carga-pasos">
-        <li data-paso="1">Bajando Python al navegador</li>
-        <li data-paso="2">Cargando el motor</li>
-        <li data-paso="3">Imprimiendo la vista previa</li>
-      </ol>
       <div class="carga-barra" aria-hidden="true"><span></span></div>
+      <p class="carga-titulo">Cargando el motor ${NOMBRES[motor]}</p>
     </div>`;
   stage.appendChild(el);
   const t0 = performance.now();
@@ -80,10 +76,6 @@ export function pantallaCarga({ motor, worker, estado, contenedor }) {
     if (n <= paso || cerrada) return;
     paso = n;
     el.dataset.paso = String(n);
-    for (const li of el.querySelectorAll("[data-paso]")) {
-      const k = +li.dataset.paso;
-      li.className = k < n ? "hecho" : (k === n ? "activo" : "");
-    }
     el.querySelector(".carga-barra span").style.width = `${Math.min(100, (n - 1) * 33 + 12)}%`;
   };
   const cerrar = () => {
@@ -91,7 +83,6 @@ export function pantallaCarga({ motor, worker, estado, contenedor }) {
     cerrada = true;
     el.dataset.paso = "4";
     el.querySelector(".carga-barra span").style.width = "100%";
-    for (const li of el.querySelectorAll("[data-paso]")) li.className = "hecho";
     el.classList.add("carga-lista");
     setTimeout(() => el.remove(), 650);
   };

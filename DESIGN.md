@@ -318,7 +318,7 @@ The logo never rotates. Only the hero isotipo moves: it floats between +5px and 
 - **Do** cut exactly one 45° bevel per plate with `clip-path` and draw its 1px diagonal rule.
 - **Do** keep lime to actions, active/pressed/focus states and small instrument markings; use `lima-ink` on lime fills and the theme's accent stroke for lime text.
 - **Do** set every heading in Barlow Condensed uppercase and everything else in Inter, both self-hosted.
-- **Do** use the original logo file (`web/assets/marca/logo-tecnobear-original.png`) untouched; only the hero isotipo moves, with a gentle float.
+- **Do** use the vector logo `web/assets/marca/logo-tecnobear.svg` (a trace of the original `logo-tecnobear-original.png`, 99.4% pixel match) untouched; only the hero isotipo moves, with a gentle float.
 - **Do** use 1.6px square-capped, miter-joined line icons from the inline sprite, 16–20px (30px in the benefit strip).
 - **Do** keep text AA on its plate in both themes and show the 2px lime focus outline on every control.
 
