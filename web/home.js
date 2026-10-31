@@ -1,7 +1,8 @@
 // © 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados.
 // Inicio: catálogo (desde herramientas.js) con buscador y filtros, menú del celular,
-// giro del isotipo, pop-ups de cada herramienta y la cuenta (auth-ui.js).
-import { mountAccount } from "./auth-ui.js";
+// planes, pop-ups de cada herramienta y la cuenta (auth-ui.js, con el tema).
+import { mountAccount, openLogin } from "./auth-ui.js";
+import { onAuth } from "./auth.js";
 import { CATEGORIAS, HERRAMIENTAS, REDES } from "./herramientas.js";
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -73,21 +74,25 @@ function menu() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && head.dataset.abierto === "true") { set(false); btn.focus(); }
   });
-  matchMedia("(min-width: 1081px)").addEventListener("change", (m) => { if (m.matches) set(false); });
+  matchMedia("(min-width: 1241px)").addEventListener("change", (m) => { if (m.matches) set(false); });
 }
 
-// ------------------------------------------------------------------ giro del isotipo
-// El giro es CSS (19 s por vuelta); al pasar el mouse acelera sin saltar, cambiando la
-// velocidad de la misma animación. Con movimiento reducido no hay animación.
-function giro() {
-  for (const el of document.querySelectorAll(".tb-iso:not(.tb-iso-quieto)")) {
-    const zona = el.closest(".tb-marca, .tb-placa") || el;
-    const vel = (v) => { for (const a of el.getAnimations()) a.updatePlaybackRate(v); };
-    zona.addEventListener("pointerenter", () => vel(3));
-    zona.addEventListener("pointerleave", () => vel(1));
-    zona.addEventListener("focusin", () => vel(3));
-    zona.addEventListener("focusout", () => vel(1));
-  }
+// ------------------------------------------------------------------ planes
+// Con cuentas: "Crear cuenta gratis" abre el registro (o, con la sesión iniciada, lleva a
+// las herramientas). Sin cuentas configuradas todo es libre: "Empezar gratis".
+function planes() {
+  const cta = $("#tb-plan-gratis-cta");
+  const txt = cta.firstChild;
+  let registro = false;
+  onAuth((a) => {
+    registro = a.configured && !a.user;
+    txt.textContent = registro ? "Crear cuenta gratis" : "Empezar gratis";
+  });
+  cta.addEventListener("click", (e) => {
+    if (!registro) return;
+    e.preventDefault();
+    openLogin("Creá tu cuenta gratis para descargar los archivos.", "up");
+  });
 }
 
 // ------------------------------------------------------------------ pop-ups
@@ -139,7 +144,7 @@ $("#tb-limpiar").addEventListener("click", () => {
 });
 $("#tb-anio").textContent = String(new Date().getFullYear());
 menu();
-giro();
+planes();
 modales();
 aparicion();
 mountAccount($("#account"));

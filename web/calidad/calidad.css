@@ -1,7 +1,7 @@
 /* © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. */
 :root { --ok: #2e7d4f; --bad: #b3261e; --warn: #9a6700; --pend: #6d6a63; --chart: #46704a; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ok: #6fcf97; --bad: #ff8a80; --warn: #f2c14e; --pend: #a7a59d; --chart: #8fbf86; } }
-:root[data-theme="dark"] { --ok: #6fcf97; --bad: #ff8a80; --warn: #f2c14e; --pend: #a7a59d; --chart: #8fbf86; }
+:root:not([data-theme="light"]) { --ok: #9fd86b; --bad: #ff8a80; --warn: #e9eb9f; --pend: #a3b1ae; --chart: #c5f05b; }
 .q { width: 100%; max-width: 1200px; margin: 0 auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 16px; }
 .q-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .q-head h1 { margin: 0; font-size: 24px; }

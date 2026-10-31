@@ -390,7 +390,7 @@
       },
       "wordmark": {
         "displayName": "Wordmark",
-        "purpose": "TecnoBear text beside the isotipo; never rotates."
+        "purpose": "TecnoBear text beside the isotipo; never moves."
       },
       "engraving": {
         "displayName": "Engraving",
@@ -441,7 +441,7 @@
       {
         "name": "isotipo-seat",
         "value": "0 0 0 10px var(--tb-surf), 0 0 0 11px var(--tb-line)",
-        "purpose": "Plate-colored collar with a 1px rule seating the spinning isotipo (6px/7px under 640px)."
+        "purpose": "Plate-colored collar with a 1px rule seating the floating isotipo (6px/7px under 640px)."
       },
       {
         "name": "modal-drop",
@@ -461,9 +461,9 @@
         "purpose": "Hover slides, index indent, card photo zoom, entrance."
       },
       {
-        "name": "isotipo-spin",
-        "value": "19s linear infinite rotate(360deg)",
-        "purpose": "The only rotating element; playback rate 3x on hover/focus of its brand area or the hero plate; footer isotipo still."
+        "name": "isotipo-float",
+        "value": "3.6s cubic-bezier(.45, 0, .55, 1) infinite alternate translateY(5px -> -7px)",
+        "purpose": "The only moving logo: the hero isotipo floats; it never rotates. Navbar and footer logos are still."
       },
       {
         "name": "entrance",
@@ -517,7 +517,7 @@
     },
     "brandAssets": {
       "logo": "web/assets/marca/logo-tecnobear-original.png",
-      "rule": "Original file, never redrawn or recolored; only the isotipo image rotates."
+      "rule": "Original file, never redrawn or recolored; it never rotates; only the hero isotipo floats gently."
     }
   },
   "components": [
@@ -582,15 +582,15 @@
       "name": "Hero Plate with Dial",
       "kind": "custom",
       "refersTo": "hero-plate",
-      "description": "Square plate, two-corner bevel, lime corner brackets, graduated dial; the isotipo spins at the center.",
+      "description": "Square plate, two-corner bevel, lime corner brackets, graduated dial; the isotipo floats at the center.",
       "html": "<div class=\"ds-placa\"><span class=\"ds-esq ds-esq-a\"></span><span class=\"ds-esq ds-esq-b\"></span><svg class=\"ds-dial\" viewBox=\"0 0 400 400\"><circle class=\"b\" cx=\"200\" cy=\"200\" r=\"190\"/><circle class=\"mn\" cx=\"200\" cy=\"200\" r=\"182\" pathLength=\"360\"/><circle class=\"mj\" cx=\"200\" cy=\"200\" r=\"180\" pathLength=\"360\"/><circle class=\"b\" cx=\"200\" cy=\"200\" r=\"170\"/><path class=\"x\" d=\"M200 8v26M200 366v26M8 200h26M366 200h26\"/></svg><span class=\"ds-iso-hero\"></span></div>",
-      "css": ".ds-placa{position:relative;width:320px;aspect-ratio:1;display:grid;place-items:center;background:radial-gradient(circle,color-mix(in srgb,var(--tb-lima, #c5f05b) 7%,transparent) 0 34%,transparent 62%),var(--tb-surf, #101719);border:1px solid var(--tb-line, #344346);clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}.ds-esq{position:absolute;width:22px;height:22px;border:solid var(--tb-lima, #c5f05b)}.ds-esq-a{top:14px;left:14px;border-width:2px 0 0 2px}.ds-esq-b{right:14px;bottom:14px;border-width:0 2px 2px 0}.ds-dial{position:absolute;inset:5%;width:90%;height:90%}.ds-dial circle,.ds-dial path{fill:none}.ds-dial .b{stroke:var(--tb-line, #344346)}.ds-dial .mn{stroke:var(--tb-line, #344346);stroke-width:8;stroke-dasharray:.35 2.65}.ds-dial .mj{stroke:var(--tb-acento, #c5f05b);stroke-width:18;stroke-dasharray:.7 29.3;opacity:.85}.ds-dial .x{stroke:var(--tb-acento, #c5f05b);stroke-width:1.5}.ds-iso-hero{width:52%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#e9eb9f 0 28%,#101719 29%);box-shadow:0 0 0 10px var(--tb-surf, #101719),0 0 0 11px var(--tb-line, #344346);animation:ds-giro 19s linear infinite}.ds-placa:hover .ds-iso-hero{animation-duration:6.33s}@keyframes ds-giro{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.ds-iso-hero{animation:none}}",
+      "css": ".ds-placa{position:relative;width:320px;aspect-ratio:1;display:grid;place-items:center;background:radial-gradient(circle,color-mix(in srgb,var(--tb-lima, #c5f05b) 7%,transparent) 0 34%,transparent 62%),var(--tb-surf, #101719);border:1px solid var(--tb-line, #344346);clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}.ds-esq{position:absolute;width:22px;height:22px;border:solid var(--tb-lima, #c5f05b)}.ds-esq-a{top:14px;left:14px;border-width:2px 0 0 2px}.ds-esq-b{right:14px;bottom:14px;border-width:0 2px 2px 0}.ds-dial{position:absolute;inset:5%;width:90%;height:90%}.ds-dial circle,.ds-dial path{fill:none}.ds-dial .b{stroke:var(--tb-line, #344346)}.ds-dial .mn{stroke:var(--tb-line, #344346);stroke-width:8;stroke-dasharray:.35 2.65}.ds-dial .mj{stroke:var(--tb-acento, #c5f05b);stroke-width:18;stroke-dasharray:.7 29.3;opacity:.85}.ds-dial .x{stroke:var(--tb-acento, #c5f05b);stroke-width:1.5}.ds-iso-hero{width:52%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#e9eb9f 0 28%,#101719 29%);box-shadow:0 0 0 10px var(--tb-surf, #101719),0 0 0 11px var(--tb-line, #344346);animation:ds-flota 3.6s cubic-bezier(.45,0,.55,1) infinite alternate}@keyframes ds-flota{from{transform:translateY(5px)}to{transform:translateY(-7px)}}@media (prefers-reduced-motion:reduce){.ds-iso-hero{animation:none}}",
       "note": "The center swatch stands in for the original logo PNG, which is never redrawn."
     }
   ],
   "narrative": {
     "northStar": "The Workbench Faceplate",
-    "overview": "TecnoBear's interface is the faceplate of a digital-fabrication bench. The page is a dark machined floor ruled with a near-invisible 1px technical grid; content sits on flat plates bounded by 1px rules, each plate with a single 45° bevel cut into one corner. The tools read as machine cards, the hero object is a graduated turntable dial with the original TecnoBear isotipo spinning at its center, and the brand motto is engraved around the ring. Nothing floats, glows or rounds into a pill; structure comes from rules, tonal plates and condensed stamped capitals.\n\nThe system is dark by default and supports a light variant (`html[data-theme=\"light\"]`) because the site-wide theme toggle must keep working; both variants share every rule below and differ only in the neutral and accent-stroke tokens. Density is calm: one 1360px container, generous section breaks, and grids of four that collapse to two and then one.\n\nScope: this industrial system currently applies to the home page (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`). It is the target system for the tool pages (macetas, mate, sopa, topper, admin), which still carry the older shared `web/style.css` look; that older look is not an authority for new work.",
+    "overview": "TecnoBear's interface is the faceplate of a digital-fabrication bench. The page is a dark machined floor ruled with a near-invisible 1px technical grid; content sits on flat plates bounded by 1px rules, each plate with a single 45° bevel cut into one corner. The tools read as machine cards, the hero object is a graduated turntable dial with the original TecnoBear isotipo floating gently at its center (it never spins), and the brand motto is engraved around the ring. Nothing floats, glows or rounds into a pill; structure comes from rules, tonal plates and condensed stamped capitals.\n\nThe system is dark by default and supports a light variant (`html[data-theme=\"light\"]`) because the site-wide theme toggle must keep working; both variants share every rule below and differ only in the neutral and accent-stroke tokens. Density is calm: one 1360px container, generous section breaks, and grids of four that collapse to two and then one.\n\nScope: this industrial system currently applies to the home page (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`). It is the target system for the tool pages (macetas, mate, sopa, topper, admin), which still carry the older shared `web/style.css` look; that older look is not an authority for new work.",
     "keyCharacteristics": [
       "Dark machined floor (dark default) with a 48px technical grid of 1px lime-tinted lines at 4.5% opacity (32px cells under 640px).",
       "Flat plates, 1px rules, one 45° bevel per plate with the diagonal rule drawn on the cut.",
@@ -641,7 +641,7 @@
       "Do cut exactly one 45° bevel per plate with `clip-path` and draw its 1px diagonal rule.",
       "Do keep lime to actions, active/pressed/focus states and small instrument markings; use `lima-ink` on lime fills and the theme's accent stroke for lime text.",
       "Do set every heading in Barlow Condensed uppercase and everything else in Inter, both self-hosted.",
-      "Do use the original logo file (`web/assets/marca/logo-tecnobear-original.png`) untouched; only the isotipo image rotates.",
+      "Do use the original logo file (`web/assets/marca/logo-tecnobear-original.png`) untouched; it never rotates; only the hero isotipo floats gently.",
       "Do use 1.6px square-capped, miter-joined line icons from the inline sprite, 16–20px (30px in the benefit strip).",
       "Do keep text AA on its plate in both themes and show the 2px lime focus outline on every control."
     ],

@@ -1,43 +1,45 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
-// Modo claro / oscuro: automático (el del sistema), claro u oscuro, recordado por navegador.
+// Modo oscuro (el de la marca, por defecto) o claro, a la vista en el encabezado de todas
+// las páginas y recordado por navegador.
 const KEY = "tb-tema";
-const ORDEN = ["auto", "light", "dark"];
-const TXT = { auto: "Tema automático", light: "Modo claro", dark: "Modo oscuro" };
 const ICON = {
-  auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
-  light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>',
-  dark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg>',
+  dark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
+  light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.6"/></svg>',
 };
+const TXT = { dark: "Oscuro", light: "Claro" };
 
+// "light" o "dark"; lo guardado de antes como "auto" (o nada) es el oscuro de la marca
 export function getTheme() {
-  try { const t = localStorage.getItem(KEY); return ORDEN.includes(t) ? t : "auto"; } catch (e) { return "auto"; }
+  try { return localStorage.getItem(KEY) === "light" ? "light" : "dark"; } catch (e) { return "dark"; }
 }
 
 export function setTheme(t) {
-  const r = document.documentElement;
-  if (t === "light" || t === "dark") r.dataset.theme = t;
-  else delete r.dataset.theme;
+  t = t === "light" ? "light" : "dark";
+  document.documentElement.dataset.theme = t;
   try { localStorage.setItem(KEY, t); } catch (e) { /* sin almacenamiento: sólo esta vez */ }
   document.dispatchEvent(new CustomEvent("tema", { detail: t }));
 }
 
 export function mountTheme(host) {
   if (!host) return;
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "theme-btn";
-  btn.dataset.testid = "btn-tema";
-  const paint = () => {
-    const t = getTheme();
-    btn.innerHTML = ICON[t];
-    btn.title = TXT[t] + " (tocá para cambiar)";
-    btn.setAttribute("aria-label", TXT[t]);
-    btn.dataset.tema = t;
+  const grupo = document.createElement("div");
+  grupo.className = "tema-sel";
+  grupo.setAttribute("role", "group");
+  grupo.setAttribute("aria-label", "Tema de la página");
+  grupo.dataset.testid = "btn-tema";
+  grupo.innerHTML = ["dark", "light"].map((t) => `
+    <button type="button" data-modo="${t}" data-testid="tema-${t === "dark" ? "oscuro" : "claro"}" aria-pressed="false">
+      ${ICON[t]}<span>${TXT[t]}</span></button>`).join("");
+  const pintar = () => {
+    const actual = getTheme();
+    grupo.dataset.tema = actual;
+    for (const b of grupo.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.modo === actual));
   };
-  btn.addEventListener("click", () => {
-    setTheme(ORDEN[(ORDEN.indexOf(getTheme()) + 1) % ORDEN.length]);
-    paint();
+  grupo.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-modo]");
+    if (b) setTheme(b.dataset.modo);
   });
-  paint();
-  host.prepend(btn);
+  document.addEventListener("tema", pintar);
+  pintar();
+  host.prepend(grupo);
 }

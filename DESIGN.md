@@ -172,11 +172,11 @@ components:
 
 **Creative North Star: "The Workbench Faceplate"**
 
-TecnoBear's interface is the faceplate of a digital-fabrication bench. The page is a dark machined floor ruled with a near-invisible 1px technical grid; content sits on flat plates bounded by 1px rules, each plate with a single 45° bevel cut into one corner. The tools read as machine cards, the hero object is a graduated turntable dial with the original TecnoBear isotipo spinning at its center, and the brand motto is engraved around the ring. Nothing floats, glows or rounds into a pill; structure comes from rules, tonal plates and condensed stamped capitals.
+TecnoBear's interface is the faceplate of a digital-fabrication bench. The page is a dark machined floor ruled with a near-invisible 1px technical grid; content sits on flat plates bounded by 1px rules, each plate with a single 45° bevel cut into one corner. The tools read as machine cards, the hero object is a graduated turntable dial with the original TecnoBear isotipo floating gently at its center (it never spins), and the brand motto is engraved around the ring. Nothing floats, glows or rounds into a pill; structure comes from rules, tonal plates and condensed stamped capitals.
 
 The system is dark by default and supports a light variant (`html[data-theme="light"]`) because the site-wide theme toggle must keep working; both variants share every rule below and differ only in the neutral and accent-stroke tokens. Density is calm: one 1360px container, generous section breaks, and grids of four that collapse to two and then one.
 
-Scope: this industrial system currently applies to the home page (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`). It is the target system for the tool pages (macetas, mate, sopa, topper, admin), which still carry the older shared `web/style.css` look; that older look is not an authority for new work.
+Scope: the whole site. The home page carries the full composition (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`); the tool pages (macetas, mate, sopa, topper, admin, calidad) get the same tokens, header, controls and plates from the industrial layer at the end of the shared `web/style.css`. The older green-on-cream rules earlier in that file are overridden and are not an authority for new work.
 
 **Key Characteristics:**
 - Dark machined floor (dark default) with a 48px technical grid of 1px lime-tinted lines at 4.5% opacity (32px cells under 640px).
@@ -184,7 +184,7 @@ Scope: this industrial system currently applies to the home page (`web/index.htm
 - Lime as the single action/active color and the color of instrument markings; the logo's pale yellow reserved for the brand.
 - Barlow Condensed uppercase for every heading; Inter for everything else.
 - Square corners: 2px on controls, 0 on plates; no pills.
-- One moving signature: the isotipo rotates like a lathe chuck; text never moves.
+- One quiet moving signature: the hero isotipo floats a few millimetres up and down; it never rotates, and the navbar and footer logos are still.
 
 ## Colors
 
@@ -256,7 +256,7 @@ Depth is ruled, not raised. Plates sit flat on the floor and are distinguished b
 
 ### Shadow Vocabulary
 - **Plate drop** (`box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .7)`; light: `0 18px 40px -22px rgba(13, 19, 20, .35)`): the hero plate only.
-- **Isotipo seat** (`box-shadow: 0 0 0 10px <plate>, 0 0 0 11px <rule>`): a plate-colored collar with a 1px rule that seats the spinning isotipo in the dial (6px/7px under 640px).
+- **Isotipo seat** (`box-shadow: 0 0 0 10px <plate>, 0 0 0 11px <rule>`): a plate-colored collar with a 1px rule that seats the floating isotipo in the dial (6px/7px under 640px).
 - **Modal drop** (`box-shadow: 0 24px 48px -16px rgba(0, 0, 0, .7)`): dialogs, over a flat rgba(5, 8, 9, .78) backdrop with no blur.
 - **Menu drop** (`box-shadow: 0 24px 40px -20px rgba(0, 0, 0, .7)`): the collapsed-nav panel.
 
@@ -300,7 +300,7 @@ Tactile and blunt, like labelled switches on a panel.
 - **Mobile (≤1080px):** 44px ruled hamburger toggles a full-width panel below the bar with 52px rows separated by faint rules and the active marker shortened to a 24px lime stub.
 
 ### Hero Plate and Dial (signature)
-A square Plate with the two-corner bevel, lime corner brackets and the plate drop. Inside, an SVG graduated dial: outer and inner 1px Rule rings, minor ticks in Rule, major ticks every 30° in the accent stroke, a dotted inner ring, a lime crosshair at the four cardinal points, and the motto engraved along a circular path in Graphite Text. The original isotipo (52% of the plate) spins in the center in its plate-colored seat. Beneath the plate, at desktop widths, the motto repeats in Isotipo Yellow after a 1px rule.
+A square Plate with the two-corner bevel, lime corner brackets and the plate drop. Inside, an SVG graduated dial: outer and inner 1px Rule rings, minor ticks in Rule, major ticks every 30° in the accent stroke, a dotted inner ring, a lime crosshair at the four cardinal points, and the motto engraved along a circular path in Graphite Text. The original isotipo (52% of the plate) floats in the center in its plate-colored seat. Beneath the plate, at desktop widths, the motto repeats in Isotipo Yellow after a 1px rule.
 
 ### Tool Index (signature)
 A ruled ordered list under the hero CTAs: each row is a link with the short tool name (Title Small), its category (Caption, muted) and an arrow icon; rows are separated by faint rules under a top Rule. Hover indents the row 10px and turns it and its arrow to the accent stroke.
@@ -309,7 +309,7 @@ A ruled ordered list under the hero CTAs: each row is a link with the short tool
 Four cells inside one ruled band (top and bottom Rule, faint dividers between cells), each with a 30px lime line icon, a Title and Body Small copy. No card chrome.
 
 ### Motion
-The isotipo turns once every 19s, linear and infinite; hovering or focusing its brand area or the hero plate speeds the same animation to 3x via playback rate, so it never jumps. The footer isotipo is still. Cards and benefit cells below the fold enter once with an 18px rise over 0.7–0.9s on `cubic-bezier(.16, 1, .3, 1)`, staggered 70ms in groups of four; content is visible without JavaScript. `prefers-reduced-motion` stops the rotation, the entrance and all transitions.
+The logo never rotates. Only the hero isotipo moves: it floats between +5px and -7px on the Y axis over 3.6s, eased in and out (`cubic-bezier(.45, 0, .55, 1)`), alternating forever. The navbar and footer logos are still. Cards and benefit cells below the fold enter once with an 18px rise over 0.7–0.9s on `cubic-bezier(.16, 1, .3, 1)`, staggered 70ms in groups of four; content is visible without JavaScript. `prefers-reduced-motion` stops the float, the entrance and all transitions.
 
 ## Do's and Don'ts
 
@@ -318,7 +318,7 @@ The isotipo turns once every 19s, linear and infinite; hovering or focusing its 
 - **Do** cut exactly one 45° bevel per plate with `clip-path` and draw its 1px diagonal rule.
 - **Do** keep lime to actions, active/pressed/focus states and small instrument markings; use `lima-ink` on lime fills and the theme's accent stroke for lime text.
 - **Do** set every heading in Barlow Condensed uppercase and everything else in Inter, both self-hosted.
-- **Do** use the original logo file (`web/assets/marca/logo-tecnobear-original.png`) untouched; only the isotipo image rotates.
+- **Do** use the original logo file (`web/assets/marca/logo-tecnobear-original.png`) untouched; only the hero isotipo moves, with a gentle float.
 - **Do** use 1.6px square-capped, miter-joined line icons from the inline sprite, 16–20px (30px in the benefit strip).
 - **Do** keep text AA on its plate in both themes and show the 2px lime focus outline on every control.
 
@@ -327,5 +327,13 @@ The isotipo turns once every 19s, linear and infinite; hovering or focusing its 
 - **Don't** lift cards with shadows or translate them on hover; answer hover with a brighter rule or lime stroke.
 - **Don't** add outer glows, neon halos or backdrop blur.
 - **Don't** fill large areas with lime, or use Isotipo Yellow for UI state.
-- **Don't** redraw, recolor, rotate the text of, or replace the logo with an emoji or icon.
-- **Don't** treat the older `web/style.css` look of the tool pages as a reference for new work.
+- **Don't** redraw, recolor, rotate or spin the logo, or replace it with an emoji or icon.
+- **Don't** treat the older green-on-cream rules at the top of `web/style.css` as a reference for new work; the industrial layer at its end is the authority.
+
+## Additions
+
+**Theme selector.** Every page header carries a two-option segmented control (`.tema-sel`, from `web/theme.js`): Oscuro (the brand default, also when nothing was chosen) and Claro. 1px Rule frame, 3px inset; the pressed option is a Bright Text fill with Floor text. Under 640px the labels collapse to icons (still named for assistive tech).
+
+**Plans (Gratis / Premium).** Two equal plates under the benefits strip, each with the 22px bevel. Gratis lists what the free plan includes and, in muted text with a cross, that pieces carry the watermark; its outline action creates a free account (or goes to the tools when accounts are off). Premium has the accent-stroke border and bevel rule, a faint 6% lime wash at the top, an Isotipo Yellow "Comunidad" tag, and the lime primary action "Quiero Premium", which goes to the real Instagram account. No prices are shown because none exist.
+
+**Tool pages.** Same header as the home (original logo, wordmark, tool name after a 1px rule, Inicio / Herramientas, theme selector, account). Configuration panels are Plates with a 16px bevel, legends are Barlow Condensed uppercase, controls are 2px-cornered on Sunken Plate, the primary action is the lime clipped button, pressed segments/chips/tabs are lime with Lime Ink, and the 3D stage sits on a dark radial floor.
