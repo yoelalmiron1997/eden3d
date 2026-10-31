@@ -68,10 +68,11 @@ function buildDialog() {
   dialog.setMode = setMode;
 }
 
-export function openLogin(why = "") {
+// mode: "in" (ingresar) o "up" (crear cuenta)
+export function openLogin(why = "", mode = "in") {
   if (!dialog) buildDialog();
   dialog.querySelector("#login-why").textContent = why;
-  dialog.setMode("in");
+  dialog.setMode(mode === "up" ? "up" : "in");
   dialog.showModal();
 }
 

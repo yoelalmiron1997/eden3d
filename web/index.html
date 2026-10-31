@@ -32,6 +32,7 @@
     <symbol id="i-comunidad" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.6-3.3 3-5.2 6-5.2s5.4 1.9 6 5.2"/><path d="M15.5 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.6c1.8.6 3 2.4 3.5 4.9"/></symbol>
     <symbol id="i-youtube" viewBox="0 0 24 24"><path d="M21.2 8.2a2.6 2.6 0 0 0-1.8-1.9C17.8 5.9 12 5.9 12 5.9s-5.8 0-7.4.4a2.6 2.6 0 0 0-1.8 1.9C2.4 9.8 2.4 12 2.4 12s0 2.2.4 3.8a2.6 2.6 0 0 0 1.8 1.9c1.6.4 7.4.4 7.4.4s5.8 0 7.4-.4a2.6 2.6 0 0 0 1.8-1.9c.4-1.6.4-3.8.4-3.8s0-2.2-.4-3.8z"/><path d="M10 9.2v5.6l4.8-2.8z"/></symbol>
     <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l4.5 4.5L19.5 6.5"/></symbol>
     <symbol id="i-externo" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></symbol>
   </svg>
 
@@ -48,12 +49,15 @@
         <a href="#herramientas">Herramientas</a>
         <a href="#categorias">Categorías</a>
         <a href="#beneficios">Beneficios</a>
+        <a href="#planes">Planes</a>
         <a href="#contacto">Contacto</a>
         <a href="calidad/" class="solo-admin" data-testid="link-calidad">Calidad</a>
         <a class="tb-yt" href="https://www.youtube.com/@TecnoBearARG" target="_blank" rel="noopener noreferrer">
           <svg class="tb-ico" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube<span class="tb-sr"> (abre en otra pestaña)</span></a>
       </nav>
-      <div class="tb-cuenta"><span id="account" class="account"></span></div>
+      <div class="tb-cuenta">
+        <span id="account" class="account"></span>
+      </div>
       <button type="button" class="tb-hamb" aria-expanded="false" aria-controls="tb-menu" data-testid="btn-menu">
         <svg class="tb-ico" aria-hidden="true"><use href="#i-menu"/></svg><span class="tb-sr">Abrir menú</span>
       </button>
@@ -123,6 +127,38 @@
         <li><svg class="tb-ico" aria-hidden="true"><use href="#i-comunidad"/></svg><h3>Para la comunidad</h3>
           <p>Herramientas creadas por TecnoBear para la gente del canal.</p></li>
       </ul>
+    </section>
+
+    <section class="tb-planes" id="planes" aria-labelledby="h-planes">
+      <div class="tb-sec-cab">
+        <h2 id="h-planes">Gratis o Premium</h2>
+        <p class="tb-planes-sub">Las herramientas son las mismas. Premium es para la gente de la comunidad que quiere más.</p>
+      </div>
+      <div class="tb-planes-grilla">
+        <article class="tb-plan" data-testid="plan-gratis" aria-labelledby="h-plan-gratis">
+          <h3 id="h-plan-gratis">Gratis</h3>
+          <p class="tb-plan-txt">Para diseñar, ver en 3D y bajar tus archivos.</p>
+          <ul class="tb-plan-lista">
+            <li><svg class="tb-ico" aria-hidden="true"><use href="#i-check"/></svg>Las cuatro herramientas, sin límite de uso</li>
+            <li><svg class="tb-ico" aria-hidden="true"><use href="#i-check"/></svg>Vista 3D, foto y vista capa por capa</li>
+            <li><svg class="tb-ico" aria-hidden="true"><use href="#i-check"/></svg>Descargas en 3MF y STL con tu cuenta gratis</li>
+            <li class="tb-plan-no"><svg class="tb-ico" aria-hidden="true"><use href="#i-cerrar"/></svg>Las piezas salen con la marca de agua</li>
+          </ul>
+          <a class="tb-btn" href="#herramientas" id="tb-plan-gratis-cta" data-testid="plan-gratis-cta">Empezar gratis<svg class="tb-ico" aria-hidden="true"><use href="#i-flecha"/></svg></a>
+        </article>
+        <article class="tb-plan tb-plan-premium" data-testid="plan-premium" aria-labelledby="h-plan-premium">
+          <h3 id="h-plan-premium">Premium <span class="tb-plan-tag">Comunidad</span></h3>
+          <p class="tb-plan-txt">Todo lo del plan gratis, y además:</p>
+          <ul class="tb-plan-lista">
+            <li><svg class="tb-ico" aria-hidden="true"><use href="#i-check"/></svg><span><strong>Actualizaciones más directas</strong>: las novedades y mejoras de las herramientas te llegan primero.</span></li>
+            <li><svg class="tb-ico" aria-hidden="true"><use href="#i-check"/></svg><span><strong>Sin marca de agua</strong>: sacás la marca de tus piezas o ponés la tuya.</span></li>
+            <li><svg class="tb-ico" aria-hidden="true"><use href="#i-check"/></svg><span>Tu cuenta pasa a <strong>Pro</strong> en todas las herramientas.</span></li>
+          </ul>
+          <a class="tb-btn tb-btn-lima" href="https://www.instagram.com/tecnobearr/" target="_blank" rel="noopener noreferrer" data-testid="plan-premium-cta">
+            Quiero Premium<svg class="tb-ico" aria-hidden="true"><use href="#i-flecha"/></svg><span class="tb-sr"> (abre Instagram en otra pestaña)</span></a>
+          <p class="tb-plan-nota">Escribinos por Instagram y te contamos cómo sumarte.</p>
+        </article>
+      </div>
     </section>
   </main>
 
@@ -216,7 +252,7 @@
     <div class="tb-pie-in">
       <div class="tb-pie-marca">
         <a class="tb-marca" href="./" aria-label="TecnoBear, inicio">
-          <span class="tb-iso-caja"><img class="tb-iso tb-iso-quieto" src="assets/marca/logo-tecnobear-original.png" alt="" width="48" height="48" loading="lazy"></span>
+          <span class="tb-iso-caja"><img class="tb-iso" src="assets/marca/logo-tecnobear-original.png" alt="" width="48" height="48" loading="lazy"></span>
           <span class="tb-marca-txt">TecnoBear</span>
         </a>
         <p class="tb-pie-lema">Despertá tu tecnología</p>
@@ -224,7 +260,7 @@
       </div>
       <nav class="tb-pie-col" aria-label="Secciones">
         <h2>Navegación</h2>
-        <a href="#inicio">Inicio</a><a href="#herramientas">Herramientas</a><a href="#categorias">Categorías</a><a href="#beneficios">Beneficios</a>
+        <a href="#inicio">Inicio</a><a href="#herramientas">Herramientas</a><a href="#categorias">Categorías</a><a href="#beneficios">Beneficios</a><a href="#planes">Planes</a>
       </nav>
       <nav class="tb-pie-col" aria-label="Herramientas">
         <h2>Herramientas</h2>

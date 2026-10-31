@@ -152,13 +152,16 @@ function fiesta(on) {
 // ------------------------------------------------------------------ opciones
 const SL = { ancho: [0, " mm"], contorno: [1, " mm"], grosor: [1, " mm"], letras: [1, " mm"], largo: [0, " mm"] };
 
+// ?calidad=normal: el visor muestra la malla de exportación (más fina; para fotos)
+const CALIDAD = new URLSearchParams(location.search).get("calidad") === "normal" ? "normal" : "preview";
+
 function opts() {
   const lineas = [];
   for (const n of [1, 2, 3]) {
     const t = $("linea-" + n).value.trim();
     if (t) lineas.push({ texto: t, fuente: $("fuente-" + n).value, escala: +$("escala-" + n).value });
   }
-  const o = { lineas, estilo: $("estilo").value, marco: $("marco").value, palitos: +$("palitos").value };
+  const o = { lineas, estilo: $("estilo").value, marco: $("marco").value, palitos: +$("palitos").value, calidad: CALIDAD };
   for (const k of Object.keys(SL)) o[k] = +$(k).value;
   o.numero = { activo: numeroOn(), numero: $("numero").value.trim(), estilo: $("estilo-num").value,
     fuente: $("fuente-num").value, alto: +$("alto-num").value, palitos: +$("palitos-num").value };

@@ -621,19 +621,26 @@ def test_modo_claro_y_oscuro(browser, base_url):
     page = open_app(browser, base_url, path="")
     page.locator(T % "popup-macetas").wait_for(state="visible", timeout=10_000)
     page.keyboard.press("Escape")
-    btn = page.locator(T % "btn-tema")
-    assert btn.get_attribute("data-tema") == "auto"
+    sel = page.locator(T % "btn-tema")
+    assert sel.is_visible() and sel.get_attribute("data-tema") == "dark"          # oscuro por defecto
+    assert page.locator(T % "tema-oscuro").get_attribute("aria-pressed") == "true"
     fondo = lambda: page.evaluate("getComputedStyle(document.body).backgroundColor")
-    btn.click()
+    oscuro = fondo()
+    page.locator(T % "tema-claro").click()
     assert page.evaluate("document.documentElement.dataset.theme") == "light"
-    claro = fondo()
-    btn.click()
-    assert page.evaluate("document.documentElement.dataset.theme") == "dark"
-    assert fondo() != claro
+    assert page.locator(T % "tema-claro").get_attribute("aria-pressed") == "true"
+    assert fondo() != oscuro
     page.reload()
-    assert page.evaluate("document.documentElement.dataset.theme") == "dark", "se recuerda"
-    page.locator(T % "btn-tema").click()
-    assert page.evaluate("document.documentElement.dataset.theme") is None, "vuelve a automático"
+    assert page.evaluate("document.documentElement.dataset.theme") == "light", "se recuerda"
+    page.locator(T % "tema-oscuro").click()
+    assert page.evaluate("document.documentElement.dataset.theme") == "dark"
+    assert fondo() == oscuro
+    # en una herramienta, el mismo selector y los mismos colores
+    page.goto(base_url + "sopa.html")
+    assert page.locator(T % "tema-oscuro").get_attribute("aria-pressed") == "true"
+    assert page.evaluate("getComputedStyle(document.body).backgroundColor") == "rgb(9, 14, 15)"
+    page.locator(T % "tema-claro").click()
+    assert page.evaluate("getComputedStyle(document.body).backgroundColor") != "rgb(9, 14, 15)"
     page.context.close()
 
 
@@ -651,6 +658,11 @@ def test_calidad_solo_admin(browser, base_url):
     page = open_app(browser, base_url, path="")                 # sin cuentas configuradas
     assert not page.locator(T % "link-calidad").is_visible()
     page.context.close()
+
+
+def open_css():
+    import os
+    return open(os.path.join(os.path.dirname(__file__), "..", "..", "web", "home.css"), encoding="utf-8").read()
 
 
 @pytest.mark.spec("WEB-014")
@@ -671,12 +683,23 @@ def test_inicio_catalogo_buscador_y_filtros(browser, base_url):
     assert visibles() == 0 and page.locator(T % "sin-resultados").is_visible()
     page.locator("#tb-limpiar").click()
     assert visibles() == 4 and not page.locator(T % "sin-resultados").is_visible()
-    # logo original: sólo el isotipo gira
+    # logo original: no gira; el del navbar quieto y el del hero flota
+    anim = lambda t: page.evaluate("(e) => getComputedStyle(e).animationName", page.locator(T % t).element_handle())
     for t in ("logo-nav", "logo-hero"):
-        img = page.locator(T % t)
-        assert img.get_attribute("src") == "assets/marca/logo-tecnobear-original.png"
-        assert page.evaluate("(e) => getComputedStyle(e).animationName", img.element_handle()) == "tb-giro"
-    assert page.evaluate("getComputedStyle(document.querySelector('.tb-marca-txt')).animationName") == "none"
+        assert page.locator(T % t).get_attribute("src") == "assets/marca/logo-tecnobear-original.png"
+    assert anim("logo-nav") == "none" and anim("logo-hero") == "tb-flota"
+    assert "rotate(360" not in open_css()
+    # planes: Premium por Instagram, "Crear cuenta gratis" abre el registro
+    assert page.locator(T % "plan-premium").is_visible()
+    premium = page.locator(T % "plan-premium").inner_text().lower()
+    assert "actualizaciones más directas" in premium and "sin marca de agua" in premium
+    assert page.locator(T % "plan-premium-cta").get_attribute("href") == "https://www.instagram.com/tecnobearr/"
+    cta = page.locator(T % "plan-gratis-cta")
+    assert "crear cuenta gratis" in cta.inner_text().lower()
+    cta.click()
+    assert page.locator(T % "login").is_visible()
+    assert page.locator("#login-title").inner_text().lower() == "crear cuenta"
+    page.keyboard.press("Escape")
     # redes reales
     assert page.locator(T % "red-youtube").get_attribute("href") == "https://www.youtube.com/@TecnoBearARG"
     assert page.locator(T % "red-instagram").get_attribute("href") == "https://www.instagram.com/tecnobearr/"
@@ -697,7 +720,7 @@ def test_inicio_celular_y_tablet(browser, base_url):
         page.goto(base_url)
         page.wait_for_function("document.querySelectorAll('.tb-card').length === 4")
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), w
-        assert page.evaluate("getComputedStyle(document.querySelector('.tb-iso')).animationName") == "none"
+        assert page.evaluate("getComputedStyle(document.querySelector('.tb-iso-hero')).animationName") == "none"
         menu = page.locator("#tb-menu")
         assert not menu.is_visible()
         page.locator(T % "btn-menu").click()
@@ -705,4 +728,19 @@ def test_inicio_celular_y_tablet(browser, base_url):
         page.keyboard.press("Escape")
         assert not menu.is_visible()
         assert page.locator(T % "btn-ingresar").is_visible() and page.locator(T % "btn-tema").is_visible()
+        ctx.close()
+
+
+@pytest.mark.spec("WEB-014")
+def test_herramientas_con_el_encabezado_nuevo(browser, base_url):
+    for path in ("macetas.html", "mate.html", "sopa.html", "topper.html"):
+        ctx = browser.new_context(viewport={"width": 390, "height": 844})
+        ctx.add_init_script("window.__EDEN_AUTH_MOCK = {role: 'visitante'};")
+        page = ctx.new_page()
+        page.goto(base_url + path)
+        logo = page.locator(T % "link-home" + " img")
+        assert logo.get_attribute("src") == "assets/marca/logo-tecnobear-original.png", path
+        assert page.locator(T % "btn-tema").is_visible() and page.locator(T % "btn-ingresar").is_visible()
+        page.wait_for_timeout(300)
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), path
         ctx.close()

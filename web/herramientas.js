@@ -38,7 +38,7 @@ export const HERRAMIENTAS = [
     descripcion: "Escribí el texto y el nombre, elegí la tipografía y bajá el topper listo para imprimir, todo unido.",
     imagen: "assets/herramientas/topper_v_450.jpg", imagen2x: "assets/herramientas/topper_v.jpg",
     alt: "Topper impreso en 3D que dice Feliz Cumpleaños Sofi y el número 5 con estrellas, en lila y blanco, clavados en una torta de crema",
-    testImagen: "tool-imagen-topper", foco: "50% 58%",
+    testImagen: "tool-imagen-topper", foco: "50% 48%",
   },
 ];
 

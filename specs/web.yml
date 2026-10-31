@@ -121,11 +121,13 @@ specs:
   - id: WEB-013
     titulo: Modo claro y oscuro
     descripcion: >
-      Un botón en el encabezado de todas las páginas alterna entre automático (el del
-      sistema), claro y oscuro, y se recuerda para la próxima visita.
+      Un selector a la vista en el encabezado de todas las páginas (inicio y herramientas)
+      con dos opciones, Oscuro (el de la marca, por defecto) y Claro; se recuerda para la
+      próxima visita.
     criterio: >
-      Cada toque pasa automático → claro → oscuro → automático; claro y oscuro cambian
-      los colores de la página; al recargar se mantiene el elegido.
+      Sin elegir nada la página está en oscuro con "Oscuro" marcado; "Claro" y "Oscuro"
+      cambian los colores de la página (inicio y herramientas) y marcan su botón; al
+      recargar se mantiene el elegido.
     prioridad: media
     nivel: web
     estado: activa
@@ -133,16 +135,20 @@ specs:
     titulo: Inicio industrial con catálogo, buscador y filtros
     descripcion: >
       Inicio rediseñado (estilo industrial, oscuro, acentos lima): navbar fijo con el logo
-      original cuyo isotipo gira (el texto TecnoBear no), hero con las cuatro herramientas,
-      catálogo con buscador y filtros por categoría, beneficios y footer con YouTube e
-      Instagram; responsive sin scroll horizontal.
+      original quieto, hero con el logo flotando suave (no gira) y las cuatro herramientas,
+      catálogo con buscador y filtros por categoría, beneficios, planes Gratis y Premium
+      y footer con YouTube e Instagram; las páginas de las herramientas usan el mismo
+      encabezado y estilo; responsive sin scroll horizontal.
     criterio: >
       Las cuatro tarjetas llevan a sus rutas reales (macetas, mate, sopa, topper); el
       buscador (sin tildes) y los filtros funcionan juntos y el contador y el mensaje de
-      "sin resultados" se actualizan; el logo es assets/marca/logo-tecnobear-original.png
-      y sólo el isotipo tiene la animación de giro (ninguna con movimiento reducido); en
-      390 px el menú hamburguesa abre y cierra y no hay scroll horizontal en 390, 768 y
-      1440 px; el login y el tema siguen andando; sin errores en la consola.
+      "sin resultados" se actualizan; el logo es assets/marca/logo-tecnobear-original.png,
+      ninguno gira, el del navbar está quieto y el del hero flota (nada con movimiento
+      reducido); el plan Premium (actualizaciones más directas, sin marca de agua) lleva a
+      Instagram y "Crear cuenta gratis" abre el registro; en 390 px el menú hamburguesa
+      abre y cierra y no hay scroll horizontal en 390, 768 y 1440 px (tampoco en las
+      herramientas, que muestran el logo original); el login y el tema siguen andando; sin
+      errores en la consola.
     prioridad: alta
     nivel: web
     estado: activa
