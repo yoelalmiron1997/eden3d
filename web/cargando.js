@@ -83,8 +83,9 @@ export function pantallaCarga({ motor, worker, estado, contenedor }) {
     cerrada = true;
     el.dataset.paso = "4";
     el.querySelector(".carga-barra span").style.width = "100%";
-    el.classList.add("carga-lista");
-    setTimeout(() => el.remove(), 650);
+    el.classList.add("carga-lista");          // se desvanece y después se saca del visor
+    el.addEventListener("transitionend", () => el.remove(), { once: true });
+    setTimeout(() => el.remove(), 700);
   };
   const fallar = (msg) => {
     cerrada = true;

@@ -765,7 +765,8 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         # sólo la impresora y la barra: el texto queda para lectores de pantalla (1 px)
         assert page.evaluate("document.querySelector('.carga-titulo').getBoundingClientRect().width") <= 1
         page.wait_for_function("window.%s && window.%s.builds >= 1" % (st, st), timeout=READY_MS)
-        carga.wait_for(state="detached", timeout=5_000)                 # se va sola
+        # se va sola: se desvanece (carga-lista) y se saca del visor
+        page.wait_for_function("!document.querySelector('[data-testid=carga]:not(.carga-lista)')", timeout=10_000)
         assert not errores, (path, errores)
         ctx.close()
 
