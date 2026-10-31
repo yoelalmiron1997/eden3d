@@ -2,6 +2,8 @@
 // "Topper para tortas": tu texto con la tipografía que quieras, todo unido en una pieza,
 // y el número de años aparte; los dos clavados en la torta que elijas.
 import * as THREE from "three";
+import { botonesPremium } from "./premium.js";
+import { pdfConsideraciones } from "./guia-impresion.js";
 import { pantallaCarga } from "./cargando.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -182,7 +184,7 @@ function setBusy(on, text = "Calculando…") {
   $("busy-text").textContent = text;
   const ok = !on && state.ready && !!state.summary?.valid;
   $("build").disabled = on || !state.ready;
-  for (const id of ["dl3mf", "dlstl", "photo", "dlletras"]) $(id).disabled = !ok;
+  for (const id of ["dl3mf", "dlstl", "photo", "pdf", "dlletras"]) $(id).disabled = !ok;
   const okN = ok && numeroOn() && !!state.summaryNum?.valid;
   for (const id of ["dlnum", "dlnumletras"]) $(id).disabled = !okN;
 }
@@ -296,6 +298,26 @@ async function download(kind, pieza) {
   } catch (e) {
     state.errors.push(String(e));
     setStatus("Error: " + e.message, "err");
+  } finally {
+    setBusy(false);
+  }
+}
+
+// PDF con las consideraciones de impresión (Premium)
+async function consideracionesPdf() {
+  if (!state.ready || state.busy || !state.summary?.valid) return;
+  setBusy(true, "Armando el PDF…");
+  try {
+    const foto = viewer.photo(1200, 744, "image/jpeg").url;
+    const doc = await pdfConsideraciones("topper", state.summary, { foto, numero: numeroOn() && state.summaryNum?.valid ? state.summaryNum : null });
+    const buf = doc.output("arraybuffer");
+    const name = `${state.summary.sku}_consideraciones.pdf`;
+    save(name, buf, "application/pdf");
+    state.lastPdf = { name, bytes: buf.byteLength, pages: doc.getNumberOfPages() };
+    setStatus("PDF descargado", "ok");
+  } catch (e) {
+    state.errors.push(String(e));
+    setStatus("Error en el PDF: " + e.message, "err");
   } finally {
     setBusy(false);
   }
@@ -415,7 +437,10 @@ $("dlstl").addEventListener("click", () => download("stl", "TOPPER"));
 $("dlletras").addEventListener("click", () => download("stl", "LETRAS"));
 $("dlnum").addEventListener("click", () => download("stl", "NUMERO"));
 $("dlnumletras").addEventListener("click", () => download("stl", "NUMERO_LETRAS"));
-$("photo").addEventListener("click", () => takePhoto());
+botonesPremium(state, [                                   // render y PDF: plan Premium
+  { el: $("photo"), que: "El render (foto)", accion: () => takePhoto() },
+  { el: $("pdf"), que: "El PDF con las consideraciones de impresión", accion: () => consideracionesPdf() },
+]);
 $("torta").addEventListener("change", () => { state.torta = $("torta").checked; if (state.summary?.valid) posar(); });
 $("fiesta").addEventListener("click", () => fiesta(!tortaV.fiesta));
 $("color").addEventListener("change", () => viewer.mats.TOPPER.color.set($("color").value));

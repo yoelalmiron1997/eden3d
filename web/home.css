@@ -299,6 +299,8 @@ html[data-theme="light"] .tb-plan-tag { color: var(--tb-acento); }
 .tb-plan-premium { border-color: var(--tb-acento); background:
   linear-gradient(180deg, color-mix(in srgb, var(--tb-lima) 6%, transparent), transparent 55%), var(--tb-surf); }
 .tb-plan-premium::after { background: var(--tb-acento); }
+.tb-plan-pronto { display: inline-block; margin-left: 6px; padding: 3px 6px; border: 1px solid var(--tb-line); font: 600 10.5px/1 "Inter", sans-serif;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tb-muted); vertical-align: 1px; }
 .tb-plan-nota { margin: 0; font-size: 13.5px; color: var(--tb-muted); }
 
 /* ------------------------------------------------------------------ footer */

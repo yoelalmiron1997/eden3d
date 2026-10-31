@@ -38,8 +38,10 @@ Playwright y specs SDD en `specs/`.
   (cuando las cuentas están configuradas). Las piezas del plan gratis salen con la marca
   de agua ("Eden3D" grabada).
 - Plan Premium para la comunidad (rol Pro): actualizaciones más directas, sin marca de
-  agua (la cuenta Pro saca o cambia la marca) y render y colecciones preseteadas para
-  mandar a clientes (el plan gratis no las tiene). Se pide por Instagram; no hay precio ni
+  agua (la cuenta Pro saca o cambia la marca), render (Foto) y PDF con consideraciones
+  de impresión en cada motor para mandar a clientes (bloqueados en el plan gratis,
+  permiso `premium`). Colecciones preseteadas: anunciadas como "próximamente", todavía
+  no construidas. Se pide por Instagram; no hay precio ni
   pago online definidos: no inventarlos.
 - HTML/CSS/JS sin framework, módulos ES; sin dependencias nuevas en el inicio.
 - Los `data-testid` existentes son contrato con los tests.

@@ -693,8 +693,8 @@ def test_inicio_catalogo_buscador_y_filtros(browser, base_url):
     assert page.locator(T % "plan-premium").is_visible()
     premium = page.locator(T % "plan-premium").inner_text().lower()
     assert "actualizaciones más directas" in premium and "sin marca de agua" in premium
-    assert "render y colecciones preseteadas" in premium
-    assert "sin render ni colecciones preseteadas" in page.locator(T % "plan-gratis").inner_text().lower()
+    assert "render y pdf con consideraciones" in premium and "colecciones preseteadas" in premium
+    assert "sin render ni pdf" in page.locator(T % "plan-gratis").inner_text().lower()
     assert page.locator(T % "plan-premium-cta").get_attribute("href") == "https://www.instagram.com/tecnobearr/"
     cta = page.locator(T % "plan-gratis-cta")
     assert "crear cuenta gratis" in cta.inner_text().lower()
@@ -768,3 +768,41 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         carga.wait_for(state="detached", timeout=5_000)                 # se va sola
         assert not errores, (path, errores)
         ctx.close()
+
+
+@pytest.mark.spec("WEB-016")
+def test_render_y_pdf_solo_premium(browser, base_url):
+    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
+    for path, st in estados.items():
+        # cuenta gratis: candado "Pro" y aviso, sin descargas
+        page = open_app(browser, base_url, role="usuario", path=path)
+        page.wait_for_function("window.%s && window.%s.builds >= 1 && !window.%s.busy" % (st, st, st), timeout=READY_MS)
+        bajadas = []
+        page.on("download", lambda d: bajadas.append(d))
+        for btn in ("btn-foto", "btn-pdf"):
+            b = page.locator(T % btn)
+            assert b.locator(".badge-pro").is_visible(), (path, btn)
+            b.click()
+            dlg = page.locator(T % "premium")
+            assert dlg.is_visible(), (path, btn)
+            assert page.locator(T % "premium-quiero").get_attribute("href") == "https://www.instagram.com/tecnobearr/"
+            dlg.locator("[data-close]").click()
+        page.wait_for_timeout(500)
+        assert not bajadas, path
+        page.context.close()
+        # cuenta Pro: foto y PDF
+        page = open_app(browser, base_url, role="pro", path=path)
+        page.wait_for_function("window.%s && window.%s.builds >= 1 && !window.%s.busy" % (st, st, st), timeout=READY_MS)
+        assert not page.locator(T % "btn-foto" + " .badge-pro").is_visible()
+        with page.expect_download(timeout=READY_MS) as dl:
+            page.locator(T % "btn-foto").click()
+        assert dl.value.suggested_filename.endswith(".png")
+        if path != "macetas.html":                     # la guía de las macetas tiene su test (WEB-009)
+            with page.expect_download(timeout=READY_MS) as dl:
+                page.locator(T % "btn-pdf").click()
+            sku = page.evaluate("window.%s.summary.sku" % st)
+            assert dl.value.suggested_filename == sku + "_consideraciones.pdf"
+            data = open(dl.value.path(), "rb").read()
+            assert data[:5] == b"%PDF-" and b"/Subtype /Image" in data
+        assert not page.console_errors, (path, page.console_errors)
+        page.context.close()

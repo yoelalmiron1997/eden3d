@@ -145,7 +145,7 @@ specs:
       "sin resultados" se actualizan; el logo es assets/marca/logo-tecnobear.svg (el original calcado a vector),
       ninguno gira, el del navbar está quieto y el del hero flota (nada con movimiento
       reducido); el plan Premium (actualizaciones más directas, sin marca de agua, render y
-      colecciones preseteadas para clientes, que el gratis no tiene) lleva a
+      PDF con consideraciones, que el gratis no tiene; colecciones, próximamente) lleva a
       Instagram y "Crear cuenta gratis" abre el registro; en 390 px el menú hamburguesa
       abre y cierra y no hay scroll horizontal en 390, 768 y 1440 px (tampoco en las
       herramientas, que muestran el logo original); el login y el tema siguen andando; sin
@@ -166,5 +166,22 @@ specs:
       worker avisa que Python está listo); desaparece sola después de la primera vista
       previa; no bloquea clics.
     prioridad: media
+    nivel: web
+    estado: activa
+  - id: WEB-016
+    titulo: Render y PDF con consideraciones, sólo Premium
+    descripcion: >
+      Cada motor (macetas, mate, sopa, topper) hace un render (Foto) y un PDF con las
+      consideraciones de impresión (la guía de las macetas; en mate, sopa y topper, la
+      pieza, sus datos y cómo imprimirla). Son del plan Premium (cuenta Pro o admin):
+      con una cuenta gratis el botón muestra "Pro" y explica el plan; sin cuentas
+      configuradas todo es libre.
+    criterio: >
+      Con una cuenta "usuario", Foto y Guía PDF muestran "Pro" y al tocarlos se abre el
+      aviso Premium (con el link a Instagram) sin descargar nada; con una cuenta "pro"
+      no hay candado, la foto baja en 1080×1350 y el PDF baja como
+      <sku>_consideraciones.pdf (mate, sopa, topper) con el render y las
+      consideraciones de impresión.
+    prioridad: alta
     nivel: web
     estado: activa
