@@ -86,3 +86,35 @@ def test_tarjeta_topper_en_el_inicio(browser, base_url):
     assert pg.locator(T % "popup-topper").is_visible()
     assert pg.locator(T % "abrir-topper").get_attribute("href") == "topper.html"
     ctx.close()
+
+
+@pytest.mark.spec("TOP-007")
+def test_torta_y_modo_cumpleanos(browser, base_url):
+    pg = abrir(browser, base_url)
+    pg.wait_for_function("!window.__topper.viewer.entrando", timeout=READY_MS)
+    m0 = pg.evaluate("window.__topperMedir()")
+    assert m0["tortaPiso"] == pytest.approx(0, abs=0.5)
+    largo = pg.evaluate("+document.getElementById('largo').value")
+    assert m0["topperAbajo"] == pytest.approx(m0["tortaArriba"] - 0.6 * largo, abs=1.0)   # clavado 60 %
+    # con el nombre: la torta no se mueve y el topper crece para arriba
+    b = pg.evaluate("window.__topper.builds")
+    pg.locator(T % "linea-3").fill("Sofi")
+    esperar(pg, b)
+    assert pg.evaluate("window.__topper.viewer.entrando")                   # el topper entra desde arriba
+    assert pg.evaluate("window.__topper.viewer.topperZ") > pg.evaluate("window.__topper.viewer.zFinal")
+    pg.wait_for_function("!window.__topper.viewer.entrando", timeout=READY_MS)
+    m1 = pg.evaluate("window.__topperMedir()")
+    assert m1["tortaPiso"] == pytest.approx(m0["tortaPiso"], abs=0.5)
+    assert m1["tortaArriba"] == pytest.approx(m0["tortaArriba"], abs=0.5)
+    assert m1["topperArriba"] > m0["topperArriba"] + 10
+    # modo cumpleaños
+    pg.locator(T % "btn-fiesta").click()
+    v = pg.evaluate("window.__topper.viewer")
+    assert v["fiesta"] and v["llamas"] == 4 and v["rafagas"] == 2 and v["confeti"] >= 400
+    pg.wait_for_function("window.__topper.viewer.apoyados > 100", timeout=READY_MS)
+    assert pg.evaluate("window.__topperViewer.controls.autoRotate")
+    pg.locator(T % "btn-fiesta").click()
+    v = pg.evaluate("window.__topper.viewer")
+    assert not v["fiesta"] and v["confeti"] == 0 and v["llamas"] == 0
+    assert not pg.console_errors, pg.console_errors
+    pg.context.close()

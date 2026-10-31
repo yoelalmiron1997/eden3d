@@ -154,3 +154,34 @@ def test_descargas():
     assert "uso personal" in m and "Eden3D" in m
     with pytest.raises(ValueError):
         tw.export_stl({}, "LETRAS")                 # un color: no hay letras aparte
+
+
+# ----------------------------------------------------------------- TOP-006
+APOYO_CASOS = [
+    [{"texto": "Feliz", "fuente": "great_vibes"}, {"texto": "Cumpleaños", "fuente": "great_vibes"}],
+    [{"texto": "Feliz", "fuente": "great_vibes"}, {"texto": "Cumpleaños", "fuente": "great_vibes"},
+     {"texto": "Sofi", "fuente": "dancing_script", "escala": 1.1}],
+    [{"texto": "Happy", "fuente": "lobster"}, {"texto": "Birthday", "fuente": "lobster"}, {"texto": "Martina", "fuente": "pacifico"}],
+    [{"texto": "Feliz", "fuente": "allura"}, {"texto": "cumple", "fuente": "allura"}, {"texto": "Juan", "fuente": "lilita_one", "escala": 0.8}],
+    [{"texto": "FELIZ", "fuente": "bungee"}, {"texto": "DIA", "fuente": "bungee"}],
+]
+
+
+@pytest.mark.spec("TOP-006")
+@pytest.mark.parametrize("lineas", APOYO_CASOS)
+def test_cada_linea_con_dos_apoyos(lineas):
+    r = tc.construir({"lineas": lineas})
+    ap = r["reporte"]["apoyos"]
+    assert len(ap) == len(lineas) - 1
+    for a in ap:
+        assert a["apoyos"] >= 2 or a["contacto_max_mm"] >= 0.4 * a["ancho_comun_mm"], a
+    g, S = r["grilla"], r["region"]
+    assert tc.componentes(S, g.nx, g.ny)[1] == 1
+
+
+@pytest.mark.spec("TOP-006")
+def test_palabras_sueltas_con_dos_puentes():
+    r = tc.construir({"contorno": 0.0, "lineas": [{"texto": "Te quiero", "fuente": "bungee"}]})
+    assert r["reporte"]["puentes"] >= 2
+    g, S = r["grilla"], r["region"]
+    assert tc.componentes(S, g.nx, g.ny)[1] == 1

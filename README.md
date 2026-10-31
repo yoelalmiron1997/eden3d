@@ -141,8 +141,15 @@ Cuarta herramienta: **toppers para tortas en una sola pieza** (`web/topper.html`
   **puentes** cortos; un test verifica que la pieza es una sola región.
 * **Un color** o **dos colores** (base con contorno + letras en relieve arriba; el 3MF trae
   las dos como partes de un objeto para asignar un filamento a cada una).
-* 1 o 2 **palitos** con punta, del largo elegido, clavados en material macizo.
-* Vista **en la torta** (parado y clavado) o plano, como se imprime; descarga en 3MF o STL.
+* **Más de un punto de apoyo**: las líneas se enciman y cada una se apoya en la de abajo
+  en al menos dos lugares (si no se tocan, un pilar corto en la columna de menos luz); las
+  piezas sueltas grandes se unen con dos puentes.
+* 1 o 2 **palitos** con punta, del largo elegido, que salen de abajo de la última línea y
+  se clavan en material macizo.
+* Vista **en la torta** (`web/torta.js`: bizcochuelo, cobertura, chorreado, granas y
+  velitas, apoyada en la mesa; el topper entra desde arriba y se clava) o plano, como se
+  imprime. **🎉 Cumpleaños**: velitas prendidas, ráfagas y lluvia de confeti que se apoya
+  en la torta y la mesa, y la cámara girando. Descarga en 3MF o STL.
 
 ## Cómo funciona
 

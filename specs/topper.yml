@@ -62,3 +62,32 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: TOP-006
+    titulo: Más de un punto de apoyo entre líneas y letras
+    descripcion: >
+      Cada línea se apoya en la de abajo en al menos dos lugares separados (las líneas se
+      enciman y, donde no se tocan, se agrega un pilar corto en la columna de menos luz);
+      cada pieza suelta de más de 6 mm se une con dos puentes, no con uno.
+    criterio: >
+      Con 2 y 3 líneas (cursivas y gruesas), entre cada línea y la de abajo hay 2 o más
+      apoyos, o un solo contacto que ocupa al menos el 40 % del ancho común; las palabras
+      separadas (contorno 0) llevan 2 puentes cada una; la pieza sigue siendo una sola.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TOP-007
+    titulo: La torta con el topper y el modo cumpleaños
+    descripcion: >
+      La torta (bizcochuelo, cobertura, chorreado, granas y velitas) apoya en la mesa y el
+      topper entra desde arriba y se clava; agregar un nombre no mueve la torta. "Modo
+      cumpleaños" prende las velitas, tira dos ráfagas de confeti y sigue lloviendo confeti
+      que se apoya en la torta y la mesa, con la cámara girando.
+    criterio: >
+      La base de la torta queda en la mesa (y = 0) y su cobertura a la misma altura con y
+      sin nombre; con el nombre el topper es más alto; el topper baja (entrada animada) y
+      termina con los palitos clavados un 60 %; "🎉 Cumpleaños" prende 4 velas, tira 2
+      ráfagas y el confeti cae y se apoya; al terminar se borra el confeti y se apagan las
+      velas; sin errores en la consola.
+    prioridad: media
+    nivel: web
+    estado: activa

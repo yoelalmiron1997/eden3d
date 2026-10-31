@@ -45,6 +45,7 @@ LIMITES = {"ancho": (60.0, 220.0), "contorno": (0.0, 6.0), "grosor": (2.0, 5.0),
            "lineas": 3, "caracteres": 24}
 ANCHO_PALITO = 5.0
 PUENTE = 2.4            # mm de ancho de los puentes que unen lo que quedó suelto
+SOLAPE = 0.30           # cuánto se encima cada línea con la de arriba (de su alto)
 MARCO_ANCHO = 3.2
 
 
@@ -74,7 +75,7 @@ def _linea(texto, fid):
     return {"texto": t, "fuente": fid, "polys": polys, "bbox": (x0, y0, x1, y1)}
 
 
-def maquetar(lineas, ancho):
+def maquetar(lineas, ancho, por_linea=False):
     """Apila las líneas centradas (algo encimadas, como los toppers), con la más ancha
     del `ancho` pedido. Devuelve (polígonos en mm, info por línea, caja)."""
     ls = []
@@ -88,7 +89,7 @@ def maquetar(lineas, ancho):
     # 1 unidad de fuente = k mm: la línea más ancha (con su escala) mide `ancho`
     k = ancho / max((r["bbox"][2] - r["bbox"][0]) * r["escala"] for r in ls)
     y = 0.0
-    out, info = [], []
+    out, info, grupos = [], [], []
     abajo_prev, alto_prev = None, None
     for n, r in enumerate(ls):
         x0, y0, x1, y1 = r["bbox"]
@@ -96,10 +97,11 @@ def maquetar(lineas, ancho):
         cx = (x0 + x1) / 2.0
         alto = (y1 - y0) * s
         if n:                                  # encimada con la de arriba (como los toppers)
-            y = abajo_prev + 0.18 * min(alto, alto_prev)
+            y = abajo_prev + SOLAPE * min(alto, alto_prev)
         dy = y - y1 * s
-        for P in r["polys"]:
-            out.append([((px - cx) * s, py * s + dy) for px, py in P])
+        propios = [[((px - cx) * s, py * s + dy) for px, py in P] for P in r["polys"]]
+        out.extend(propios)
+        grupos.append(propios)
         info.append({"texto": r["texto"], "fuente": r["fuente"], "alto_mm": round(alto, 1),
                      "ancho_mm": round((x1 - x0) * s, 1)})
         abajo_prev, alto_prev = y0 * s + dy, alto
@@ -108,6 +110,9 @@ def maquetar(lineas, ancho):
     out = [[(x, yy - ymid) for x, yy in P] for P in out]
     pts = [p for P in out for p in P]
     caja = (min(p[0] for p in pts), min(p[1] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts))
+    if por_linea:
+        grupos = [[[(x, yy - ymid) for x, yy in P] for P in G] for G in grupos]
+        return out, info, caja, grupos
     return out, info, caja
 
 
@@ -302,6 +307,74 @@ def capsula(M, g, a, b, ancho):
                 fila[i] = 1
 
 
+APOYOS_MIN = 2           # puntos de apoyo entre una línea y la de abajo
+APOYO_ANCHO = 3.0        # mm de cada pilar entre líneas
+
+
+def _contactos(arriba, abajo, g, i0, i1):
+    """Columnas (i0..i1) donde la línea de arriba toca a la de abajo, agrupadas en tramos;
+    y por columna la luz (mm) entre las dos (0 si se tocan, None si alguna no tiene nada)."""
+    luz = []
+    for i in range(i0, i1 + 1):
+        ja = next((j for j in range(g.ny) if arriba[j][i]), None)        # lo más bajo de arriba
+        jb = next((j for j in range(g.ny - 1, -1, -1) if abajo[j][i]), None)  # lo más alto de abajo
+        if ja is None or jb is None:
+            luz.append(None)
+        else:
+            luz.append(max(0.0, (ja - jb - 1) * g.res))
+    tramos, t0 = [], None
+    for k, d in enumerate(luz + [None]):
+        if d == 0.0 and t0 is None:
+            t0 = k
+        elif d != 0.0 and t0 is not None:
+            tramos.append((i0 + t0, i0 + k - 1))
+            t0 = None
+    return tramos, luz
+
+
+def reforzar_lineas(M, g, lineas):
+    """Entre cada línea y la de abajo deja al menos APOYOS_MIN apoyos separados (tramos
+    de contacto de 1 mm o más, o pilares nuevos en las columnas de menos luz)."""
+    out = []
+    minimo = max(1, int(round(1.0 / g.res)))
+    for n in range(len(lineas) - 1):
+        A, B = lineas[n], lineas[n + 1]
+        colA = [i for i in range(g.nx) if any(A[j][i] for j in range(g.ny))]
+        colB = [i for i in range(g.nx) if any(B[j][i] for j in range(g.ny))]
+        if not colA or not colB:
+            continue
+        i0, i1 = max(colA[0], colB[0]), min(colA[-1], colB[-1])
+        if i1 - i0 < 4:
+            continue
+        tramos, luz = _contactos(A, B, g, i0, i1)
+        buenos = [t for t in tramos if t[1] - t[0] + 1 >= minimo]
+        agregados = 0
+        # se quiere un apoyo en cada tercio del ancho común; donde no hay, un pilar
+        ancho = i1 - i0
+        for frac in ((0.25, 0.75) if len(buenos) < APOYOS_MIN else ()):
+            c = i0 + int(frac * ancho)
+            if any(t[0] - 0.12 * ancho <= c <= t[1] + 0.12 * ancho for t in buenos):
+                continue
+            ventana = range(max(i0, c - int(0.15 * ancho)), min(i1, c + int(0.15 * ancho)) + 1)
+            cand = [(luz[i - i0], abs(i - c), i) for i in ventana if luz[i - i0] is not None]
+            if not cand:
+                continue
+            d, _, i = min(cand)
+            if d > 0.0:
+                ja = next(j for j in range(g.ny) if A[j][i])
+                jb = next(j for j in range(g.ny - 1, -1, -1) if B[j][i])
+                x = g.x0 + (i + 0.5) * g.res
+                capsula(M, g, (x, g.y0 + (jb - 1.5) * g.res), (x, g.y0 + (ja + 2.5) * g.res), APOYO_ANCHO)
+                agregados += 1
+                buenos.append((i, i))
+        comun_mm = (i1 - i0 + 1) * g.res
+        ancho_max = max([(t[1] - t[0] + 1) * g.res for t in tramos if t[1] - t[0] + 1 >= minimo] or [0.0])
+        out.append({"lineas": [n + 1, n + 2], "contactos": len([t for t in tramos if t[1] - t[0] + 1 >= minimo]),
+                    "agregados": agregados, "apoyos": len(buenos), "contacto_max_mm": round(ancho_max, 1),
+                    "ancho_comun_mm": round(comun_mm, 1)})
+    return out
+
+
 def unir(M, g):
     """Une todas las regiones a la más grande con puentes cortos. -> cantidad de puentes."""
     L, n, tam = componentes(M, g.nx, g.ny)
@@ -342,6 +415,35 @@ def unir(M, g):
         b = (b[0] + dx / Ld * 1.0, b[1] + dy / Ld * 1.0)
         capsula(M, g, a, b, PUENTE)
         puentes += 1
+        # piezas de más de 6 mm: un segundo apoyo, lejos del primero
+        celdas = [(ii, jj) for jj in range(g.ny) for ii in range(g.nx) if L[jj][ii] == k]
+        ext = max(max(c[0] for c in celdas) - min(c[0] for c in celdas),
+                  max(c[1] for c in celdas) - min(c[1] for c in celdas)) * g.res
+        if ext >= 6.0:
+            sep = max(6.0, 0.35 * ext) / g.res
+            otro = None
+            for ii, jj in celdas:
+                if (ii - i) ** 2 + (jj - j) ** 2 >= sep * sep:
+                    d = D[jj][ii]
+                    if otro is None or d < otro[0]:
+                        otro = (d, ii, jj)
+            if otro and math.sqrt(otro[0]) * g.res <= 3 * math.sqrt(mejor[0]) * g.res + 4.0:
+                d2, ii, jj = otro
+                rad = int(math.sqrt(d2)) + 2
+                dest = None
+                for y_ in range(max(0, jj - rad), min(g.ny, jj + rad + 1)):
+                    for x_ in range(max(0, ii - rad), min(g.nx, ii + rad + 1)):
+                        if L[y_][x_] in hechas:
+                            dd = (x_ - ii) ** 2 + (y_ - jj) ** 2
+                            if dest is None or dd < dest[0]:
+                                dest = (dd, x_, y_)
+                if dest:
+                    a2 = (g.x0 + (ii + 0.5) * g.res, g.y0 + (jj + 0.5) * g.res)
+                    b2 = (g.x0 + (dest[1] + 0.5) * g.res, g.y0 + (dest[2] + 0.5) * g.res)
+                    dx, dy = b2[0] - a2[0], b2[1] - a2[1]
+                    Ld = math.hypot(dx, dy) or 1.0
+                    capsula(M, g, (a2[0] - dx / Ld, a2[1] - dy / Ld), (b2[0] + dx / Ld, b2[1] + dy / Ld), PUENTE)
+                    puentes += 1
         hechas.add(k)
     return puentes
 
@@ -548,7 +650,7 @@ def opciones(o):
 def construir(opts):
     o = opciones(opts)
     res = 0.32 if o["calidad"] == "preview" else 0.2
-    polys, info_lineas, caja = maquetar(o["lineas"], o["ancho"])
+    polys, info_lineas, caja, grupos = maquetar(o["lineas"], o["ancho"], True)
     mpoly = marco(o["marco"], caja)
     ancho_txt = o["ancho"]
     for _ in range(6):                         # con marco, el ancho pedido es el del marco
@@ -558,7 +660,7 @@ def construir(opts):
         if wf <= o["ancho"]:
             break
         ancho_txt *= o["ancho"] / wf
-        polys, info_lineas, caja = maquetar(o["lineas"], ancho_txt)
+        polys, info_lineas, caja, grupos = maquetar(o["lineas"], ancho_txt, True)
         mpoly = marco(o["marco"], caja)
     ext = list(caja)
     if mpoly:
@@ -583,6 +685,16 @@ def construir(opts):
             for i in range(g.nx):
                 if not Aj[i] and Dj[i] <= lim:
                     Sj[i] = 1
+    # cada línea con la de abajo: al menos dos apoyos separados (no un solo puntito)
+    lineas_m = []
+    for G in grupos:
+        Li = g.llenar(G)
+        if o["contorno"] > 0:
+            Dl = edt(Li, g.nx, g.ny, 1)
+            lim = (o["contorno"] / res + 0.5) ** 2
+            Li = [bytearray(1 if Dl[j][i] <= lim else 0 for i in range(g.nx)) for j in range(g.ny)]
+        lineas_m.append(Li)
+    apoyos = reforzar_lineas(S, g, lineas_m)
     puentes = unir(S, g)
     f = campo(S, g)
     eps = 0.05 if o["calidad"] == "normal" else 0.09
@@ -591,8 +703,9 @@ def construir(opts):
     z1 = o["grosor"]
     Vb, Fb = extruir(lz, 0.0, z1)
     # palitos: salen de lo más bajo de la pieza en su columna y se meten 6 mm
-    W = ext[2] - ext[0]
-    xs = [0.0] if o["palitos"] == 1 else [-0.26 * W, 0.26 * W]
+    # los palitos salen de abajo de la última línea (con marco, del marco)
+    W = ext[2] - ext[0] if mpoly else max(40.0, info_lineas[-1]["ancho_mm"])
+    xs = [0.0] if o["palitos"] == 1 else [-0.3 * W, 0.3 * W]
     palos, info_palos = [], []
     for x in xs:
         i0 = int((x - g.x0) / res)
@@ -631,7 +744,8 @@ def construir(opts):
     ys_ = [v[1] for _, V, _ in piezas for v in V]
     zs_ = [v[2] for _, V, _ in piezas for v in V]
     rep = {"lineas": info_lineas, "estilo": o["estilo"], "marco": o["marco"],
-           "palitos": o["palitos"], "puentes": puentes, "contorno_mm": o["contorno"],
+           "palitos": o["palitos"], "puentes": puentes + sum(a["agregados"] for a in apoyos),
+           "apoyos": apoyos, "contorno_mm": o["contorno"],
            "grosor_mm": z1, "letras_mm": o["letras"] if o["estilo"] == "doble" else 0.0,
            "medidas_mm": [round(max(xs_) - min(xs_), 1), round(max(ys_) - min(ys_), 1),
                           round(max(zs_) - min(zs_), 2)],
