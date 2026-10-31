@@ -1,6 +1,9 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // "Mate con hueco": mate imperial para imprimir en 3D con el hueco exacto del inserto.
 import * as THREE from "three";
+import { botonesPremium } from "./premium.js";
+import { pdfConsideraciones } from "./guia-impresion.js";
+import { pantallaCarga } from "./cargando.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { Cebado, ESTILOS } from "./mate-cebado.js";
@@ -21,6 +24,7 @@ window.__mate = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("mate-worker.js");
+pantallaCarga({ motor: "mate", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {
@@ -97,7 +101,7 @@ function setBusy(on, text = "Calculando…") {
   $("busy-text").textContent = text;
   const ok = !on && state.ready && !!state.summary?.valid;
   $("build").disabled = on || !state.ready;
-  for (const id of ["dlstl", "dl3mf", "photo", "dlcuna", "dlmedallon"]) $(id).disabled = !ok;
+  for (const id of ["dlstl", "dl3mf", "photo", "pdf", "dlcuna", "dlmedallon"]) $(id).disabled = !ok;
 }
 
 function showReport(s) {
@@ -224,6 +228,26 @@ async function download(kind, pieza) {
   }
 }
 
+// PDF con las consideraciones de impresión (Premium)
+async function consideracionesPdf() {
+  if (!state.ready || state.busy || !state.summary?.valid) return;
+  setBusy(true, "Armando el PDF…");
+  try {
+    const foto = viewer.photo(1200, 744, "image/jpeg").url;
+    const doc = await pdfConsideraciones("mate", state.summary, { foto });
+    const buf = doc.output("arraybuffer");
+    const name = `${state.summary.sku}_consideraciones.pdf`;
+    save(name, buf, "application/pdf");
+    state.lastPdf = { name, bytes: buf.byteLength, pages: doc.getNumberOfPages() };
+    setStatus("PDF descargado", "ok");
+  } catch (e) {
+    state.errors.push(String(e));
+    setStatus("Error en el PDF: " + e.message, "err");
+  } finally {
+    setBusy(false);
+  }
+}
+
 function takePhoto() {
   const h = gizmo ? gizmo.getHelper() : null;
   if (h) h.visible = false;                              // el gumball no sale en la foto
@@ -328,7 +352,10 @@ $("dlstl").addEventListener("click", () => download("stl"));
 $("dl3mf").addEventListener("click", () => download("3mf"));
 $("dlcuna").addEventListener("click", () => download("stl", "CUNA"));
 $("dlmedallon").addEventListener("click", () => download("stl", "MEDALLON"));
-$("photo").addEventListener("click", () => takePhoto());
+botonesPremium(state, [                                   // render y PDF: plan Premium
+  { el: $("photo"), que: "El render (foto)", accion: () => takePhoto() },
+  { el: $("pdf"), que: "El PDF con las consideraciones de impresión", accion: () => consideracionesPdf() },
+]);
 $("color").addEventListener("change", () => viewer.setColor($("color").value));
 $("cut").addEventListener("change", () => viewer.setCut($("cut").checked));
 $("ver-inserto").addEventListener("change", insertoVisible);

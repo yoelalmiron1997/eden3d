@@ -8,10 +8,11 @@
 import { SUPABASE } from "./config.js";
 
 export const ROLES = {
-  visitante: { label: "Visitante", download: false, brand: false, admin: false },
-  usuario: { label: "Usuario", download: true, brand: false, admin: false },
-  pro: { label: "Pro", download: true, brand: true, admin: false },
-  admin: { label: "Administrador", download: true, brand: true, admin: true },
+  // premium: render (foto) y PDF con consideraciones de impresión (plan Premium = Pro)
+  visitante: { label: "Visitante", download: false, brand: false, premium: false, admin: false },
+  usuario: { label: "Usuario", download: true, brand: false, premium: false, admin: false },
+  pro: { label: "Pro", download: true, brand: true, premium: true, admin: false },
+  admin: { label: "Administrador", download: true, brand: true, premium: true, admin: true },
 };
 
 const SITIO = new URL("./", import.meta.url).href;   // raíz de la web (para los links de los emails)
@@ -25,7 +26,7 @@ function emit() {
 export function snapshot() {
   const perms = { ...ROLES[auth.role] };
   // sin cuentas configuradas la web sigue funcionando como antes (descarga libre)
-  if (!auth.configured) perms.download = true;
+  if (!auth.configured) { perms.download = true; perms.premium = true; }   // sin cuentas: todo libre
   return { configured: auth.configured, user: auth.user, role: auth.role, perms, mock: auth.mock, ready: auth.ready };
 }
 

@@ -1,5 +1,7 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
+import { botonesPremium } from "./premium.js";
+import { pantallaCarga } from "./cargando.js";
 import { renderCare, renderCompat } from "./care.js";
 import { makeGuide } from "./guia.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -29,6 +31,7 @@ window.__eden = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("worker.js");
+pantallaCarga({ motor: "macetas", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {
@@ -418,7 +421,6 @@ $("scenes").addEventListener("click", (ev) => {
   lightButtons();
 });
 $("wind").addEventListener("change", () => viewer.setWind($("wind").checked));
-$("photo").addEventListener("click", () => takePhoto());
 
 // ------------------------------------------------------------------ cuenta y marca de agua
 const PIEZA = { MACETA: "maceta" };
@@ -501,7 +503,10 @@ async function guidePdf() {
     setBusy(false);
   }
 }
-$("pdf").addEventListener("click", () => guidePdf());
+botonesPremium(state, [                                   // render y guía: plan Premium
+  { el: $("photo"), que: "El render (foto)", accion: () => takePhoto() },
+  { el: $("pdf"), que: "La guía en PDF con las consideraciones", accion: () => guidePdf() },
+]);
 
 // ------------------------------------------------------------------ agua, piezas y slicer
 $("drop").addEventListener("click", () => viewer.randomDrop());

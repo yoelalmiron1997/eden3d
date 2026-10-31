@@ -10,7 +10,9 @@ const fuentes = new Set();
 
 async function init() {
   const t0 = performance.now();
+  self.postMessage({ type: "progreso", paso: 1 });
   py = await loadPyodide({ indexURL: "./vendor/pyodide/" });
+  self.postMessage({ type: "progreso", paso: 2 });     // Python listo: ahora el motor
   const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
   version = manifest.version;
   py.FS.mkdirTree("/eden/colecciones");

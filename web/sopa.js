@@ -1,6 +1,9 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // "Sopa de letras 3D": sopa con tus palabras, cortada en piezas que encastran.
 import * as THREE from "three";
+import { botonesPremium } from "./premium.js";
+import { pdfConsideraciones } from "./guia-impresion.js";
+import { pantallaCarga } from "./cargando.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -16,6 +19,7 @@ window.__sopa = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("sopa-worker.js");
+pantallaCarga({ motor: "sopa", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {
@@ -80,7 +84,7 @@ function setBusy(on, text = "Calculando…") {
   $("busy-text").textContent = text;
   const ok = !on && state.ready && !!state.summary?.valid;
   $("build").disabled = on || !state.ready;
-  for (const id of ["dl3mf", "dlstl", "photo"]) $(id).disabled = !ok;
+  for (const id of ["dl3mf", "dlstl", "photo", "pdf"]) $(id).disabled = !ok;
 }
 
 function contar() {
@@ -274,6 +278,26 @@ async function download(kind) {
   }
 }
 
+// PDF con las consideraciones de impresión (Premium)
+async function consideracionesPdf() {
+  if (!state.ready || state.busy || !state.summary?.valid) return;
+  setBusy(true, "Armando el PDF…");
+  try {
+    const foto = viewer.photo(1200, 744, "image/jpeg").url;
+    const doc = await pdfConsideraciones("sopa", state.summary, { foto });
+    const buf = doc.output("arraybuffer");
+    const name = `${state.summary.sku}_consideraciones.pdf`;
+    save(name, buf, "application/pdf");
+    state.lastPdf = { name, bytes: buf.byteLength, pages: doc.getNumberOfPages() };
+    setStatus("PDF descargado", "ok");
+  } catch (e) {
+    state.errors.push(String(e));
+    setStatus("Error en el PDF: " + e.message, "err");
+  } finally {
+    setBusy(false);
+  }
+}
+
 function takePhoto() {
   const r = viewer.photo(1080, 1350);
   const a = Object.assign(document.createElement("a"), { href: r.url, download: `${state.summary?.sku || "sopa"}.png` });
@@ -346,7 +370,10 @@ $("mezclar").addEventListener("click", () => { state.semilla = 1 + Math.floor(Ma
 $("build").addEventListener("click", () => build(true));
 $("dl3mf").addEventListener("click", () => download("3mf"));
 $("dlstl").addEventListener("click", () => download("stl"));
-$("photo").addEventListener("click", () => takePhoto());
+botonesPremium(state, [                                   // render y PDF: plan Premium
+  { el: $("photo"), que: "El render (foto)", accion: () => takePhoto() },
+  { el: $("pdf"), que: "El PDF con las consideraciones de impresión", accion: () => consideracionesPdf() },
+]);
 $("color").addEventListener("change", () => viewer.setColor($("color").value));
 $("color-letras").addEventListener("change", () => { viewer.mats.LETRAS.color.set($("color-letras").value); verSolucion(state.solucion); });
 $("solucion").addEventListener("change", () => verSolucion($("solucion").checked));
