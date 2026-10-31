@@ -2,6 +2,7 @@
 // "Topper para tortas": tu texto con la tipografía que quieras, todo unido en una pieza,
 // y el número de años aparte; los dos clavados en la torta que elijas.
 import * as THREE from "three";
+import { pantallaCarga } from "./cargando.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -18,6 +19,7 @@ window.__topper = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("topper-worker.js");
+pantallaCarga({ motor: "topper", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {

@@ -152,3 +152,17 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: WEB-015
+    titulo: Pantalla de carga de cada motor con una impresora 3D
+    descripcion: >
+      Mientras se baja Python, se carga el motor y se arma la primera vista previa, el
+      visor de cada herramienta muestra una impresora 3D (vector propio) imprimiendo la
+      pieza de esa herramienta (maceta, mate, pieza de la sopa o topper) capa por capa,
+      con los pasos de la carga y una barra.
+    criterio: >
+      En macetas, mate, sopa y topper aparece la pantalla de carga con la impresora y la
+      pieza de su motor; los pasos avanzan (el worker avisa cuando Python está listo) y
+      la pantalla desaparece sola después de la primera vista previa; no bloquea clics.
+    prioridad: media
+    nivel: web
+    estado: activa

@@ -1,6 +1,7 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // "Mate con hueco": mate imperial para imprimir en 3D con el hueco exacto del inserto.
 import * as THREE from "three";
+import { pantallaCarga } from "./cargando.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { Cebado, ESTILOS } from "./mate-cebado.js";
@@ -21,6 +22,7 @@ window.__mate = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("mate-worker.js");
+pantallaCarga({ motor: "mate", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {

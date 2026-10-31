@@ -7,7 +7,7 @@ import zipfile
 
 import pytest
 
-from web_helpers import open_app, wait_build
+from web_helpers import READY_MS, open_app, wait_build
 
 T = "[data-testid=%s]"
 
@@ -743,4 +743,24 @@ def test_herramientas_con_el_encabezado_nuevo(browser, base_url):
         assert page.locator(T % "btn-tema").is_visible() and page.locator(T % "btn-ingresar").is_visible()
         page.wait_for_timeout(300)
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), path
+        ctx.close()
+
+
+@pytest.mark.spec("WEB-015")
+def test_pantalla_de_carga_de_cada_motor(browser, base_url):
+    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
+    for path, st in estados.items():
+        ctx = browser.new_context(viewport={"width": 1280, "height": 800})
+        page = ctx.new_page()
+        errores = []
+        page.on("pageerror", lambda e: errores.append(str(e)))
+        page.goto(base_url + path)
+        carga = page.locator("[data-testid=carga]")
+        carga.wait_for(state="attached", timeout=10_000)
+        assert carga.locator("svg .carga-pieza").count() == 1 and carga.locator(".carga-cabezal").count() == 1
+        assert page.evaluate("getComputedStyle(document.querySelector('[data-testid=carga]')).pointerEvents") == "none"
+        assert carga.locator("[data-paso]").count() == 3
+        page.wait_for_function("window.%s && window.%s.builds >= 1" % (st, st), timeout=READY_MS)
+        carga.wait_for(state="detached", timeout=5_000)                 # se va sola
+        assert not errores, (path, errores)
         ctx.close()

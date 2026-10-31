@@ -1,5 +1,6 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
+import { pantallaCarga } from "./cargando.js";
 import { renderCare, renderCompat } from "./care.js";
 import { makeGuide } from "./guia.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -29,6 +30,7 @@ window.__eden = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("worker.js");
+pantallaCarga({ motor: "macetas", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {

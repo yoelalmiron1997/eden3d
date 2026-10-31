@@ -1,6 +1,7 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // "Sopa de letras 3D": sopa con tus palabras, cortada en piezas que encastran.
 import * as THREE from "three";
+import { pantallaCarga } from "./cargando.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -16,6 +17,7 @@ window.__sopa = state;
 
 // ------------------------------------------------------------------ worker
 const worker = new Worker("sopa-worker.js");
+pantallaCarga({ motor: "sopa", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {
