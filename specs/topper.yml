@@ -103,7 +103,7 @@ specs:
     criterio: >
       Con "Happy / Birthday / Martina" en Lobster y "Feliz / Cumpleaños" en Great Vibes,
       todos los huecos de 0,5 mm² o más de las letras siguen abiertos en la pieza
-      (huecos_abiertos == huecos > 0); el contorno por defecto es 0,8 mm; la pieza sigue
+      (huecos_abiertos == huecos > 0); el contorno por defecto es 0,4 mm; la pieza sigue
       siendo una sola.
     prioridad: alta
     nivel: motor

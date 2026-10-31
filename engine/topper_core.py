@@ -37,7 +37,7 @@ MARCOS = [("ninguno", "Sin marco"), ("circulo", "Círculo"), ("corazon", "Coraz�
           ("flor", "Flor"), ("rombo", "Rombo"), ("sol", "Sol")]
 DEFECTO = {"lineas": [{"texto": "Feliz", "fuente": "great_vibes", "escala": 1.0},
                       {"texto": "Cumpleaños", "fuente": "great_vibes", "escala": 1.0}],
-           "ancho": 140.0, "contorno": 0.8, "grosor": 3.0, "letras": 1.2, "estilo": "simple",
+           "ancho": 140.0, "contorno": 0.4, "grosor": 3.0, "letras": 1.2, "estilo": "simple",
            "marco": "ninguno", "palitos": 2, "largo": 90.0, "calidad": "preview"}
 LIMITES = {"ancho": (60.0, 220.0), "contorno": (0.0, 6.0), "grosor": (2.0, 5.0),
            "letras": (0.6, 3.0), "palitos": (1, 2), "largo": (40.0, 140.0), "escala": (0.4, 1.6),

@@ -213,7 +213,7 @@ def test_palitos_del_corazon_cerca_de_la_punta():
 def test_huecos_de_las_letras_abiertos(lineas):
     r = tc.construir({"lineas": lineas})
     rep = r["reporte"]
-    assert rep["contorno_mm"] == pytest.approx(0.8)
+    assert rep["contorno_mm"] == pytest.approx(0.4)
     assert rep["huecos"] > 0 and rep["huecos_abiertos"] == rep["huecos"]
     g, S, T = r["grilla"], r["region"], r["letras"]
     A = tc.afuera(T, g)
