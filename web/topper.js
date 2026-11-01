@@ -50,6 +50,7 @@ window.__topperViewer = viewer;
 // la torta (apoyada en la mesa) con el topper y el número clavados; modo cumpleaños
 const tortaV = new Torta(viewer);
 const torta = tortaV.grupo;
+viewer.ocultarAbajo.push(torta);                 // mirando desde abajo se ve el topper solo
 window.__topperTorta = tortaV;
 const pose = new THREE.Group();            // el topper parado y clavado en la torta
 pose.name = "POSE";

@@ -855,3 +855,33 @@ def test_perfil_con_foto(browser, base_url, tmp_path):
     assert page.locator(T % "perfil-nacimiento").input_value() == "1997-05-20"
     assert not page.console_errors, page.console_errors
     page.context.close()
+
+
+@pytest.mark.spec("WEB-017")
+def test_vista_desde_todos_los_angulos(browser, base_url):
+    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper",
+               "chapita.html": "__chapita"}
+    visor = {"macetas.html": "__edenViewer", "mate.html": "__mateViewer", "sopa.html": "__sopaViewer",
+             "topper.html": "__topperViewer", "chapita.html": "__chapitaViewer"}
+    for path, st in estados.items():
+        page = open_app(browser, base_url, role="sin-cuentas", path=path)
+        page.wait_for_function("window.%s && window.%s.builds >= 1 && !window.%s.busy" % (st, st, st), timeout=READY_MS)
+        V = "window." + visor[path]
+        assert page.evaluate("!!%s" % V), path
+        assert page.locator(T % "vistas" + " button").count() == 8, path
+        assert page.evaluate("%s.controls.maxPolarAngle" % V) >= 3.14, path
+        page.locator(T % "vista-abajo").click()
+        page.wait_for_function("!%s.vuelo" % V, timeout=10_000)
+        page.wait_for_timeout(200)
+        assert page.evaluate("%s.camera.position.y < 0 && %s.stats.desdeAbajo" % (V, V)), path
+        assert not page.evaluate("%s.ground.visible || (%s.sceneGroup && %s.sceneGroup.visible)" % (V, V, V)), path
+        page.locator(T % "vista-arriba").click()
+        page.wait_for_function("!%s.vuelo" % V, timeout=10_000)
+        page.wait_for_timeout(200)
+        assert page.evaluate("!%s.stats.desdeAbajo && %s.camera.position.y > %s.controls.target.y" % (V, V, V)), path
+        page.locator(T % "vista-girar").click()
+        assert page.evaluate("%s.controls.autoRotate" % V) and page.locator(T % "vista-girar").get_attribute("aria-pressed") == "true"
+        page.locator(T % "vista-girar").click()
+        assert not page.evaluate("%s.controls.autoRotate" % V)
+        assert not page.console_errors, (path, page.console_errors)
+        page.context.close()

@@ -184,3 +184,18 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: WEB-017
+    titulo: La vista 3D se mira desde todos los ángulos
+    descripcion: >
+      En todas las herramientas la cámara gira libre (también por debajo de la pieza) y
+      hay botones de vista: frente, atrás, izquierda, derecha, arriba, abajo, 3/4 y girar
+      360°. Mirando desde abajo se esconden la mesa, el escenario y el piso (y la torta del
+      topper) para ver la pieza por debajo.
+    criterio: >
+      En macetas, mate, sopa, topper y chapitas la barra de vistas tiene sus 8 botones; la
+      cámara no tiene límite de ángulo hacia abajo; "Abajo" deja la cámara por debajo de la
+      mesa y esconde el piso y el escenario, "Arriba" la lleva arriba y los vuelve a mostrar;
+      "360°" prende y apaga el giro; sin errores en la consola.
+    prioridad: media
+    nivel: web
+    estado: activa

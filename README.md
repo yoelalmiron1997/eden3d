@@ -175,6 +175,13 @@ motor `engine/chapita_core.py`, que reusa la grilla y las tipografías del toppe
 * Letras **en relieve** (con borde y patitas en el hueso y el óvalo) o **grabadas**.
 * Colores: uno; **dos** (las letras arriba, cambio de filamento a mano en la altura que
   indica el reporte); o **al ras para AMS**. Descarga en 3MF (una pieza con sus partes) o STL.
+* **Llavero en el visor** (`web/llavero.js`): argolla partida, cadenita y ganchito. Puesto, la
+  chapita cuelga y se hamaca; "Sacar la argolla" anima todo hasta quedar en la mesa con el
+  ganchito abierto, y "Poner la argolla" lo vuelve a colgar.
+
+En todas las herramientas la vista 3D se mira **desde todos los ángulos**: la cámara gira
+libre (también por debajo; la mesa y el escenario se esconden para ver la base) y hay
+botones Frente, Atrás, Izq., Der., Arriba, Abajo, 3/4 y 360°.
 
 ## Cómo funciona
 

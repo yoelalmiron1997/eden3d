@@ -567,3 +567,26 @@ dialog.modal::backdrop { background: rgba(5, 8, 9, .78); backdrop-filter: none; 
 .perfil-cara img { width: 100%; height: 100%; object-fit: cover; }
 .perfil-foto .btn { cursor: pointer; }
 .perfil-form input[type=date] { font: inherit; padding: 9px 11px; border: 1px solid var(--line); background: var(--surface-2, var(--bg)); color: var(--ink); border-radius: 2px; }
+
+/* ---- vistas de la cámara (todos los ángulos), en el visor de cada herramienta ---- */
+.vistas { position: absolute; right: 10px; top: 10px; z-index: 5; display: flex; flex-direction: column; gap: 4px; }
+.vistas button {
+  min-height: 0; height: 28px; min-width: 54px; padding: 0 8px; font: 600 12px/1 "Barlow Condensed", "Inter", sans-serif;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(4px); cursor: pointer;
+}
+.vistas button:hover { border-color: var(--lima); }
+.vistas button[aria-pressed="true"] { background: var(--lima); color: var(--lima-ink); border-color: var(--lima); }
+:root[data-theme="light"] .vistas button[aria-pressed="true"] { background: var(--green); color: #fff; border-color: var(--green); }
+@media (max-width: 560px) {
+  .vistas { right: 6px; top: 6px; gap: 3px; }
+  .vistas button { height: 26px; min-width: 44px; padding: 0 5px; font-size: 11px; }
+}
+.llavero-btn {
+  position: absolute; left: 10px; bottom: 10px; z-index: 5; min-height: 0; height: 34px; padding: 0 14px;
+  font: 600 13px/1 "Barlow Condensed", "Inter", sans-serif; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--lima-ink); background: var(--lima); border: 1px solid var(--lima); border-radius: var(--radius); cursor: pointer;
+}
+.llavero-btn:hover { background: var(--lima-hover); }
+:root[data-theme="light"] .llavero-btn { background: var(--green); border-color: var(--green); color: #fff; }

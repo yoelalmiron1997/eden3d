@@ -52,10 +52,15 @@ specs:
   - id: CHA-005
     titulo: Chapitas en la web
     descripcion: >
-      La página chapita.html arma la chapita en el navegador, con la argolla puesta, y el
-      inicio tiene la tarjeta "Chapitas para collares" con su pop-up.
+      La página chapita.html arma la chapita en el navegador con su llavero (argolla
+      partida, cadenita y ganchito) y el inicio tiene la tarjeta "Chapitas para collares"
+      con su pop-up. El botón del visor anima el llavero: puesto (la chapita colgando del
+      ganchito, que pasa por el agujero) o sin poner (todo apoyado en la mesa, el ganchito abierto).
     criterio: >
-      La página arranca con un hueso "Roma" en una pieza y la argolla; cambiar la forma,
+      La página arranca con un hueso "Roma" en una pieza, colgado de su llavero puesto (la
+      chapita parada, el ganchito cerrado); "Sacar la argolla" la anima hasta quedar todo
+      en la mesa (chapita acostada, ganchito abierto) y "Poner la argolla" la vuelve a
+      colgar; cambiar la forma,
       escribir otro nombre o pasar a dos colores (aparece LETRAS y "STL letras") recalculan;
       las patitas se ocultan en las formas que no las llevan; las descargas STL y 3MF
       funcionan; la tarjeta del inicio abre el pop-up con el link a chapita.html; sin

@@ -28,6 +28,19 @@ def test_chapita_en_la_web(browser, base_url):
     assert s["valid"] and s["sku"] == "Chapita-Hueso-Roma"
     v = pg.evaluate("window.__chapita.viewer")
     assert v["meshes"] == ["CHAPITA"] and v["argolla"]
+    L = v["llavero"]
+    assert L["puesto"] and L["colgada"] and L["piezas"] == 8 and L["gap"] < 0.1
+    # sacar la argolla: se anima hasta quedar todo en la mesa, con el ganchito abierto
+    pg.locator(T % "btn-llavero").click()
+    assert pg.evaluate("window.__chapita.viewer.llavero.animando")
+    pg.wait_for_function("!window.__chapita.viewer.llavero.animando", timeout=30_000)
+    L = pg.evaluate("window.__chapita.viewer.llavero")
+    assert not L["puesto"] and not L["colgada"] and L["gap"] > 0.9
+    assert "poner" in pg.locator(T % "btn-llavero").inner_text().lower()
+    pg.locator(T % "btn-llavero").click()
+    pg.wait_for_function("!window.__chapita.viewer.llavero.animando", timeout=30_000)
+    L = pg.evaluate("window.__chapita.viewer.llavero")
+    assert L["puesto"] and L["colgada"] and L["gap"] < 0.1
     assert pg.locator(T % "chk-patitas").is_visible()
     # otra forma y otro nombre
     b = pg.evaluate("window.__chapita.builds")

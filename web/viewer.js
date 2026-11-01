@@ -39,7 +39,9 @@ export class Viewer {
     this.camera.position.set(-180, 160, 320);
     this.controls = new OrbitControls(this.camera, r.domElement);
     this.controls.enableDamping = true;
-    this.controls.maxPolarAngle = Math.PI * 0.49;
+    this.controls.maxPolarAngle = Math.PI;              // todos los ángulos, también desde abajo
+    this.controls.addEventListener("start", () => { this.vuelo = null; });
+    this.ocultarAbajo = [];                              // lo que cada página esconde al mirar desde abajo
 
     this.hemi = new THREE.HemisphereLight(0xfff6e8, 0x8a7a66, 0.6);
     this.sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
@@ -53,7 +55,9 @@ export class Viewer {
     this.lamp = new THREE.PointLight(0xffc27a, 0, 0, 1.6);
     this.lamp.castShadow = true;
     this.lamp.shadow.mapSize.set(1024, 1024);
-    this.scene.add(this.hemi, this.sun, this.sun.target, this.fill, this.lamp);
+    this.luzAbajo = new THREE.DirectionalLight(0xfff6ea, 0);      // sólo al mirar desde abajo
+    this.luzAbajo.position.set(60, -300, 120);
+    this.scene.add(this.hemi, this.sun, this.sun.target, this.fill, this.lamp, this.luzAbajo);
     this.ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShadowMaterial({ opacity: 0.2 }));
     this.ground.rotation.x = -Math.PI / 2;
     this.ground.receiveShadow = true;
@@ -110,6 +114,7 @@ export class Viewer {
     this.slicer = { on: false, part: "MACETA", layer: 0, layers: 0, playing: false,
       uniforms: { uCut: { value: 1e6 }, uLayer: { value: LAYER_MM } } };
     this.setupPointer();
+    this.mountVistas(host);
 
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
@@ -125,7 +130,9 @@ export class Viewer {
       last = now;
       const t0 = performance.now();
       const dt = Math.min(this.clock.getDelta(), this.lowPower ? 0.6 : 0.1);
+      this.tickVuelo(dt);
       this.controls.update();
+      this.tickAbajo();
       this.tickWater(dt);
       this.tickPlants(dt);
       this.tickSlicer(dt);
@@ -234,7 +241,7 @@ export class Viewer {
     this.triangles = tris;
     this.applyExplode();
     if (this.slicer.on) { this.slicer.layer = 0; this.enterSlicer(); }
-    const box = new THREE.Box3().setFromObject(this.model);
+    const box = this.baseBox();
     this.center = box.getCenter(new THREE.Vector3());
     const sz = box.getSize(new THREE.Vector3());
     this.contact.scale.set(sz.x * 1.45, sz.z * 1.45, 1);
@@ -246,6 +253,78 @@ export class Viewer {
 
   meshNames() {
     return this.model.children.map((m) => m.name);
+  }
+
+  // caja de la pieza apoyada (la página puede dar otra: la chapita colgada sigue "apoyada" en la mesa)
+  baseBox() {
+    return this.sceneBox ? this.sceneBox() : new THREE.Box3().setFromObject(this.model);
+  }
+
+  // ------------------------------------------------------------ vistas (todos los ángulos)
+  mountVistas(host) {
+    const bar = document.createElement("div");
+    bar.className = "vistas";
+    bar.setAttribute("role", "toolbar");
+    bar.setAttribute("aria-label", "Vistas de la cámara");
+    bar.dataset.testid = "vistas";
+    bar.innerHTML = Object.entries(VISTAS).map(([k, V]) =>
+      `<button type="button" data-vista="${k}" data-testid="vista-${k}" title="${V.titulo}" aria-label="${V.titulo}">${V.label}</button>`).join("")
+      + `<button type="button" data-vista="girar" data-testid="vista-girar" title="Girar 360°" aria-label="Girar 360°" aria-pressed="false">360°</button>`;
+    bar.addEventListener("click", (ev) => {
+      const b = ev.target.closest("button[data-vista]");
+      if (!b) return;
+      if (b.dataset.vista === "girar") {
+        this.controls.autoRotate = !this.controls.autoRotate;
+        this.controls.autoRotateSpeed = 2.2;
+        b.setAttribute("aria-pressed", String(this.controls.autoRotate));
+      } else this.vista(b.dataset.vista);
+    });
+    host.appendChild(bar);
+    this.vistasBar = bar;
+  }
+
+  // lleva la cámara (sin cambiar la distancia) a la vista pedida, en un vuelo corto
+  vista(k, inmediato) {
+    const V = VISTAS[k];
+    if (!V) return;
+    const t = this.controls.target;
+    const rel = this.camera.position.clone().sub(t);
+    const desde = new THREE.Spherical().setFromVector3(rel);
+    const hacia = new THREE.Spherical().setFromVector3(new THREE.Vector3(...V.dir).normalize());
+    hacia.radius = desde.radius;
+    hacia.phi = THREE.MathUtils.clamp(hacia.phi, 0.001, Math.PI - 0.001);
+    let dth = hacia.theta - desde.theta;                      // el giro más corto
+    dth = Math.atan2(Math.sin(dth), Math.cos(dth));
+    this.vuelo = { desde, dth, hacia, t: inmediato ? 1 : 0, dur: 0.75 };
+    this.vistaActual = k;
+    this.tickVuelo(0);
+  }
+
+  tickVuelo(dt) {
+    const F = this.vuelo;
+    if (!F) return;
+    F.t = Math.min(1, F.t + dt / F.dur);
+    const e = F.t < 0.5 ? 4 * F.t ** 3 : 1 - (-2 * F.t + 2) ** 3 / 2;
+    const s = new THREE.Spherical(F.desde.radius, F.desde.phi + (F.hacia.phi - F.desde.phi) * e, F.desde.theta + F.dth * e);
+    this.camera.position.copy(this.controls.target).add(new THREE.Vector3().setFromSpherical(s));
+    this.camera.lookAt(this.controls.target);
+    if (F.t >= 1) this.vuelo = null;
+  }
+
+  // mirando desde abajo de la mesa: se esconden la mesa, el escenario y el piso para ver la pieza
+  tickAbajo() {
+    const abajo = this.camera.position.y < (this.pisoY || 0) - 0.5;
+    if (abajo) {
+      this.ocultos = this.ocultos || new Set();
+      for (const o of [this.ground, this.contact, this.sceneGroup, ...this.ocultarAbajo]) {
+        if (o && o.visible) { o.visible = false; this.ocultos.add(o); }
+      }
+    } else if (this.ocultos && this.ocultos.size) {
+      for (const o of this.ocultos) if (o.parent) o.visible = true;   // lo que se sacó de la escena, no
+      this.ocultos.clear();
+    }
+    this.luzAbajo.intensity += ((abajo ? 1.6 : 0) - this.luzAbajo.intensity) * 0.2;
+    this.stats.desdeAbajo = abajo;
   }
 
   fit(box, dir) {
@@ -742,7 +821,7 @@ export class Viewer {
   // los escenarios están modelados para una maceta de ~150 mm; se escalan con la maceta
   fitScene() {
     if (!this.sceneGroup) return;
-    const box = new THREE.Box3().setFromObject(this.model);
+    const box = this.baseBox();
     if (box.isEmpty()) return;
     const size = box.getSize(new THREE.Vector3());
     const k = THREE.MathUtils.clamp(Math.max(size.y, size.x * 1.2) / 150, 0.55, 2.2);
@@ -951,6 +1030,17 @@ function buildTaller(THREE) {
   g.add(pant);
   return g;
 }
+
+// vistas fijas (dirección desde la pieza hacia la cámara; y arriba, z hacia el frente)
+export const VISTAS = {
+  frente: { label: "Frente", titulo: "Vista de frente", dir: [0, 0, 1] },
+  atras: { label: "Atrás", titulo: "Vista de atrás", dir: [0, 0, -1] },
+  izquierda: { label: "Izq.", titulo: "Vista desde la izquierda", dir: [-1, 0, 0] },
+  derecha: { label: "Der.", titulo: "Vista desde la derecha", dir: [1, 0, 0] },
+  arriba: { label: "Arriba", titulo: "Vista desde arriba", dir: [0, 1, 0] },
+  abajo: { label: "Abajo", titulo: "Vista desde abajo", dir: [0, -1, 0] },
+  tres4: { label: "3/4", titulo: "Vista en perspectiva", dir: [-0.6, 0.55, 1] },
+};
 
 export const SCENES = {
   estudio: { label: "Estudio" },

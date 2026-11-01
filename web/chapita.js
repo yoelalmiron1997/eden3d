@@ -6,6 +6,7 @@ import { pantallaCarga } from "./cargando.js";
 import { botonesPremium } from "./premium.js";
 import { pdfConsideraciones } from "./guia-impresion.js";
 import { Viewer, SCENES } from "./viewer.js";
+import { Llavero } from "./llavero.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
 
@@ -68,31 +69,26 @@ viewer.geom = (p) => {
   g.computeVertexNormals();
   return g;
 };
-const metal = new THREE.MeshStandardMaterial({ color: 0xc9ccd1, roughness: 0.22, metalness: 1 });
 Object.defineProperty(state, "viewer", { get: () => ({
   meshes: viewer.model.children.filter((m) => m.isMesh && m.name !== "ARGOLLA").map((m) => m.name),
-  argolla: viewer.model.children.some((m) => m.name === "ARGOLLA"), triangles: viewer.triangles,
+  argolla: llavero.grupo.children.some((m) => m.name === "ARGOLLA"), llavero: llavero.estado, triangles: viewer.triangles,
   color: "#" + viewer.mats.CHAPITA.color.getHexString(), letras: "#" + viewer.mats.LETRAS.color.getHexString(),
 }) });
 
-// la argollita del collar pasando por el agujero, para ver cómo queda colgada
-function argolla(s) {
-  const O = s.ojal;
-  const R = Math.max(7, O.r_ojal + 3.2);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(R, 0.75, 16, 96), metal);
-  ring.name = "ARGOLLA";
-  ring.rotation.y = Math.PI / 2;                       // de canto, atravesando el agujero
-  ring.position.set(O.x, O.y + R - O.r_agujero * 0.55, s.grosor_mm / 2);
-  ring.castShadow = true;
-  viewer.model.add(ring);
+// el llavero: argolla partida, cadenita y ganchito; puesto (colgando) o sin poner
+const llavero = new Llavero(viewer);
+window.__chapitaLlavero = llavero;
+const btnLlavero = document.createElement("button");
+btnLlavero.type = "button";
+btnLlavero.className = "llavero-btn";
+btnLlavero.dataset.testid = "btn-llavero";
+function pintarLlavero() {
+  btnLlavero.textContent = llavero.puesto ? "Sacar la argolla" : "Poner la argolla";
+  btnLlavero.setAttribute("aria-pressed", String(llavero.puesto));
 }
-
-function encuadrar() {
-  const box = new THREE.Box3().setFromObject(viewer.model);
-  if (box.isEmpty()) return;
-  viewer.viewDir = new THREE.Vector3(-0.12, 1.25, 0.75);
-  viewer.fit(box);
-}
+btnLlavero.addEventListener("click", () => { llavero.poner(!llavero.puesto); pintarLlavero(); });
+$("viewer").appendChild(btnLlavero);
+pintarLlavero();
 
 // ------------------------------------------------------------------ opciones
 const SL = { ancho: [0, " mm"], borde: [1, " mm"], grosor: [1, " mm"], relieve: [1, " mm"], agujero: [1, " mm"] };
@@ -155,8 +151,9 @@ async function build() {
       viewer.showModel(r.parts, null, false);
       viewer.mats.CHAPITA.color.set($("color").value);
       viewer.mats.LETRAS.color.set($("color-letras").value);
-      argolla(r.summary);
-      encuadrar();
+      llavero.montar(r.summary);
+      const marco = o.forma + "|" + o.ancho;            // se reencuadra sólo si cambia el tamaño
+      if (marco !== state.marco) { llavero.encuadrar(false); state.marco = marco; }
       $("dlletras").hidden = !r.parts.some((p) => p.name === "LETRAS");
       state.builtOpts = o;
     }
@@ -335,6 +332,7 @@ $("scenes").addEventListener("click", (ev) => {
   if (!b) return;
   state.scene = b.dataset.k;
   viewer.setScene(state.scene);
+  llavero.encuadrar(false);
   sceneButtons();
 });
 
