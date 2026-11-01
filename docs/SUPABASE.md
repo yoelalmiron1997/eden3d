@@ -40,3 +40,16 @@ como antes, sin cuentas y con descarga libre.
 > saltearla modificando el código en su propio navegador. Para blindarlo del todo,
 > las descargas Pro se tendrían que generar en un servidor (por ejemplo, una Edge
 > Function de Supabase).
+
+## Perfil y feedback de la comunidad
+
+* **Perfil**: nombre, apellido, nacimiento, ciudad, provincia/país, oficio, impresora 3D,
+  Instagram, "Sobre vos" y una imagen (una foto chica o una de las 16 prediseñadas de
+  `web/avatares.js`). Va en los metadatos de la cuenta (`user_metadata`): no necesita tablas.
+* **Feedback** (botón "Feedback" en todas las páginas): vive en las tablas `feedback`,
+  `feedback_respuestas` y `feedback_votos`, que están al final de `supabase/esquema.sql`.
+  **Para activarlo hay que volver a correr el script entero** en el *SQL Editor* (se puede
+  correr más de una vez: no borra nada). Hasta entonces, el feedback avisa que falta.
+  Reglas (RLS): lo leen todas las cuentas; cada uno escribe, se suma y responde sólo a su
+  nombre y borra lo suyo; el admin marca resuelto y borra cualquier cosa. Con cada
+  feedback se guarda el nombre, "oficio · ciudad" y la imagen de quien lo escribió.

@@ -44,6 +44,10 @@ elegís diseño, tamaño, plato con autorriego y drenaje, lo ves en 3D y bajás 
 * **Cuentas y roles** (Supabase): usuario, **Pro** (paquete extra: cambia el texto de
   la marca de agua) y **admin** (panel `admin.html` con roles y cobertura de la marca
   en cada maceta). Configuración: [docs/SUPABASE.md](docs/SUPABASE.md).
+* **Perfil** (nombre, dónde vive, oficio, impresora, Instagram, "Sobre vos" y una foto o
+  una de 16 imágenes minimalistas prediseñadas) y **feedback de la comunidad**: un botón
+  en todas las páginas para dejar ideas, avisar lo que no anda o comentar, sumarse y
+  responder a lo de los demás (tablas con RLS en `supabase/esquema.sql`).
 * **Marca de agua personalizada**: texto libre (letras, números, acentos, ñ y signos)
   grabado en la base; un test arma los 17 diseños con textos de prueba y verifica que
   ninguna pieza se rompa.

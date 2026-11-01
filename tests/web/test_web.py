@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.
 """Tests de punta a punta de Eden3D Studio (GitHub Pages)."""
+import json
 import io
 import math
 import zipfile
@@ -885,3 +886,128 @@ def test_vista_desde_todos_los_angulos(browser, base_url):
         assert not page.evaluate("%s.controls.autoRotate" % V)
         assert not page.console_errors, (path, page.console_errors)
         page.context.close()
+
+
+def _con_cuenta(browser, base_url, role, path="", seed=None):
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    ctx.add_init_script("window.__EDEN_AUTH_MOCK = %s; window.__EDEN_FEEDBACK_MOCK = %s;"
+                        "try { localStorage.setItem('tb-popup-macetas', '1') } catch (e) {}"
+                        % (json.dumps({"role": role, "email": "yoel@tecnobear.test"}), json.dumps(seed or [])))
+    page = ctx.new_page()
+    page.console_errors = []
+    page.on("console", lambda m: page.console_errors.append(m.text) if m.type == "error" else None)
+    page.on("pageerror", lambda e: page.console_errors.append(str(e)))
+    page.goto(base_url + path)
+    return page
+
+
+@pytest.mark.spec("CUE-007")
+def test_perfil_con_imagen_y_datos(browser, base_url):
+    page = _con_cuenta(browser, base_url, "usuario")
+    page.locator(T % "btn-cuenta").click()
+    page.locator(T % "btn-perfil").click()
+    assert page.locator(T % "perfil" + " [data-av]").count() == 16
+    page.locator(T % "avatar-perro").click()
+    assert page.locator(T % "avatar-perro").get_attribute("aria-checked") == "true"
+    assert page.locator(T % "avatar-oso").get_attribute("aria-checked") == "false"
+    datos = {"nombre": "Yoel", "oficio": "Diseñador 3D", "ciudad": "Córdoba", "provincia": "Córdoba, Argentina",
+             "impresora": "Bambu Lab A1", "bio": "Hago herramientas para imprimir en 3D."}
+    for k, v in datos.items():
+        page.locator(T % ("perfil-" + k)).fill(v)
+    page.locator(T % "perfil-instagram").fill("@tecno bear")               # inválido
+    page.locator(T % "perfil-guardar").click()
+    assert "instagram" in page.locator("#perfil-msg").inner_text().lower()
+    page.locator(T % "perfil-instagram").fill("@tecnobearr")
+    page.locator(T % "perfil-guardar").click()
+    assert not page.locator(T % "perfil").is_visible()
+    src = page.locator(T % "btn-cuenta" + " img").get_attribute("src")
+    assert src.startswith("data:image/svg+xml")
+    page.locator(T % "btn-cuenta").click()
+    page.locator(T % "btn-perfil").click()
+    for k, v in datos.items():
+        assert page.locator(T % ("perfil-" + k)).input_value() == v, k
+    assert page.locator(T % "perfil-instagram").input_value() == "@tecnobearr"
+    assert page.locator(T % "avatar-perro").get_attribute("aria-checked") == "true"
+    assert not page.console_errors, page.console_errors
+    page.context.close()
+
+
+@pytest.mark.spec("CUE-008")
+def test_feedback_de_la_comunidad(browser, base_url):
+    # sin cuentas configuradas: no hay botón
+    page = _con_cuenta(browser, base_url, "sin-cuentas")
+    page.wait_for_timeout(500)
+    assert not page.locator(T % "btn-feedback").is_visible()
+    page.context.close()
+    # visitante: pide ingresar
+    page = _con_cuenta(browser, base_url, "visitante")
+    page.locator(T % "btn-feedback").click()
+    assert page.locator(T % "fb-ingresar").is_visible() and not page.locator(T % "fb-form").is_visible()
+    page.locator(T % "fb-btn-ingresar").click()
+    assert page.locator(T % "login").is_visible()
+    page.context.close()
+    # usuario con perfil: deja una idea, se suma, responde, filtra y borra lo suyo
+    seed = [{"nombre": "Lucía", "detalle": "Docente · Rosario", "avatar": "av:gato", "tipo": "error", "herramienta": "sopa",
+             "texto": "En el celular no me deja arrastrar las piezas."}]
+    page = _con_cuenta(browser, base_url, "usuario", path="sopa.html", seed=seed)
+    page.locator(T % "btn-cuenta").click()
+    page.locator(T % "btn-perfil").click()
+    page.locator(T % "perfil-nombre").fill("Yoel")
+    page.locator(T % "perfil-oficio").fill("Maker")
+    page.locator(T % "perfil-ciudad").fill("Córdoba")
+    page.locator(T % "avatar-oso").click()
+    page.locator(T % "perfil-guardar").click()
+    page.locator(T % "btn-feedback").click()
+    dlg = page.locator(T % "feedback")
+    assert dlg.is_visible()
+    assert page.locator(T % "fb-herramienta").input_value() == "sopa"       # la de la página
+    items = page.locator(T % "fb-item")
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-item]').length === 1")
+    assert page.locator(T % "fb-resolver").count() == 0 and page.locator(T % "fb-borrar").count() == 0
+    page.locator(T % "fb-texto").fill("ok")
+    page.locator(T % "fb-enviar").click()
+    assert "escribí un poco más" in page.locator("#fb-msg").inner_text().lower()
+    page.locator(T % "fb-tipo-idea").click()
+    page.locator(T % "fb-herramienta").select_option("topper")
+    page.locator(T % "fb-texto").fill("Me gustaría poner un logo en el topper.")
+    page.locator(T % "fb-enviar").click()
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-item]').length === 2")
+    primero = items.nth(0)
+    assert "Yoel" in primero.inner_text() and "Maker · Córdoba" in primero.inner_text()
+    assert "Topper" in primero.inner_text() and "Idea" in primero.inner_text()
+    assert primero.locator(".fb-cara img").get_attribute("src").startswith("data:image/svg+xml")
+    # me sumo a lo de Lucía (y me saco)
+    voto = items.nth(1).locator(T % "fb-votar")
+    voto.click()
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-votar]')[1].getAttribute('aria-pressed') === 'true'")
+    assert items.nth(1).locator(T % "fb-votar" + " b").inner_text() == "1"
+    items.nth(1).locator(T % "fb-votar").click()
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-votar]')[1].getAttribute('aria-pressed') === 'false'")
+    # respondo
+    items.nth(1).locator(T % "fb-ver").click()
+    items.nth(1).locator(T % "fb-resp-texto").fill("A mí me pasa lo mismo.")
+    items.nth(1).locator(T % "fb-resp-enviar").click()
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-respuesta]').length === 1")
+    assert "A mí me pasa lo mismo." in items.nth(1).locator(T % "fb-respuesta").inner_text()
+    # filtro
+    page.locator(T % "fb-filtro-error").click()
+    assert items.count() == 1 and "Lucía" in items.nth(0).inner_text()
+    page.locator(T % "fb-filtro-todos").click()
+    # borro lo mío: primero pide confirmar
+    borrar = items.nth(0).locator(T % "fb-borrar")
+    borrar.click()
+    assert "seguro" in borrar.inner_text().lower() and items.count() == 2
+    borrar.click()
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-item]').length === 1")
+    assert not page.console_errors, page.console_errors
+    page.context.close()
+    # admin: marca resuelto
+    page = _con_cuenta(browser, base_url, "admin", seed=seed)
+    page.locator(T % "btn-cuenta").click()
+    page.locator(T % "menu-feedback").click()
+    page.wait_for_function("document.querySelectorAll('[data-testid=fb-item]').length === 1")
+    page.locator(T % "fb-resolver").click()
+    page.wait_for_selector(T % "fb-resuelto")
+    assert page.locator(T % "fb-resolver").inner_text() == "Reabrir"
+    assert not page.console_errors, page.console_errors
+    page.context.close()

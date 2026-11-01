@@ -135,18 +135,28 @@ export async function signOut() {
 }
 
 // ---------------------------------------------------------------- perfil
-// Datos simples del usuario (nombre, apellido, fecha de nacimiento y una foto chica) en
-// los metadatos de su cuenta de Supabase: no hace falta ninguna tabla nueva.
+// Datos del usuario en los metadatos de su cuenta de Supabase (no hace falta ninguna tabla):
+// nombre, apellido, nacimiento, una imagen (foto chica o una prediseñada "av:<id>"),
+// dónde vive, oficio, su impresora 3D, su Instagram y unas líneas sobre él.
+export const CAMPOS_PERFIL = {
+  nombre: 40, apellido: 40, ciudad: 50, provincia: 50, oficio: 50, impresora: 50, instagram: 31, bio: 240,
+};
+
 export function perfil() {
   const m = (auth.user && auth.user.user_metadata) || {};
-  return { nombre: m.nombre || "", apellido: m.apellido || "", nacimiento: m.nacimiento || "", foto: m.foto || "" };
+  const p = { nacimiento: m.nacimiento || "", foto: m.foto || "" };
+  for (const k of Object.keys(CAMPOS_PERFIL)) p[k] = m[k] || "";
+  return p;
 }
 
 export async function guardarPerfil(datos) {
   if (!auth.user) throw new Error("Ingresá con tu cuenta para guardar tu perfil.");
-  const d = { nombre: String(datos.nombre || "").trim().slice(0, 40), apellido: String(datos.apellido || "").trim().slice(0, 40),
-    nacimiento: /^\d{4}-\d{2}-\d{2}$/.test(datos.nacimiento || "") ? datos.nacimiento : "", foto: datos.foto || "" };
-  if (d.foto && (!d.foto.startsWith("data:image/") || d.foto.length > 40000)) throw new Error("La foto es demasiado grande.");
+  const d = { nacimiento: /^\d{4}-\d{2}-\d{2}$/.test(datos.nacimiento || "") ? datos.nacimiento : "", foto: datos.foto || "" };
+  for (const [k, n] of Object.entries(CAMPOS_PERFIL)) d[k] = String(datos[k] || "").trim().replace(/\s+/g, " ").slice(0, n);
+  d.instagram = d.instagram.replace(/^@+/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/\/.*$/, "");
+  if (d.instagram && !/^[A-Za-z0-9._]{1,30}$/.test(d.instagram)) throw new Error("El usuario de Instagram sólo lleva letras, números, punto y guion bajo.");
+  const prediseñada = /^av:[a-z]+$/.test(d.foto);
+  if (d.foto && !prediseñada && (!d.foto.startsWith("data:image/") || d.foto.length > 40000)) throw new Error("La foto es demasiado grande.");
   if (auth.mock) {
     auth.user = { ...auth.user, user_metadata: { ...(auth.user.user_metadata || {}), ...d } };
     emit();
@@ -157,6 +167,18 @@ export async function guardarPerfil(datos) {
   auth.user = data.user;
   emit();
   return perfil();
+}
+
+// cómo se muestra alguien a los demás (feedback): su nombre o la parte de su email antes de la @
+export function nombrePublico() {
+  if (!auth.user) return "";
+  const p = perfil();
+  return [p.nombre, p.apellido].filter(Boolean).join(" ") || auth.user.email.split("@")[0];
+}
+
+// para el feedback (feedback.js): el cliente de Supabase o el modo de prueba
+export function conexion() {
+  return { client: auth.client, user: auth.user, mock: auth.mock, configured: auth.configured, role: auth.role };
 }
 
 // ---------------------------------------------------------------- administración

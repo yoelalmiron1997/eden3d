@@ -1,7 +1,9 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // Botón de cuenta del encabezado y ventana de ingreso / registro.
-import { initAuth, onAuth, signIn, signUp, signOut, resetPassword, ROLES, perfil, guardarPerfil } from "./auth.js";
+import { initAuth, onAuth, signIn, signUp, signOut, resetPassword, ROLES, perfil, guardarPerfil, CAMPOS_PERFIL } from "./auth.js";
 import { mountTheme } from "./theme.js";
+import { AVATARES, srcCara, caraHTML, esAvatar } from "./avatares.js";
+import { mountFeedback, abrirFeedback } from "./feedback.js";
 
 const RAIZ = new URL("./", import.meta.url).href;
 
@@ -97,25 +99,46 @@ function achicarFoto(file) {
   });
 }
 
+const CAMPOS = [
+  ["nombre", "Nombre", "given-name"], ["apellido", "Apellido", "family-name"],
+  ["oficio", "Oficio", "organization-title", "Diseñador 3D, docente, maker…"], ["ciudad", "Ciudad", "address-level2"],
+  ["provincia", "Provincia / país", "address-level1", "Córdoba, Argentina"], ["impresora", "Tu impresora 3D", "off", "Bambu Lab A1, Ender 3…"],
+  ["instagram", "Instagram", "off", "@tuusuario"],
+];
+
 function abrirPerfil() {
   if (!dlgPerfil) {
     dlgPerfil = document.createElement("dialog");
     dlgPerfil.className = "modal";
     dlgPerfil.dataset.testid = "perfil";
+    const campo = ([k, label, ac, ph]) => `<label>${label} <input type="text" name="${k}" maxlength="${CAMPOS_PERFIL[k]}"
+      autocomplete="${ac}" ${ph ? `placeholder="${esc(ph)}"` : ""} data-testid="perfil-${k}"></label>`;
     dlgPerfil.innerHTML = `
       <form method="dialog" class="modal-box perfil-form">
         <button type="button" class="modal-x" aria-label="Cerrar" data-close>×</button>
         <h2>Mi perfil</h2>
         <div class="perfil-foto">
           <span class="perfil-cara" id="perfil-cara"></span>
-          <label class="btn">Cambiar foto <input type="file" accept="image/*" data-testid="perfil-foto" hidden></label>
-          <button type="button" class="link" id="perfil-sin-foto">Quitar</button>
+          <div class="perfil-foto-acc">
+            <label class="btn">Subir foto <input type="file" accept="image/*" data-testid="perfil-foto" hidden></label>
+            <button type="button" class="link" id="perfil-sin-foto" data-testid="perfil-quitar">Quitar</button>
+          </div>
         </div>
-        <div class="row2">
-          <label>Nombre <input type="text" name="nombre" maxlength="40" autocomplete="given-name" data-testid="perfil-nombre"></label>
-          <label>Apellido <input type="text" name="apellido" maxlength="40" autocomplete="family-name" data-testid="perfil-apellido"></label>
+        <fieldset class="perfil-avatares">
+          <legend>O elegí una imagen</legend>
+          <div class="avatares" role="radiogroup" aria-label="Imágenes de perfil">
+            ${AVATARES.map((a) => `<button type="button" role="radio" aria-checked="false" data-av="${a.id}" data-testid="avatar-${a.id}"
+              title="${esc(a.nombre)}" aria-label="${esc(a.nombre)}"><img src="${esc(srcCara("av:" + a.id))}" alt=""></button>`).join("")}
+          </div>
+        </fieldset>
+        <div class="perfil-campos">
+          ${campo(CAMPOS[0])}${campo(CAMPOS[1])}
+          <label>Fecha de nacimiento <input type="date" name="nacimiento" autocomplete="bday" data-testid="perfil-nacimiento"></label>
+          ${CAMPOS.slice(2).map(campo).join("")}
         </div>
-        <label>Fecha de nacimiento <input type="date" name="nacimiento" autocomplete="bday" data-testid="perfil-nacimiento"></label>
+        <label class="perfil-bio">Sobre vos <span class="hint" id="perfil-bio-n"></span>
+          <textarea name="bio" rows="3" maxlength="${CAMPOS_PERFIL.bio}" placeholder="Qué imprimís, qué te gusta hacer…" data-testid="perfil-bio"></textarea></label>
+        <p class="hint small">Tu nombre, tu oficio y tu ciudad se ven en el feedback que dejes. La fecha de nacimiento no se muestra.</p>
         <p class="login-msg" id="perfil-msg" role="alert"></p>
         <button type="submit" class="primary" data-testid="perfil-guardar">Guardar</button>
       </form>`;
@@ -125,15 +148,27 @@ function abrirPerfil() {
     q("[data-testid=perfil-foto]").addEventListener("change", async (e) => {
       try { dlgPerfil.foto = await achicarFoto(e.target.files[0]); pintarCara(); q("#perfil-msg").textContent = ""; }
       catch (err) { q("#perfil-msg").textContent = err.message; }
+      e.target.value = "";
     });
     q("#perfil-sin-foto").addEventListener("click", () => { dlgPerfil.foto = ""; pintarCara(); });
+    q(".avatares").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-av]");
+      if (!b) return;
+      dlgPerfil.foto = "av:" + b.dataset.av;
+      pintarCara();
+    });
+    const bio = q("[name=bio]");
+    const contar = () => { q("#perfil-bio-n").textContent = `${bio.value.length}/${CAMPOS_PERFIL.bio}`; };
+    bio.addEventListener("input", contar);
+    dlgPerfil.contar = contar;
     q("form").addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const ok = q("[data-testid=perfil-guardar]");
       ok.disabled = true;
       try {
-        await guardarPerfil({ nombre: q("[name=nombre]").value, apellido: q("[name=apellido]").value,
-          nacimiento: q("[name=nacimiento]").value, foto: dlgPerfil.foto });
+        const datos = { nacimiento: q("[name=nacimiento]").value, foto: dlgPerfil.foto, bio: bio.value };
+        for (const [k] of CAMPOS) datos[k] = q(`[name=${k}]`).value;
+        await guardarPerfil(datos);
         dlgPerfil.close();
       } catch (err) { q("#perfil-msg").textContent = err.message; }
       finally { ok.disabled = false; }
@@ -141,11 +176,12 @@ function abrirPerfil() {
   }
   const p = perfil();
   const q = (sel) => dlgPerfil.querySelector(sel);
-  q("[name=nombre]").value = p.nombre;
-  q("[name=apellido]").value = p.apellido;
+  for (const [k] of CAMPOS) q(`[name=${k}]`).value = k === "instagram" && p[k] ? "@" + p[k] : p[k];
+  q("[name=bio]").value = p.bio;
   q("[name=nacimiento]").value = p.nacimiento;
   q("[name=nacimiento]").max = new Date().toISOString().slice(0, 10);
   q("#perfil-msg").textContent = "";
+  dlgPerfil.contar();
   dlgPerfil.foto = p.foto;
   pintarCara();
   dlgPerfil.showModal();
@@ -153,8 +189,12 @@ function abrirPerfil() {
 
 function pintarCara() {
   const cara = dlgPerfil.querySelector("#perfil-cara");
-  cara.innerHTML = dlgPerfil.foto ? `<img src="${esc(dlgPerfil.foto)}" alt="Tu foto">` : "<span>Sin foto</span>";
+  const src = srcCara(dlgPerfil.foto);
+  cara.innerHTML = src ? `<img src="${esc(src)}" alt="Tu imagen de perfil">` : "<span>Sin foto</span>";
   dlgPerfil.querySelector("#perfil-sin-foto").hidden = !dlgPerfil.foto;
+  for (const b of dlgPerfil.querySelectorAll("[data-av]")) {
+    b.setAttribute("aria-checked", String(esAvatar(dlgPerfil.foto) && dlgPerfil.foto === "av:" + b.dataset.av));
+  }
 }
 
 // host: elemento del encabezado donde va el botón de cuenta
@@ -163,6 +203,7 @@ export function mountAccount(host) {
   const theme = document.createElement("span");
   host.before(theme);
   mountTheme(theme);
+  mountFeedback(openLogin);                          // el botón flotante de feedback, en todas las páginas
   onAuth((a) => {
     // Calidad, specs y cobertura: sólo para administradores
     document.documentElement.classList.toggle("es-admin", !!a.perms.admin);
@@ -176,7 +217,7 @@ export function mountAccount(host) {
     const nombre = [p.nombre, p.apellido].filter(Boolean).join(" ");
     // con nombre: sus iniciales; sin nombre: la primera letra del email
     const iniciales = nombre ? nombre.split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join("") : a.user.email[0].toUpperCase();
-    const cara = p.foto ? `<img src="${esc(p.foto)}" alt="">` : `<span>${esc(iniciales)}</span>`;
+    const cara = caraHTML(p.foto, iniciales);
     host.innerHTML = `
       <div class="cuenta">
         <button type="button" class="cuenta-btn" data-testid="btn-cuenta" aria-haspopup="menu" aria-expanded="false"
@@ -188,6 +229,7 @@ export function mountAccount(host) {
             <span class="role role-${a.role}" data-testid="rol">${ROLES[a.role].label}</span>
           </div>
           <button type="button" role="menuitem" data-testid="btn-perfil">Mi perfil</button>
+          <button type="button" role="menuitem" data-testid="menu-feedback">Feedback</button>
           ${a.perms.admin ? `<a role="menuitem" href="${RAIZ}admin.html" data-testid="link-admin">Administración</a>` : ""}
           <button type="button" role="menuitem" data-testid="btn-salir">Salir</button>
         </div>
@@ -201,6 +243,7 @@ export function mountAccount(host) {
     document.addEventListener("click", (e) => { if (!host.contains(e.target)) abrir(false); }, { signal });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !menu.hidden) { abrir(false); btn.focus(); } }, { signal });
     host.querySelector("[data-testid=btn-perfil]").addEventListener("click", () => { abrir(false); abrirPerfil(); });
+    host.querySelector("[data-testid=menu-feedback]").addEventListener("click", () => { abrir(false); abrirFeedback(); });
     host.querySelector("[data-testid=btn-salir]").addEventListener("click", () => { abrir(false); signOut(); });
   });
   initAuth();

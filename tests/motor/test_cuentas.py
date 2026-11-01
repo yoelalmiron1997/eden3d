@@ -10,7 +10,8 @@ import sys
 import pytest
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SQL = open(os.path.join(REPO, "supabase", "esquema.sql"), encoding="utf-8").read().lower()
+SQL_TODO = open(os.path.join(REPO, "supabase", "esquema.sql"), encoding="utf-8").read().lower()
+SQL, SQL_FB = SQL_TODO.split("-- feedback de la comunidad", 1)        # cuentas y roles | feedback
 AUTH_JS = open(os.path.join(REPO, "web", "auth.js"), encoding="utf-8").read()
 
 
@@ -62,3 +63,35 @@ def test_la_config_sale_de_las_variables(tmp_path):
     assert (out / "vendor" / "supabase" / "supabase.js").is_file()
     for page in ("index.html", "macetas.html", "admin.html"):
         assert (out / page).is_file()
+
+
+@pytest.mark.spec("CUE-009")
+def test_feedback_con_rls():
+    for t in ("feedback", "feedback_respuestas", "feedback_votos"):
+        assert "create table if not exists public.%s" % t in SQL_FB
+        assert "alter table public.%s enable row level security" % t in SQL_FB
+        pols = re.findall(r'create policy "[^"]+" on public\.%s\s+for (\w+) to authenticated (using|with check) \(([^;]*)\);' % t, SQL_FB)
+        por = {}
+        for accion, _, cond in pols:
+            por.setdefault(accion, []).append(cond)
+        assert por["select"] == ["true"], t
+        assert por["insert"] and all("autor = auth.uid()" in c for c in por["insert"]), t
+        assert por["delete"] and all(c.startswith("autor = auth.uid()") for c in por["delete"]), t
+        # nada "for all" ni políticas para anónimos
+        assert "for all" not in SQL_FB and " to anon" not in SQL_FB
+    # el estado sólo lo cambia el admin; nadie más actualiza
+    upd = re.findall(r'on public\.(\w+)\s+for update to authenticated using \(([^)]*\))\) with check \(([^)]*\))\)', SQL_FB)
+    assert upd == [("feedback", "public.es_admin()", "public.es_admin()")], upd
+    assert "estado = 'abierto'" in SQL_FB                      # se crea siempre abierto
+    assert "check (tipo in ('idea', 'error', 'comentario'))" in SQL_FB
+    assert "char_length(texto) between 3 and 1000" in SQL_FB
+    assert "on delete cascade" in SQL_FB and "primary key (feedback_id, autor)" in SQL_FB
+
+
+@pytest.mark.spec("CUE-009")
+def test_las_herramientas_del_feedback_coinciden():
+    js = open(os.path.join(REPO, "web", "feedback.js"), encoding="utf-8").read()
+    m = re.search(r"export const HERRAMIENTAS = \{([^}]*)\}", js)
+    web = set(re.findall(r"(\w+):", m.group(1)))
+    base = set(re.findall(r"'(\w+)'", re.search(r"check \(herramienta in \(([^)]*)\)\)", SQL_FB).group(1)))
+    assert web == base == {"general", "macetas", "mate", "sopa", "topper", "chapita"}

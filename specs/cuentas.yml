@@ -74,3 +74,51 @@ specs:
     prioridad: media
     nivel: web
     estado: activa
+  - id: CUE-007
+    titulo: Perfil con dónde vive, oficio y una imagen prediseñada
+    descripcion: >
+      Además de nombre, apellido, nacimiento y foto, el perfil guarda ciudad, provincia o
+      país, oficio, impresora 3D, usuario de Instagram y unas líneas "Sobre vos". En vez de
+      subir una foto se puede elegir una de 16 imágenes minimalistas prediseñadas (oso,
+      perro, gato, patita, impresora 3D, mate…), que se guardan como "av:<id>".
+    criterio: >
+      Elegir una imagen prediseñada la marca elegida y la muestra en el perfil y en el botón
+      de la cuenta; ciudad, provincia, oficio, impresora, Instagram (sin la @) y "Sobre vos"
+      se guardan y vuelven al abrir el perfil; un Instagram con caracteres inválidos se
+      rechaza con un mensaje en español; sin errores en la consola.
+    prioridad: media
+    nivel: web
+    estado: activa
+  - id: CUE-008
+    titulo: Feedback de la comunidad
+    descripcion: >
+      Un botón "Feedback" en todas las páginas abre el feedback de la comunidad: con la
+      sesión iniciada se elige el tipo (idea, algo no anda, comentario), la herramienta y se
+      escribe la descripción; la lista muestra lo de todos con su nombre, oficio, ciudad e
+      imagen; se puede sumar ("Me sumo"), responder, filtrar por tipo y borrar lo propio; el
+      admin marca resuelto y borra. Sin sesión pide ingresar; sin cuentas configuradas el
+      botón no aparece.
+    criterio: >
+      Sin cuentas no hay botón; un visitante ve el aviso para ingresar; con sesión, enviar
+      una idea la suma arriba de la lista con el nombre y el oficio · ciudad del perfil, la
+      herramienta de la página elegida sola; "Me sumo" cuenta 1 y se puede sacar; una
+      respuesta aparece debajo; el filtro "Algo no anda" muestra sólo esos; borrar pide
+      confirmar con un segundo toque; un usuario no ve "Marcar resuelto" y el admin sí; menos
+      de 3 caracteres da un error en español; sin errores en la consola.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: CUE-009
+    titulo: Las reglas del feedback viven en la base
+    descripcion: >
+      supabase/esquema.sql crea las tablas feedback, feedback_respuestas y feedback_votos con
+      RLS: las leen las cuentas; cada uno escribe sólo a su nombre (autor = auth.uid());
+      cada uno borra lo suyo y el admin todo; sólo el admin cambia el estado.
+    criterio: >
+      El esquema se puede correr dos veces; las tres tablas tienen RLS activado y políticas
+      de select para authenticated, insert con autor = auth.uid(), delete del autor o admin
+      y update del feedback sólo para es_admin(); los límites de largo y los tipos válidos
+      están en checks de la base.
+    prioridad: alta
+    nivel: motor
+    estado: activa

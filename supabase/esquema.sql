@@ -59,3 +59,77 @@ insert into public.perfiles (id, email)
 
 -- PRIMER ADMIN: después de crear tu cuenta en la web, cambiá el email y corré sólo esto:
 -- update public.perfiles set rol = 'admin' where email = 'TU_EMAIL@ejemplo.com';
+
+-- ===========================================================================
+-- FEEDBACK DE LA COMUNIDAD (botón "Feedback" de la web)
+-- Todos los que tienen cuenta leen el feedback de los demás, dejan el suyo, se suman
+-- ("Me sumo") y responden. Cada uno borra lo suyo; el admin marca resuelto y borra todo.
+-- ===========================================================================
+create table if not exists public.feedback (
+  id bigint generated always as identity primary key,
+  autor uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  nombre text not null check (char_length(nombre) between 1 and 60),
+  detalle text not null default '' check (char_length(detalle) <= 90),
+  avatar text not null default '' check (char_length(avatar) <= 40000),
+  herramienta text not null default 'general'
+    check (herramienta in ('general', 'macetas', 'mate', 'sopa', 'topper', 'chapita')),
+  tipo text not null default 'idea' check (tipo in ('idea', 'error', 'comentario')),
+  texto text not null check (char_length(texto) between 3 and 1000),
+  estado text not null default 'abierto' check (estado in ('abierto', 'resuelto')),
+  creado timestamptz not null default now()
+);
+create index if not exists feedback_creado on public.feedback (creado desc);
+alter table public.feedback enable row level security;
+
+drop policy if exists "feedback: lo leen las cuentas" on public.feedback;
+create policy "feedback: lo leen las cuentas" on public.feedback
+  for select to authenticated using (true);
+drop policy if exists "feedback: cada uno escribe el suyo" on public.feedback;
+create policy "feedback: cada uno escribe el suyo" on public.feedback
+  for insert to authenticated with check (autor = auth.uid() and estado = 'abierto');
+drop policy if exists "feedback: el admin lo marca resuelto" on public.feedback;
+create policy "feedback: el admin lo marca resuelto" on public.feedback
+  for update to authenticated using (public.es_admin()) with check (public.es_admin());
+drop policy if exists "feedback: borra el autor o el admin" on public.feedback;
+create policy "feedback: borra el autor o el admin" on public.feedback
+  for delete to authenticated using (autor = auth.uid() or public.es_admin());
+
+create table if not exists public.feedback_respuestas (
+  id bigint generated always as identity primary key,
+  feedback_id bigint not null references public.feedback (id) on delete cascade,
+  autor uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  nombre text not null check (char_length(nombre) between 1 and 60),
+  avatar text not null default '' check (char_length(avatar) <= 40000),
+  texto text not null check (char_length(texto) between 1 and 600),
+  creado timestamptz not null default now()
+);
+create index if not exists feedback_respuestas_fb on public.feedback_respuestas (feedback_id);
+alter table public.feedback_respuestas enable row level security;
+
+drop policy if exists "respuestas: las leen las cuentas" on public.feedback_respuestas;
+create policy "respuestas: las leen las cuentas" on public.feedback_respuestas
+  for select to authenticated using (true);
+drop policy if exists "respuestas: cada uno escribe la suya" on public.feedback_respuestas;
+create policy "respuestas: cada uno escribe la suya" on public.feedback_respuestas
+  for insert to authenticated with check (autor = auth.uid());
+drop policy if exists "respuestas: borra el autor o el admin" on public.feedback_respuestas;
+create policy "respuestas: borra el autor o el admin" on public.feedback_respuestas
+  for delete to authenticated using (autor = auth.uid() or public.es_admin());
+
+create table if not exists public.feedback_votos (
+  feedback_id bigint not null references public.feedback (id) on delete cascade,
+  autor uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  creado timestamptz not null default now(),
+  primary key (feedback_id, autor)
+);
+alter table public.feedback_votos enable row level security;
+
+drop policy if exists "votos: los ven las cuentas" on public.feedback_votos;
+create policy "votos: los ven las cuentas" on public.feedback_votos
+  for select to authenticated using (true);
+drop policy if exists "votos: cada uno el suyo" on public.feedback_votos;
+create policy "votos: cada uno el suyo" on public.feedback_votos
+  for insert to authenticated with check (autor = auth.uid());
+drop policy if exists "votos: cada uno saca el suyo" on public.feedback_votos;
+create policy "votos: cada uno saca el suyo" on public.feedback_votos
+  for delete to authenticated using (autor = auth.uid());
