@@ -677,3 +677,6 @@ dialog.modal::backdrop { background: rgba(5, 8, 9, .78); backdrop-filter: none; 
 .fb-resp-form button { min-height: 36px; }
 .avatares button { border-color: var(--line-2, var(--line)); }
 .fb-resp li .fb-borrar { min-height: 28px; padding: 0 8px; font-size: 12px; }
+
+/* trofeos: los campos que dependen de la figura */
+.panel label[hidden], .panel div[hidden] { display: none; }
