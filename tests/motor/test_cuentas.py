@@ -94,4 +94,4 @@ def test_las_herramientas_del_feedback_coinciden():
     m = re.search(r"export const HERRAMIENTAS = \{([^}]*)\}", js)
     web = set(re.findall(r"(\w+):", m.group(1)))
     base = set(re.findall(r"'(\w+)'", re.search(r"check \(herramienta in \(([^)]*)\)\)", SQL_FB).group(1)))
-    assert web == base == {"general", "macetas", "mate", "sopa", "topper", "chapita"}
+    assert web == base == {"general", "macetas", "mate", "sopa", "topper", "chapita", "trofeo"}

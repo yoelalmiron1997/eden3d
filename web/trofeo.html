@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trofeos para eventos · TecnoBear</title>
+  <meta name="description" content="Armá el trofeo de tu torneo o evento: una estrella, una copa, una llama o un número sobre una base con el nombre del evento, y bajalo para imprimir en 3D.">
+  <meta name="copyright" content="© TecnoBear — Yoel Almirón. Todos los derechos reservados.">
+  <meta name="theme-color" content="#090E0F">
+  <link rel="icon" href="assets/marca/logo-tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear, inicio" data-testid="link-home">
+      <img class="brand-logo" src="assets/marca/logo-tecnobear.svg" alt="" width="36" height="36"><span class="brand-tb">TecnoBear</span><span class="brand-sub">Trofeos para eventos</span>
+    </a>
+    <nav class="nav">
+      <a href="./" class="hide-sm">Inicio</a>
+      <a href="./#herramientas" class="hide-sm">Herramientas</a>
+      <a href="calidad/" data-testid="link-calidad" class="solo-admin">Calidad</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset class="sec" data-sec="figura">
+        <legend>Figura</legend>
+        <div class="seg seg4" id="figuras" role="radiogroup" aria-label="Figura del trofeo" data-testid="figuras"></div>
+        <div id="numero-row" hidden>
+          <div class="row2">
+            <label>Número o letra
+              <input type="text" id="caracter" data-testid="inp-caracter" maxlength="3" value="1" autocomplete="off" spellcheck="false">
+            </label>
+            <label>Tipografía
+              <select id="fuente_figura" data-testid="sel-fuente-figura" disabled></select>
+            </label>
+          </div>
+        </div>
+        <label id="texto-figura-row">Texto en la figura <span class="hint">opcional: 1°, MVP…</span>
+          <input type="text" id="texto_figura" data-testid="inp-texto-figura" maxlength="4" value="" placeholder="1°" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="slider"><span>Alto total</span>
+          <input type="range" id="alto" data-testid="sl-alto" min="90" max="260" step="1" value="160">
+          <output id="o-alto">160 mm</output></label>
+        <label class="slider"><span>Tallo</span>
+          <input type="range" id="tallo" data-testid="sl-tallo" min="0" max="50" step="1" value="14">
+          <output id="o-tallo">14 mm</output></label>
+        <label class="slider"><span>Grosor</span>
+          <input type="range" id="grosor" data-testid="sl-grosor" min="5" max="14" step="0.5" value="8">
+          <output id="o-grosor">8,0 mm</output></label>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="base">
+        <legend>Base y texto</legend>
+        <label>Primera línea <span class="hint">el premio o el evento</span>
+          <input type="text" id="linea1" data-testid="inp-linea1" maxlength="22" value="CAMPEÓN" autocomplete="off" spellcheck="false">
+        </label>
+        <label>Segunda línea <span class="hint">opcional: torneo, fecha, nombre…</span>
+          <input type="text" id="linea2" data-testid="inp-linea2" maxlength="28" value="Torneo 2026" autocomplete="off" spellcheck="false">
+        </label>
+        <div class="row2">
+          <label>Tipografía
+            <select id="fuente" data-testid="sel-fuente" disabled></select>
+          </label>
+          <label>Base
+            <select id="base" data-testid="sel-base" disabled></select>
+          </label>
+        </div>
+        <label class="slider"><span>Ancho</span>
+          <input type="range" id="base_ancho" data-testid="sl-base-ancho" min="40" max="140" step="1" value="70">
+          <output id="o-base_ancho">70 mm</output></label>
+        <label class="slider"><span>Alto</span>
+          <input type="range" id="base_alto" data-testid="sl-base-alto" min="20" max="60" step="1" value="32">
+          <output id="o-base_alto">32 mm</output></label>
+        <label class="slider"><span>Fondo</span>
+          <input type="range" id="base_fondo" data-testid="sl-base-fondo" min="25" max="80" step="1" value="40">
+          <output id="o-base_fondo">40 mm</output></label>
+        <p class="hint small">El texto sale lo más grande que entra en el frente de la base.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="detalles">
+        <legend>Detalles y colores</legend>
+        <div class="row2">
+          <label>Texto de la base
+            <select id="texto" data-testid="sel-texto" disabled></select>
+          </label>
+          <label>Colores
+            <select id="colores" data-testid="sel-colores" disabled></select>
+          </label>
+        </div>
+        <p class="hint small" id="colores-hint" hidden></p>
+        <label class="slider"><span>Borde</span>
+          <input type="range" id="borde" data-testid="sl-borde" min="0" max="3" step="0.1" value="1.6">
+          <output id="o-borde">1,6 mm</output></label>
+        <label class="slider"><span id="relieve-lbl">Relieve</span>
+          <input type="range" id="relieve" data-testid="sl-relieve" min="0.6" max="2" step="0.1" value="1.2">
+          <output id="o-relieve">1,2 mm</output></label>
+        <label class="slider"><span>Holgura</span>
+          <input type="range" id="holgura" data-testid="sl-holgura" min="0.1" max="0.5" step="0.05" value="0.25">
+          <output id="o-holgura">0,25 mm</output></label>
+        <p class="hint small">La holgura es el juego entre la espiga de la figura y la ranura de la base.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
+        <legend>Vista</legend>
+        <div class="row3 even">
+          <label>Figura
+            <select id="color" data-testid="sel-color">
+              <option value="#d4a537" data-metal="1">Dorado</option>
+              <option value="#c4c8cc" data-metal="1">Plateado</option>
+              <option value="#b8733d" data-metal="1">Bronce</option>
+              <option value="#e0352b">Rojo</option>
+              <option value="#2a5bd7">Azul</option>
+              <option value="#a5d63a">Verde lima</option>
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#2c2c2c">Negro</option>
+            </select>
+          </label>
+          <label>Base
+            <select id="color-base" data-testid="sel-color-base">
+              <option value="#1f1f1f">Negro</option>
+              <option value="#b98a5a">Madera</option>
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#6b7075">Gris</option>
+              <option value="#d4a537" data-metal="1">Dorado</option>
+            </select>
+          </label>
+          <label>Detalles
+            <select id="color-detalle" data-testid="sel-color-detalle">
+              <option value="#d4a537" data-metal="1">Dorado</option>
+              <option value="#c4c8cc" data-metal="1">Plateado</option>
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#2c2c2c">Negro</option>
+              <option value="#e0352b">Rojo</option>
+            </select>
+          </label>
+        </div>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <div class="row3 even">
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="dlfigura" data-testid="btn-stl-figura" disabled>STL figura</button>
+          <button type="button" id="dlbase" data-testid="btn-stl-base" disabled>STL base</button>
+        </div>
+        <div class="row2 even" id="dl-color" hidden>
+          <button type="button" id="dldetalle" data-testid="btn-stl-detalle" disabled>STL detalle</button>
+          <button type="button" id="dltexto" data-testid="btn-stl-texto" disabled>STL texto</button>
+        </div>
+        <div class="row2 even">
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
+          <button type="button" id="pdf" data-testid="btn-pdf" disabled>Guía PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="column">
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings" data-testid="avisos"></ul>
+      </article>
+    </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Tipografías libres (OFL / Apache) de sus autores · motor de trofeos <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="trofeo.js"></script>
+</body>
+</html>

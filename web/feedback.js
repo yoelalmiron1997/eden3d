@@ -7,7 +7,7 @@ import { onAuth, conexion, perfil, nombrePublico } from "./auth.js";
 import { caraHTML } from "./avatares.js";
 
 export const TIPOS = { idea: "Idea", error: "Algo no anda", comentario: "Comentario" };
-export const HERRAMIENTAS = { general: "General", macetas: "Macetas", mate: "Mate", sopa: "Sopa de letras", topper: "Topper", chapita: "Chapitas" };
+export const HERRAMIENTAS = { general: "General", macetas: "Macetas", mate: "Mate", sopa: "Sopa de letras", topper: "Topper", chapita: "Chapitas", trofeo: "Trofeos" };
 const LARGO = 1000, LARGO_RESP = 600;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

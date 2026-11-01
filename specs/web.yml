@@ -192,7 +192,7 @@ specs:
       360°. Mirando desde abajo se esconden la mesa, el escenario y el piso (y la torta del
       topper) para ver la pieza por debajo.
     criterio: >
-      En macetas, mate, sopa, topper y chapitas la barra de vistas tiene sus 8 botones; la
+      En macetas, mate, sopa, topper, chapitas y trofeos la barra de vistas tiene sus 8 botones; la
       cámara no tiene límite de ángulo hacia abajo; "Abajo" deja la cámara por debajo de la
       mesa y esconde el piso y el escenario, "Arriba" la lleva arriba y los vuelve a mostrar;
       "360°" prende y apaga el giro; sin errores en la consola.

@@ -54,6 +54,33 @@ const MOTORES = {
       ]],
     ],
   }),
+  trofeo: (s) => ({
+    titulo: "Trofeo para eventos",
+    datos: [["Texto", [s.linea1, s.linea2].filter(Boolean).join(" / ")],
+      ["Figura", `${s.figura === "numero" ? "número" : s.figura}${s.caracter ? " " + s.caracter : ""}${s.texto_figura ? " · " + s.texto_figura : ""}`],
+      ["Medidas", `${Math.round(s.medidas_mm[0])} x ${Math.round(s.medidas_mm[1])} x ${Math.round(s.medidas_mm[2])} mm`],
+      ["Figura (acostada)", `${Math.round(s.figura_pieza_mm[0])} x ${Math.round(s.figura_pieza_mm[1])} x ${n(s.figura_mm[2])} mm`],
+      ["Base", `${Math.round(s.base_mm[0])} x ${Math.round(s.base_mm[1])} x ${Math.round(s.base_mm[2])} mm · ${s.base}`],
+      ["Encastre", `espiga ${n(s.espiga_mm[0])} x ${n(s.espiga_mm[1])} mm en una ranura de ${n(s.ranura_mm[0], 2)} x ${n(s.ranura_mm[1], 2)} x ${n(s.ranura_mm[2])} mm`],
+      ["Colores", s.colores === "dos" ? (s.cambio_mm ? `figura: cambio de filamento a los ${n(s.cambio_mm)} mm · base: texto aparte (AMS)` : "base: texto aparte (AMS)") : "un color por pieza"]],
+    secciones: [
+      ["Preparar la impresión", [
+        "La figura va acostada, tal como sale el archivo: no necesita soportes y la espiga queda fuerte.",
+        "La base va parada, con la ranura para arriba: tampoco necesita soportes.",
+        "Capa de 0,2 mm (0,16 mm para que el texto se lea mejor), 3 perímetros y 15 a 20 % de relleno.",
+        s.cambio_mm ? `Figura en dos colores: pausá en la capa de los ${n(s.cambio_mm)} mm y cambiá el filamento para el borde y los detalles.`
+          : "Para que brille como un trofeo de verdad, probá un PLA seda dorado o plateado en la figura.",
+        s.colores === "dos" ? "El texto de la base es una parte aparte: con AMS asignale otro filamento (es parte del mismo objeto)."
+          : "Texto de otro color sin AMS: pintalo con un marcador de pintura o un pincel fino.",
+        "No escales las piezas en el laminador: la holgura del encastre ya está calculada.",
+      ]],
+      ["Armado", [
+        "Probá la espiga en la ranura antes de pegar: tiene que entrar con una presión suave.",
+        "Si queda dura, lijá apenas los costados de la espiga; si queda floja, una gota de cianoacrilato la fija.",
+        "Pegala derecha y dejala secar parada unos minutos.",
+      ]],
+    ],
+  }),
   chapita: (s) => ({
     titulo: "Chapita para collar",
     datos: [["Nombre", [s.nombre, s.linea2].filter(Boolean).join(" / ")],

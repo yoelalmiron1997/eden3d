@@ -72,13 +72,17 @@ create table if not exists public.feedback (
   detalle text not null default '' check (char_length(detalle) <= 90),
   avatar text not null default '' check (char_length(avatar) <= 40000),
   herramienta text not null default 'general'
-    check (herramienta in ('general', 'macetas', 'mate', 'sopa', 'topper', 'chapita')),
+    check (herramienta in ('general', 'macetas', 'mate', 'sopa', 'topper', 'chapita', 'trofeo')),
   tipo text not null default 'idea' check (tipo in ('idea', 'error', 'comentario')),
   texto text not null check (char_length(texto) between 3 and 1000),
   estado text not null default 'abierto' check (estado in ('abierto', 'resuelto')),
   creado timestamptz not null default now()
 );
 create index if not exists feedback_creado on public.feedback (creado desc);
+-- si la tabla ya existía, la lista de herramientas se actualiza (cada herramienta nueva se suma acá)
+alter table public.feedback drop constraint if exists feedback_herramienta_check;
+alter table public.feedback add constraint feedback_herramienta_check
+  check (herramienta in ('general', 'macetas', 'mate', 'sopa', 'topper', 'chapita', 'trofeo'));
 alter table public.feedback enable row level security;
 
 drop policy if exists "feedback: lo leen las cuentas" on public.feedback;

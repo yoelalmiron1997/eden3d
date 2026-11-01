@@ -355,7 +355,7 @@ html.es-admin .solo-admin { display: revert !important; }
   font-weight: 700; background: var(--green); color: #fff; vertical-align: 1px; }
 .row2.even { display: flex; flex-wrap: wrap; gap: 8px; }
 .row2.even > button { flex: 1 1 30%; }
-.row2.even > button[hidden] { display: none; }
+.row2.even > button[hidden], .row2.even[hidden] { display: none; }
 
 /* =====================================================================
    SISTEMA INDUSTRIAL (DESIGN.md): el mismo mundo del inicio en todas las páginas.

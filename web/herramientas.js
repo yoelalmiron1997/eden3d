@@ -48,6 +48,14 @@ export const HERRAMIENTAS = [
     alt: "Chapita impresa en 3D con forma de hueso, azul con el nombre Roma, borde y patitas en blanco, con su argolla, sobre una mesa de madera",
     testImagen: "tool-imagen-chapita", foco: "50% 50%",
   },
+  {
+    id: "trofeo", ruta: "trofeo.html", modal: "trofeo-modal", categoria: "personalizacion",
+    nombre: "Trofeos para eventos", corto: "Trofeos para eventos",
+    descripcion: "Una estrella, una copa, una llama o un número sobre una base con el nombre del torneo o del evento.",
+    imagen: "assets/herramientas/trofeo_v_450.jpg", imagen2x: "assets/herramientas/trofeo_v.jpg",
+    alt: "Trofeo impreso en 3D: una estrella dorada parada sobre una base negra escalonada que dice Campeón, Torneo 2026",
+    testImagen: "tool-imagen-trofeo", foco: "50% 45%",
+  },
 ];
 
 export const REDES = [

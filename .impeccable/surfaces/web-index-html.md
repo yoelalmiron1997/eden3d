@@ -9,7 +9,7 @@ related_targets: []
 
 Modo: Persuade. Visitante: alguien de la comunidad del canal que llega desde un video o
 directo al sitio y quiere abrir una herramienta. Acción: encontrar y abrir una de las cuatro
-herramientas (rutas reales: macetas.html, mate.html, sopa.html, topper.html, chapita.html). Restricciones:
+herramientas (rutas reales: macetas.html, mate.html, sopa.html, topper.html, chapita.html, trofeo.html). Restricciones:
 logo original sin redibujar y sin girar (en el hero flota suave); data-testid existentes; login, tema y
 pop-up de primera visita intactos. Dirección fijada por el usuario: Industrial Tech /
 InfraCore (paleta, Inter + Barlow Condensed, radios 0–4 px, cortes diagonales).

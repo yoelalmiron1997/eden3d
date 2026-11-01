@@ -1,0 +1,70 @@
+area: Trofeos para eventos
+prefijo: TRO
+specs:
+  - id: TRO-001
+    titulo: La figura sale en una sola pieza con su espiga
+    descripcion: >
+      Estrella, copa, llama, rayo, hojas, pelota o un número / letra, acostada para imprimir,
+      con una espiga abajo que entra en la base. Un número de varias cifras se une con un zócalo.
+    criterio: >
+      Para cada figura (y para "10") la figura con su espiga es UNA sola componente; el alto
+      de la figura es el alto total menos la base y el tallo (±1 mm); el grosor es el pedido;
+      cada pieza es una malla cerrada con volumen positivo.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TRO-002
+    titulo: La espiga encastra en la ranura de la base
+    descripcion: >
+      La base (recta o escalonada) tiene arriba una ranura del tamaño de la espiga más la
+      holgura, con pared alrededor, y la figura armada queda parada con la espiga adentro.
+    criterio: >
+      La ranura mide la espiga más 2 × holgura en ancho y en grosor y tiene la misma
+      profundidad que la parte de la espiga que entra; deja al menos 4 mm de pared; los
+      detalles en relieve de la figura no bajan hasta la espiga (entra lisa); en el trofeo
+      armado la punta de la espiga queda en el fondo de la ranura y la figura arriba de la base.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TRO-003
+    titulo: El texto del evento al frente de la base
+    descripcion: >
+      Una o dos líneas (el premio, el evento, la fecha) lo más grandes que entran en el
+      frente, en relieve o grabadas; un texto corto opcional en la figura ("1°", "MVP").
+    criterio: >
+      El texto queda adentro del frente de la base; con menos letras sale más grande; en
+      relieve sobresale del frente y en grabado se hunde; el texto de la figura queda adentro
+      de la figura y lejos del borde; sin texto, con demasiadas letras, un carácter que la
+      tipografía no tiene o una figura de menos de 40 mm se rechaza con un mensaje en español.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: TRO-004
+    titulo: Colores y descargas
+    descripcion: >
+      En un color la figura y la base salen en una pieza cada una; en dos colores los
+      detalles (DETALLE) y el texto (TEXTO) son piezas aparte. STL de cada pieza y un 3MF con
+      la figura acostada y la base parada.
+    criterio: >
+      Un color da FIGURA y BASE; dos colores da además DETALLE (del grosor al grosor + relieve,
+      con el cambio de filamento en `cambio_mm`) y TEXTO; el STL es binario y se llama
+      Trofeo-<Figura>-<Texto>_<PIEZA>.stl; el 3MF trae dos objetos en la cama (figura y base),
+      cada uno con sus partes, y los metadatos de licencia de TecnoBear.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: TRO-005
+    titulo: Trofeos en la web
+    descripcion: >
+      La página trofeo.html arma el trofeo en el navegador y lo muestra armado (la figura
+      parada en la base, los detalles y el texto de su color), y el inicio tiene la tarjeta
+      "Trofeos para eventos" con su pop-up.
+    criterio: >
+      La página arranca con una estrella "CAMPEÓN / Torneo 2026" armada; cambiar la figura
+      (el número muestra su campo y esconde el texto de la figura), escribir otro texto o
+      pasar a dos colores (aparecen "STL detalle" y "STL texto") recalculan; las descargas
+      STL y 3MF funcionan; la tarjeta del inicio abre el pop-up con el link a trofeo.html;
+      sin errores en la consola.
+    prioridad: alta
+    nivel: web
+    estado: activa

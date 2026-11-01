@@ -31,9 +31,10 @@ configuradas, todo es libre. Modo claro / oscuro / automático (`theme.js`). Tes
 Playwright y specs SDD en `specs/`.
 
 ## Capabilities and Constraints
-- Cinco herramientas: Generador de macetas con autorriego (Impresión 3D), Mate con hueco
+- Seis herramientas: Generador de macetas con autorriego (Impresión 3D), Mate con hueco
   (Impresión 3D), Sopa de letras 3D (Entretenimiento), Topper para tortas
-  (Personalización) y Chapitas para collares de perros y gatos (Personalización). No se inventan ni se quitan herramientas.
+  (Personalización), Chapitas para collares de perros y gatos (Personalización) y
+  Trofeos para eventos (Personalización). No se inventan ni se quitan herramientas.
 - Usar las herramientas es gratis; para descargar los archivos se crea una cuenta gratis
   (cuando las cuentas están configuradas). Las piezas del plan gratis salen con la marca
   de agua ("Eden3D" grabada).

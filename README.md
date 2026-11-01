@@ -125,6 +125,7 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
 * **Mate con hueco:** https://yoelalmiron1997.github.io/eden3d/mate.html
 * **Topper para tortas:** https://yoelalmiron1997.github.io/eden3d/topper.html
 * **Chapitas para collares:** https://yoelalmiron1997.github.io/eden3d/chapita.html
+* **Trofeos para eventos:** https://yoelalmiron1997.github.io/eden3d/trofeo.html
 * **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
 
@@ -183,6 +184,23 @@ motor `engine/chapita_core.py`, que reusa la grilla y las tipografías del toppe
   chapita cuelga y se hamaca; "Sacar la argolla" anima todo hasta quedar en la mesa con el
   ganchito abierto, y "Poner la argolla" lo vuelve a colgar.
 
+### Trofeos para eventos
+
+Sexta herramienta: **trofeos para torneos y eventos** (`web/trofeo.html`, motor
+`engine/trofeo_core.py`, que reusa la grilla y las tipografías del topper).
+
+* Figuras: **estrella, copa, llama, rayo, hojas, pelota** (con su dibujo en relieve) o un
+  **número / letra** (hasta 3; las cifras sueltas se unen con un zócalo).
+* Dos piezas que encastran: la **figura** se imprime acostada y tiene abajo una espiga
+  exacta; la **base** (recta o escalonada) se imprime parada, con la ranura de la espiga
+  más la holgura (0,25 mm por defecto) y al menos 4 mm de pared.
+* El **texto del evento** en una o dos líneas, lo más grande que entra en el frente de la
+  base, en relieve o grabado; opcional, un texto corto en la figura ("1°", "MVP") y un
+  borde en relieve.
+* Colores: uno, o **dos** (los detalles de la figura con cambio de filamento a la altura
+  del grosor y el texto de la base como parte aparte para AMS). Descarga en 3MF (figura y
+  base en la cama, cada una con sus partes) o STL por pieza.
+
 En todas las herramientas la vista 3D se mira **desde todos los ángulos**: la cámara gira
 libre (también por debajo; la mesa y el escenario se esconden para ver la base) y hay
 botones Frente, Atrás, Izq., Der., Arriba, Abajo, 3/4 y 360°.
@@ -195,6 +213,7 @@ engine/          motor paramétrico en Python puro (el mismo que usa Grasshopper
                  sopa_core.py / sopa_web.py: motor de la Sopa de letras 3D
                  topper_core.py / topper_web.py: motor del Topper para tortas
                  chapita_core.py / chapita_web.py: motor de las Chapitas para collares
+                 trofeo_core.py / trofeo_web.py: motor de los Trofeos para eventos
 web/             página estática: visor three.js + motor corriendo en el navegador (Pyodide)
 specs/           requisitos con ID (Spec-Driven Development)
 tests/motor/     pytest: geometría, autorriego (booleanas exactas), exportación, licencia
