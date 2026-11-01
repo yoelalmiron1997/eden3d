@@ -750,20 +750,32 @@ def test_herramientas_con_el_encabezado_nuevo(browser, base_url):
 
 @pytest.mark.spec("WEB-015")
 def test_pantalla_de_carga_de_cada_motor(browser, base_url):
+    # la pantalla puede durar muy poco: se anota cómo era en el momento en que aparece
+    espia = """
+      window.__carga = null;
+      new MutationObserver((ms, obs) => {
+        const el = document.querySelector('[data-testid=carga]');
+        if (!el || window.__carga) return;
+        const t = el.querySelector('.carga-titulo');
+        window.__carga = { pieza: el.querySelectorAll('svg .carga-pieza').length,
+          cabezal: el.querySelectorAll('.carga-cabezal').length, barra: el.querySelectorAll('.carga-barra').length,
+          punteros: getComputedStyle(el).pointerEvents, titulo: t ? t.getBoundingClientRect().width : -1 };
+        obs.disconnect();
+      }).observe(document, { childList: true, subtree: true });
+    """
     estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
     for path, st in estados.items():
         ctx = browser.new_context(viewport={"width": 1280, "height": 800})
+        ctx.add_init_script(espia)
         page = ctx.new_page()
         errores = []
         page.on("pageerror", lambda e: errores.append(str(e)))
         page.goto(base_url + path)
-        carga = page.locator("[data-testid=carga]")
-        carga.wait_for(state="attached", timeout=10_000)
-        assert carga.locator("svg .carga-pieza").count() == 1 and carga.locator(".carga-cabezal").count() == 1
-        assert page.evaluate("getComputedStyle(document.querySelector('[data-testid=carga]')).pointerEvents") == "none"
-        assert carga.locator(".carga-barra").is_visible()
-        # sólo la impresora y la barra: el texto queda para lectores de pantalla (1 px)
-        assert page.evaluate("document.querySelector('.carga-titulo').getBoundingClientRect().width") <= 1
+        page.wait_for_function("window.__carga", timeout=10_000)
+        c = page.evaluate("window.__carga")
+        assert c["pieza"] == 1 and c["cabezal"] == 1 and c["barra"] == 1, (path, c)
+        assert c["punteros"] == "none", (path, c)          # no bloquea clics
+        assert c["titulo"] <= 1, (path, c)                 # sólo la impresora y la barra (texto para lectores)
         page.wait_for_function("window.%s && window.%s.builds >= 1" % (st, st), timeout=READY_MS)
         # se va sola: se desvanece (carga-lista) y se saca del visor
         page.wait_for_function("!document.querySelector('[data-testid=carga]:not(.carga-lista)')", timeout=10_000)
@@ -771,7 +783,6 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         ctx.close()
 
 
-@pytest.mark.spec("WEB-016")
 def test_render_y_pdf_solo_premium(browser, base_url):
     estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
     for path, st in estados.items():
