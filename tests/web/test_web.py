@@ -783,6 +783,7 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         ctx.close()
 
 
+@pytest.mark.spec("WEB-016")
 def test_render_y_pdf_solo_premium(browser, base_url):
     estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
     for path, st in estados.items():
