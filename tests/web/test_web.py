@@ -526,6 +526,7 @@ def test_ingresar_y_salir(browser, base_url):
     page.locator(T % "login-ok").click()
     page.wait_for_function("window.__eden.auth.role === 'pro'", timeout=10_000)
     assert not dlg.is_visible()
+    page.locator(T % "btn-cuenta").click()                        # el menú de la cuenta
     assert page.locator(T % "rol").inner_text() == "Pro"
     page.locator(T % "btn-salir").click()
     page.wait_for_function("window.__eden.auth.role === 'visitante'", timeout=10_000)
@@ -579,6 +580,7 @@ def test_marca_solo_para_pro(browser, base_url):
     b = page.evaluate("window.__eden.summary.brand")
     assert b["text"] == "TecnoBear" and any(b["pieces"].values())
     assert "TecnoBear" in page.locator(T % "marca-msg").inner_text()
+    page.locator(T % "btn-cuenta").click()
     page.locator(T % "btn-salir").click()                       # sin cuenta vuelve a Eden3D
     page.wait_for_function("window.__eden.summary.brand.text === 'Eden3D' && !window.__eden.busy", timeout=180_000)
     assert page.locator(T % "marca-texto").input_value() == "Eden3D"
@@ -621,25 +623,22 @@ def test_modo_claro_y_oscuro(browser, base_url):
     page = open_app(browser, base_url, path="")
     page.locator(T % "popup-macetas").wait_for(state="visible", timeout=10_000)
     page.keyboard.press("Escape")
-    sel = page.locator(T % "btn-tema")
-    assert sel.is_visible() and sel.get_attribute("data-tema") == "dark"          # oscuro por defecto
-    assert page.locator(T % "tema-oscuro").get_attribute("aria-pressed") == "true"
+    btn = page.locator(T % "btn-tema")
+    assert btn.is_visible() and btn.get_attribute("data-tema") == "dark"          # oscuro por defecto
     fondo = lambda: page.evaluate("getComputedStyle(document.body).backgroundColor")
     oscuro = fondo()
-    page.locator(T % "tema-claro").click()
+    btn.click()                                                                   # un solo botón: alterna
     assert page.evaluate("document.documentElement.dataset.theme") == "light"
-    assert page.locator(T % "tema-claro").get_attribute("aria-pressed") == "true"
-    assert fondo() != oscuro
+    assert btn.get_attribute("data-tema") == "light" and fondo() != oscuro
     page.reload()
     assert page.evaluate("document.documentElement.dataset.theme") == "light", "se recuerda"
-    page.locator(T % "tema-oscuro").click()
-    assert page.evaluate("document.documentElement.dataset.theme") == "dark"
-    assert fondo() == oscuro
-    # en una herramienta, el mismo selector y los mismos colores
+    page.locator(T % "btn-tema").click()
+    assert page.evaluate("document.documentElement.dataset.theme") == "dark" and fondo() == oscuro
+    # en una herramienta, el mismo botón y los mismos colores
     page.goto(base_url + "sopa.html")
-    assert page.locator(T % "tema-oscuro").get_attribute("aria-pressed") == "true"
+    assert page.locator(T % "btn-tema").get_attribute("data-tema") == "dark"
     assert page.evaluate("getComputedStyle(document.body).backgroundColor") == "rgb(9, 14, 15)"
-    page.locator(T % "tema-claro").click()
+    page.locator(T % "btn-tema").click()
     assert page.evaluate("getComputedStyle(document.body).backgroundColor") != "rgb(9, 14, 15)"
     page.context.close()
 
@@ -819,3 +818,37 @@ def test_render_y_pdf_solo_premium(browser, base_url):
             assert data[:5] == b"%PDF-" and b"/Subtype /Image" in data
         assert not page.console_errors, (path, page.console_errors)
         page.context.close()
+
+
+@pytest.mark.spec("CUE-006")
+def test_perfil_con_foto(browser, base_url, tmp_path):
+    from PIL import Image
+    foto = tmp_path / "yo.png"
+    Image.new("RGB", (300, 200), (200, 40, 40)).save(foto)
+    page = open_app(browser, base_url, role="usuario", path="")
+    page.evaluate("try { localStorage.setItem('tb-popup-macetas', '1') } catch (e) {}")
+    page.reload()
+    cuenta = page.locator(T % "btn-cuenta")
+    assert cuenta.inner_text().strip() == "U"                         # sin nombre: la inicial del email
+    cuenta.click()
+    assert page.locator(T % "menu-cuenta").is_visible()
+    page.locator(T % "btn-perfil").click()
+    dlg = page.locator(T % "perfil")
+    assert dlg.is_visible()
+    page.locator(T % "perfil-nombre").fill("Yoel")
+    page.locator(T % "perfil-apellido").fill("Almirón")
+    page.locator(T % "perfil-nacimiento").fill("1997-05-20")
+    page.locator(T % "perfil-foto").set_input_files(str(foto))
+    page.wait_for_function("document.querySelector('#perfil-cara img')")
+    page.locator(T % "perfil-guardar").click()
+    assert not dlg.is_visible()
+    # el botón de la cuenta muestra la foto (96 × 96) y el menú el nombre
+    page.wait_for_function("document.querySelector('[data-testid=btn-cuenta] img')")
+    size = page.evaluate("(() => { const i = document.querySelector('[data-testid=btn-cuenta] img'); return [i.naturalWidth, i.naturalHeight]; })()")
+    assert size == [96, 96]
+    cuenta.click()
+    assert "Yoel Almirón" in page.locator(T % "menu-cuenta").inner_text()
+    page.locator(T % "btn-perfil").click()
+    assert page.locator(T % "perfil-nacimiento").input_value() == "1997-05-20"
+    assert not page.console_errors, page.console_errors
+    page.context.close()

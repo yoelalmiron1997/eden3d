@@ -121,13 +121,12 @@ specs:
   - id: WEB-013
     titulo: Modo claro y oscuro
     descripcion: >
-      Un selector a la vista en el encabezado de todas las páginas (inicio y herramientas)
-      con dos opciones, Oscuro (el de la marca, por defecto) y Claro; se recuerda para la
-      próxima visita.
+      Un botón simple en el encabezado de todas las páginas (inicio y herramientas), con
+      la luna en oscuro (el de la marca, por defecto) y el sol en claro; cada toque
+      alterna y se recuerda para la próxima visita.
     criterio: >
-      Sin elegir nada la página está en oscuro con "Oscuro" marcado; "Claro" y "Oscuro"
-      cambian los colores de la página (inicio y herramientas) y marcan su botón; al
-      recargar se mantiene el elegido.
+      Sin elegir nada la página está en oscuro; el botón alterna claro y oscuro y cambia
+      los colores de la página (inicio y herramientas); al recargar se mantiene el elegido.
     prioridad: media
     nivel: web
     estado: activa

@@ -413,3 +413,4 @@ html[data-theme="light"] .tb .login-msg { color: #8a2614; }
   .tb *, .tb *::before, .tb *::after { transition-duration: .01ms !important; }
   .tb-entra { opacity: 1; translate: none; }
 }
+.tb .cuenta-quien .acc-mail { display: block; }

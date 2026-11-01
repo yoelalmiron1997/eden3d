@@ -420,18 +420,13 @@ h1, h2, h3 { font-family: "Barlow Condensed", "Inter", sans-serif; font-weight: 
 .nav a { padding: 8px 10px; font-size: 14px; font-weight: 500; color: var(--muted); transition: color .2s; }
 .nav a:hover { color: var(--ink); }
 
-/* selector de tema (todas las páginas) */
-.tema-sel { display: inline-flex; border: 1px solid var(--line); border-radius: 2px; padding: 3px; gap: 3px; }
-.tema-sel button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 1px;
-  background: transparent; color: var(--muted); font: 600 12px/1 "Inter", sans-serif; letter-spacing: .06em; text-transform: uppercase; }
-.tema-sel button svg { width: 16px; height: 16px; }
-.tema-sel button:hover { color: var(--ink); }
-.tema-sel button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-@media (max-width: 640px) {
-  .tema-sel span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .tema-sel button { padding: 0 8px; }
-  .brand-sub { display: none; }
-}
+/* botón de tema (todas las páginas): cuadrado, un ícono */
+.tema-btn { width: 40px; height: 40px; min-height: 0; padding: 0; display: inline-grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 2px; background: transparent; color: var(--ink); cursor: pointer;
+  transition: border-color .2s, color .2s; }
+.tema-btn svg { width: 18px; height: 18px; }
+.tema-btn:hover { border-color: var(--green); color: var(--green); }
+@media (max-width: 640px) { .brand-sub { display: none; } }
 
 /* controles: rectos, de 1 px; la acción principal en lima */
 select, button, .btn, .panel textarea, .brand-row input, .cov-form input[type=text], .modal-box input, .filters input {
@@ -546,3 +541,28 @@ dialog.modal::backdrop { background: rgba(5, 8, 9, .78); backdrop-filter: none; 
   .carga-cabezal { animation: none; transform: translateX(160px); }
   .carga-carrete, .carga-gota, }
 .stage:has(.carga) .busy { visibility: hidden; }   /* mientras carga el motor, sólo la impresora */
+
+/* ---- cuenta: botón con la foto o las iniciales y menú ---- */
+.cuenta { position: relative; }
+.cuenta-btn { width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+  border: 1px solid var(--line); background: var(--surface-2, var(--surface)); color: var(--ink); cursor: pointer;
+  font: 700 15px/1 "Barlow Condensed", sans-serif; letter-spacing: .04em; transition: border-color .2s; }
+.cuenta-btn:hover, .cuenta-btn[aria-expanded="true"] { border-color: var(--green); }
+.cuenta-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cuenta-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; min-width: 240px; display: grid;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 36px -14px rgba(0, 0, 0, .55); padding: 6px; }
+.cuenta-menu[hidden] { display: none; }
+.cuenta-quien { display: grid; gap: 2px; padding: 10px 10px 12px; border-bottom: 1px solid var(--line-2, var(--line)); margin-bottom: 4px; }
+.cuenta-quien strong { font-size: 14px; color: var(--ink); }
+.cuenta-quien .acc-mail { font-size: 12.5px; color: var(--muted); display: block; max-width: 240px; }
+.cuenta-quien .role { justify-self: start; margin-top: 6px; }
+.cuenta-menu [role=menuitem] { display: block; width: 100%; min-height: 40px; padding: 0 10px; text-align: left; border: 0; border-radius: 0;
+  background: transparent; color: var(--ink); font: 500 14px/40px "Inter", sans-serif; text-decoration: none; cursor: pointer; }
+.cuenta-menu [role=menuitem]:hover, .cuenta-menu [role=menuitem]:focus-visible { background: var(--surface-2, var(--bg)); color: var(--green); }
+.perfil-form { width: 420px; }
+.perfil-foto { display: flex; align-items: center; gap: 14px; }
+.perfil-cara { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; flex: none;
+  border: 1px solid var(--line); background: var(--surface-2, var(--bg)); color: var(--muted); font-size: 11px; }
+.perfil-cara img { width: 100%; height: 100%; object-fit: cover; }
+.perfil-foto .btn { cursor: pointer; }
+.perfil-form input[type=date] { font: inherit; padding: 9px 11px; border: 1px solid var(--line); background: var(--surface-2, var(--bg)); color: var(--ink); border-radius: 2px; }

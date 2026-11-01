@@ -60,3 +60,17 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: CUE-006
+    titulo: Menú de la cuenta y perfil con foto
+    descripcion: >
+      Con la sesión iniciada, el encabezado muestra un botón redondo con la foto o las
+      iniciales; abre un menú con el nombre, el email, el rol, "Mi perfil", la
+      administración (sólo admin) y "Salir". El perfil guarda nombre, apellido, fecha de
+      nacimiento y una foto (achicada a 96 × 96) en los metadatos de la cuenta.
+    criterio: >
+      Sin perfil el botón muestra las iniciales; al guardar nombre, apellido, fecha y foto
+      el botón muestra la foto de 96 × 96, el menú el nombre y al volver a abrir el perfil
+      están los datos; "Salir" desde el menú cierra la sesión; sin errores en la consola.
+    prioridad: media
+    nivel: web
+    estado: activa

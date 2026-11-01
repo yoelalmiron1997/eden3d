@@ -134,6 +134,31 @@ export async function signOut() {
   await auth.client.auth.signOut();
 }
 
+// ---------------------------------------------------------------- perfil
+// Datos simples del usuario (nombre, apellido, fecha de nacimiento y una foto chica) en
+// los metadatos de su cuenta de Supabase: no hace falta ninguna tabla nueva.
+export function perfil() {
+  const m = (auth.user && auth.user.user_metadata) || {};
+  return { nombre: m.nombre || "", apellido: m.apellido || "", nacimiento: m.nacimiento || "", foto: m.foto || "" };
+}
+
+export async function guardarPerfil(datos) {
+  if (!auth.user) throw new Error("Ingresá con tu cuenta para guardar tu perfil.");
+  const d = { nombre: String(datos.nombre || "").trim().slice(0, 40), apellido: String(datos.apellido || "").trim().slice(0, 40),
+    nacimiento: /^\d{4}-\d{2}-\d{2}$/.test(datos.nacimiento || "") ? datos.nacimiento : "", foto: datos.foto || "" };
+  if (d.foto && (!d.foto.startsWith("data:image/") || d.foto.length > 40000)) throw new Error("La foto es demasiado grande.");
+  if (auth.mock) {
+    auth.user = { ...auth.user, user_metadata: { ...(auth.user.user_metadata || {}), ...d } };
+    emit();
+    return perfil();
+  }
+  const { data, error } = await auth.client.auth.updateUser({ data: d });
+  fail(error);
+  auth.user = data.user;
+  emit();
+  return perfil();
+}
+
 // ---------------------------------------------------------------- administración
 export async function listUsers() {
   if (auth.mock) return auth.mockUsers;

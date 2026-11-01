@@ -1,6 +1,6 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
-// Modo oscuro (el de la marca, por defecto) o claro, a la vista en el encabezado de todas
-// las páginas y recordado por navegador.
+// Modo oscuro (el de la marca, por defecto) o claro: un botón en el encabezado de todas
+// las páginas, recordado por navegador.
 const KEY = "tb-tema";
 const ICON = {
   dark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>',
@@ -20,26 +20,23 @@ export function setTheme(t) {
   document.dispatchEvent(new CustomEvent("tema", { detail: t }));
 }
 
+// un solo botón: muestra la luna en oscuro y el sol en claro; cada toque cambia
 export function mountTheme(host) {
   if (!host) return;
-  const grupo = document.createElement("div");
-  grupo.className = "tema-sel";
-  grupo.setAttribute("role", "group");
-  grupo.setAttribute("aria-label", "Tema de la página");
-  grupo.dataset.testid = "btn-tema";
-  grupo.innerHTML = ["dark", "light"].map((t) => `
-    <button type="button" data-modo="${t}" data-testid="tema-${t === "dark" ? "oscuro" : "claro"}" aria-pressed="false">
-      ${ICON[t]}<span>${TXT[t]}</span></button>`).join("");
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "tema-btn";
+  btn.dataset.testid = "btn-tema";
   const pintar = () => {
-    const actual = getTheme();
-    grupo.dataset.tema = actual;
-    for (const b of grupo.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.modo === actual));
+    const t = getTheme();
+    btn.dataset.tema = t;
+    btn.innerHTML = ICON[t];
+    const otro = t === "dark" ? "claro" : "oscuro";
+    btn.setAttribute("aria-label", `Modo ${TXT[t].toLowerCase()} (cambiar a ${otro})`);
+    btn.title = `Cambiar a modo ${otro}`;
   };
-  grupo.addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-modo]");
-    if (b) setTheme(b.dataset.modo);
-  });
+  btn.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
   document.addEventListener("tema", pintar);
   pintar();
-  host.prepend(grupo);
+  host.prepend(btn);
 }
