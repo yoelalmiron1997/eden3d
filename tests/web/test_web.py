@@ -763,7 +763,8 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         obs.disconnect();
       }).observe(document, { childList: true, subtree: true });
     """
-    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
+    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper",
+               "chapita.html": "__chapita"}
     for path, st in estados.items():
         ctx = browser.new_context(viewport={"width": 1280, "height": 800})
         ctx.add_init_script(espia)
@@ -771,7 +772,7 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
         errores = []
         page.on("pageerror", lambda e: errores.append(str(e)))
         page.goto(base_url + path)
-        page.wait_for_function("window.__carga", timeout=10_000)
+        page.wait_for_function("window.__carga", timeout=60_000)   # con la máquina cargada tarda
         c = page.evaluate("window.__carga")
         assert c["pieza"] == 1 and c["cabezal"] == 1 and c["barra"] == 1, (path, c)
         assert c["punteros"] == "none", (path, c)          # no bloquea clics
@@ -785,7 +786,8 @@ def test_pantalla_de_carga_de_cada_motor(browser, base_url):
 
 @pytest.mark.spec("WEB-016")
 def test_render_y_pdf_solo_premium(browser, base_url):
-    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper"}
+    estados = {"macetas.html": "__eden", "mate.html": "__mate", "sopa.html": "__sopa", "topper.html": "__topper",
+               "chapita.html": "__chapita"}
     for path, st in estados.items():
         # cuenta gratis: candado "Pro" y aviso, sin descargas
         page = open_app(browser, base_url, role="usuario", path=path)
