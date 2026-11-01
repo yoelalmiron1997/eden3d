@@ -120,6 +120,7 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
 * **Sopa de letras 3D:** https://yoelalmiron1997.github.io/eden3d/sopa.html
 * **Mate con hueco:** https://yoelalmiron1997.github.io/eden3d/mate.html
 * **Topper para tortas:** https://yoelalmiron1997.github.io/eden3d/topper.html
+* **Chapitas para collares:** https://yoelalmiron1997.github.io/eden3d/chapita.html
 * **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
 
@@ -161,6 +162,20 @@ Cuarta herramienta: **toppers para tortas en una sola pieza** (`web/topper.html`
   **🎉 Cumpleaños**: velitas prendidas, ráfagas y lluvia de confeti que se apoya en la
   torta y la mesa, y la cámara girando. Descarga en 3MF o STL.
 
+### Chapitas para collares
+
+Quinta herramienta: **chapitas con el nombre de tu perro o gato** (`web/chapita.html`,
+motor `engine/chapita_core.py`, que reusa la grilla y las tipografías del topper).
+
+* Formas: **hueso, gato, corazón, círculo, óvalo y pescado**, del ancho pedido, con un
+  ojal arriba al centro y el agujero para la argolla del collar (la argolla se ve en el visor).
+* El **nombre** (hasta 14 letras) y una **segunda línea** opcional (teléfono, apellido)
+  salen lo más grandes que entran sin pisar el borde, el ojal ni las patitas; si la letra
+  queda de menos de 4 mm, se avisa.
+* Letras **en relieve** (con borde y patitas en el hueso y el óvalo) o **grabadas**.
+* Colores: uno; **dos** (las letras arriba, cambio de filamento a mano en la altura que
+  indica el reporte); o **al ras para AMS**. Descarga en 3MF (una pieza con sus partes) o STL.
+
 ## Cómo funciona
 
 ```
@@ -168,6 +183,7 @@ engine/          motor paramétrico en Python puro (el mismo que usa Grasshopper
                  mate_core.py / mate_web.py: motor del Mate con hueco
                  sopa_core.py / sopa_web.py: motor de la Sopa de letras 3D
                  topper_core.py / topper_web.py: motor del Topper para tortas
+                 chapita_core.py / chapita_web.py: motor de las Chapitas para collares
 web/             página estática: visor three.js + motor corriendo en el navegador (Pyodide)
 specs/           requisitos con ID (Spec-Driven Development)
 tests/motor/     pytest: geometría, autorriego (booleanas exactas), exportación, licencia

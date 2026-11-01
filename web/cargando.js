@@ -9,13 +9,15 @@
 // El worker avisa sus pasos con postMessage({ type: "progreso", paso: 2 }); el estado de
 // la página (ready, builds, errors) dice cuándo termina.
 
-const NOMBRES = { macetas: "de macetas", mate: "del mate", sopa: "de la sopa de letras", topper: "del topper" };
+const NOMBRES = { macetas: "de macetas", mate: "del mate", sopa: "de la sopa de letras", topper: "del topper", chapita: "de chapitas" };
 
 // la pieza que imprime cada motor: silueta sobre la cama (y = 200), unos 110 mm de alto
 const PIEZAS = {
   macetas: `<path d="M104 92h112v13h-6l-14 95h-72l-14-95h-6z"/>`,
   mate: `<path d="M140 92h40c3 7 13 17 19 34 9 26 3 58-17 68l-4 6h-36l-4-6c-20-10-26-42-17-68 6-17 16-27 19-34z"/>`,
   sopa: `<path d="M106 112h42v-6a9 9 0 1 1 18 0v6h42v40h-6a9 9 0 1 0 0 18h6v30H106z"/>`,
+  chapita: `<rect x="112" y="160" width="96" height="26"/><circle cx="112" cy="157" r="15"/><circle cx="112" cy="185" r="15"/>
+    <circle cx="208" cy="157" r="15"/><circle cx="208" cy="185" r="15"/><path d="M160 136a12 12 0 1 1 0 24 12 12 0 1 1 0-24zm0 6a6 6 0 1 0 0 12 6 6 0 1 0 0-12z" fill-rule="evenodd"/>`,
   topper: `<path d="M160 146c-30-17-46-30-46-45 0-12 9-20 20-20 11 0 20 7 26 16 6-9 15-16 26-16 11 0 20 8 20 20 0 15-16 28-46 45z"/>
     <rect x="139" y="132" width="7" height="68"/><rect x="174" y="132" width="7" height="68"/>`,
 };

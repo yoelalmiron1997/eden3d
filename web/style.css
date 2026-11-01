@@ -348,6 +348,7 @@ html.es-admin .solo-admin { display: revert !important; }
 .topper-linea input[type=text], .topper-linea select { width: 100%; min-width: 0; }
 .topper-linea input[type=range] { grid-column: 1 / -1; }
 #letras-row[hidden] { display: none; }
+#patitas-row[hidden], #borde-row[hidden], #colores-hint[hidden], .actions > button[hidden] { display: none; }
 
 /* topper: etiqueta "nuevo" en una sección y fila de botones que se acomoda sola */
 .badge-nuevo { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 11px;

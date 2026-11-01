@@ -40,6 +40,14 @@ export const HERRAMIENTAS = [
     alt: "Topper impreso en 3D que dice Feliz Cumpleaños Sofi y el número 5 con estrellas, en lila y blanco, clavados en una torta de crema",
     testImagen: "tool-imagen-topper", foco: "50% 48%",
   },
+  {
+    id: "chapita", ruta: "chapita.html", modal: "chapita-modal", categoria: "personalizacion",
+    nombre: "Chapitas para collares", corto: "Chapitas para collares",
+    descripcion: "El nombre de tu perro o gato en una chapita con forma de hueso, gato, corazón o pescado, lista para el collar.",
+    imagen: "assets/herramientas/chapita_v_450.jpg", imagen2x: "assets/herramientas/chapita_v.jpg",
+    alt: "Chapita impresa en 3D con forma de hueso, azul con el nombre Roma, borde y patitas en blanco, con su argolla, sobre una mesa de madera",
+    testImagen: "tool-imagen-chapita", foco: "50% 50%",
+  },
 ];
 
 export const REDES = [

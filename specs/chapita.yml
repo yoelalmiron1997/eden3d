@@ -1,0 +1,65 @@
+area: Chapitas para collares
+prefijo: CHA
+specs:
+  - id: CHA-001
+    titulo: La chapita sale en una sola pieza con su agujero
+    descripcion: >
+      Hueso, gato, corazón, círculo, óvalo o pescado, con un ojal arriba al centro y el
+      agujero para la argolla del collar.
+    criterio: >
+      Para cada forma la placa es UNA sola componente conectada; el agujero está abierto
+      (el centro del ojal queda fuera de la placa) y tiene al menos 2 mm de pared alrededor;
+      cada pieza es una malla cerrada; el ancho es el pedido ±1 mm y el grosor el pedido.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: CHA-002
+    titulo: El nombre lo más grande que entra, sin pisar nada
+    descripcion: >
+      El nombre (hasta 14 letras) y una segunda línea opcional (teléfono, apellido) se
+      agrandan hasta tocar el margen del borde, el ojal o las patitas.
+    criterio: >
+      Las letras quedan adentro de la placa, fuera de la zona del ojal y a más de 1 mm del
+      borde en relieve; un nombre más corto sale con letra más grande; con segunda línea el
+      nombre se achica; si la letra queda de menos de 4 mm se avisa; sin nombre, con más de
+      14 letras o con un carácter que la tipografía no tiene se rechaza con un mensaje en español.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: CHA-003
+    titulo: Relieve, grabado y colores
+    descripcion: >
+      Letras en relieve o grabadas; un color, dos colores con cambio de filamento a mano o
+      al ras para AMS; patitas en el hueso y el óvalo.
+    criterio: >
+      Relieve en un color da una malla CHAPITA de grosor + relieve; en dos colores da CHAPITA
+      y LETRAS, con las letras de grosor a grosor + relieve y el cambio de filamento en
+      `cambio_mm`; AMS da CHAPITA y LETRAS a la misma altura (las letras llenan el hueco de la
+      placa) con `capa_color_mm`; grabado deja la placa con el texto hundido; las patitas
+      sólo aparecen en las formas que las llevan.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: CHA-004
+    titulo: Descargas STL y 3MF
+    descripcion: STL de cada pieza y un 3MF con un objeto y sus partes de color.
+    criterio: >
+      El STL es binario y se llama Chapita-<Forma>-<Nombre>_<PIEZA>.stl; el 3MF trae un
+      objeto con un componente por pieza y los metadatos de licencia de TecnoBear.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: CHA-005
+    titulo: Chapitas en la web
+    descripcion: >
+      La página chapita.html arma la chapita en el navegador, con la argolla puesta, y el
+      inicio tiene la tarjeta "Chapitas para collares" con su pop-up.
+    criterio: >
+      La página arranca con un hueso "Roma" en una pieza y la argolla; cambiar la forma,
+      escribir otro nombre o pasar a dos colores (aparece LETRAS y "STL letras") recalculan;
+      las patitas se ocultan en las formas que no las llevan; las descargas STL y 3MF
+      funcionan; la tarjeta del inicio abre el pop-up con el link a chapita.html; sin
+      errores en la consola.
+    prioridad: alta
+    nivel: web
+    estado: activa

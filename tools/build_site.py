@@ -24,7 +24,7 @@ WEB_MODULES = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py
                "eden_plantas.py", "colecciones/catalogo_eden3d.json",
                "colecciones/plantas.json", "mate_core.py", "mate_web.py", "mate_deco.py",
                "mate_fuentes.py", "eden_patitas.py", "topper_core.py", "topper_web.py",
-               "sopa_core.py", "sopa_web.py"]
+               "sopa_core.py", "sopa_web.py", "chapita_core.py", "chapita_web.py"]
 PYODIDE_FILES = ["pyodide.js", "pyodide.asm.js", "pyodide.asm.wasm", "python_stdlib.zip",
                  "pyodide-lock.json"]
 PYODIDE_NOTICE = """Pyodide 0.27.7 — Mozilla Public License 2.0 (MPL-2.0)

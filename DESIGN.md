@@ -176,7 +176,7 @@ TecnoBear's interface is the faceplate of a digital-fabrication bench. The page 
 
 The system is dark by default and supports a light variant (`html[data-theme="light"]`) because the site-wide theme toggle must keep working; both variants share every rule below and differ only in the neutral and accent-stroke tokens. Density is calm: one 1360px container, generous section breaks, and grids of four that collapse to two and then one.
 
-Scope: the whole site. The home page carries the full composition (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`); the tool pages (macetas, mate, sopa, topper, admin, calidad) get the same tokens, header, controls and plates from the industrial layer at the end of the shared `web/style.css`. The older green-on-cream rules earlier in that file are overridden and are not an authority for new work.
+Scope: the whole site. The home page carries the full composition (`web/index.html`, `web/home.css`, `web/home.js`, catalog data in `web/herramientas.js`); the tool pages (macetas, mate, sopa, topper, chapita, admin, calidad) get the same tokens, header, controls and plates from the industrial layer at the end of the shared `web/style.css`. The older green-on-cream rules earlier in that file are overridden and are not an authority for new work.
 
 **Key Characteristics:**
 - Dark machined floor (dark default) with a 48px technical grid of 1px lime-tinted lines at 4.5% opacity (32px cells under 640px).

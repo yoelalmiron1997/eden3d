@@ -669,11 +669,12 @@ def test_inicio_catalogo_buscador_y_filtros(browser, base_url):
     page = open_app(browser, base_url, path="", role="visitante")
     page.evaluate("try { localStorage.setItem('tb-popup-macetas', '1') } catch (e) {}")
     page.reload()
-    rutas = {h: page.locator(T % ("ir-" + h)).get_attribute("href") for h in ("macetas", "mate", "sopa", "topper")}
-    assert rutas == {"macetas": "macetas.html", "mate": "mate.html", "sopa": "sopa.html", "topper": "topper.html"}
-    assert page.locator(T % "indice" + " a").count() == 4
+    rutas = {h: page.locator(T % ("ir-" + h)).get_attribute("href") for h in ("macetas", "mate", "sopa", "topper", "chapita")}
+    assert rutas == {"macetas": "macetas.html", "mate": "mate.html", "sopa": "sopa.html", "topper": "topper.html",
+                     "chapita": "chapita.html"}
+    assert page.locator(T % "indice" + " a").count() == 5
     visibles = lambda: page.locator(".tb-card:not([hidden])").count()
-    assert visibles() == 4 and page.locator(T % "contador").inner_text() == "4"
+    assert visibles() == 5 and page.locator(T % "contador").inner_text() == "5"
     page.locator(T % "filtro-impresion").click()
     assert visibles() == 2 and page.locator(T % "filtro-impresion").get_attribute("aria-pressed") == "true"
     page.locator(T % "buscar").fill("polimero")                  # sin tilde, con filtro: sólo el mate
@@ -681,7 +682,7 @@ def test_inicio_catalogo_buscador_y_filtros(browser, base_url):
     page.locator(T % "filtro-entretenimiento").click()
     assert visibles() == 0 and page.locator(T % "sin-resultados").is_visible()
     page.locator("#tb-limpiar").click()
-    assert visibles() == 4 and not page.locator(T % "sin-resultados").is_visible()
+    assert visibles() == 5 and not page.locator(T % "sin-resultados").is_visible()
     # logo original: no gira; el del navbar quieto y el del hero flota
     anim = lambda t: page.evaluate("(e) => getComputedStyle(e).animationName", page.locator(T % t).element_handle())
     for t in ("logo-nav", "logo-hero"):
@@ -719,7 +720,7 @@ def test_inicio_celular_y_tablet(browser, base_url):
                             "try { localStorage.setItem('tb-popup-macetas', '1') } catch (e) {}")
         page = ctx.new_page()
         page.goto(base_url)
-        page.wait_for_function("document.querySelectorAll('.tb-card').length === 4")
+        page.wait_for_function("document.querySelectorAll('.tb-card').length === 5")
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), w
         assert page.evaluate("getComputedStyle(document.querySelector('.tb-iso-hero')).animationName") == "none"
         menu = page.locator("#tb-menu")
@@ -734,7 +735,7 @@ def test_inicio_celular_y_tablet(browser, base_url):
 
 @pytest.mark.spec("WEB-014")
 def test_herramientas_con_el_encabezado_nuevo(browser, base_url):
-    for path in ("macetas.html", "mate.html", "sopa.html", "topper.html"):
+    for path in ("macetas.html", "mate.html", "sopa.html", "topper.html", "chapita.html"):
         ctx = browser.new_context(viewport={"width": 390, "height": 844})
         ctx.add_init_script("window.__EDEN_AUTH_MOCK = {role: 'visitante'};")
         page = ctx.new_page()

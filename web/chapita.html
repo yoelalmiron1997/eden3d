@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapitas para collares · TecnoBear</title>
+  <meta name="description" content="Armá la chapita del collar de tu perro o gato con su nombre, en hueso, gato, corazón y más, y bajala para imprimir en 3D.">
+  <meta name="copyright" content="© TecnoBear — Yoel Almirón. Todos los derechos reservados.">
+  <meta name="theme-color" content="#090E0F">
+  <link rel="icon" href="assets/marca/logo-tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear, inicio" data-testid="link-home">
+      <img class="brand-logo" src="assets/marca/logo-tecnobear.svg" alt="" width="36" height="36"><span class="brand-tb">TecnoBear</span><span class="brand-sub">Chapitas para collares</span>
+    </a>
+    <nav class="nav">
+      <a href="./" class="hide-sm">Inicio</a>
+      <a href="./#herramientas" class="hide-sm">Herramientas</a>
+      <a href="calidad/" data-testid="link-calidad" class="solo-admin">Calidad</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset class="sec" data-sec="forma">
+        <legend>Forma</legend>
+        <div class="seg seg3" id="formas" role="radiogroup" aria-label="Forma de la chapita" data-testid="formas"></div>
+        <label class="slider"><span>Ancho</span>
+          <input type="range" id="ancho" data-testid="sl-ancho" min="28" max="70" step="1" value="45">
+          <output id="o-ancho">45 mm</output></label>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="texto">
+        <legend>Nombre</legend>
+        <label>Nombre de tu mascota
+          <input type="text" id="nombre" data-testid="inp-nombre" maxlength="14" value="Roma" autocomplete="off" spellcheck="false">
+        </label>
+        <label>Segunda línea <span class="hint">opcional: teléfono, apellido…</span>
+          <input type="text" id="linea2" data-testid="inp-linea2" maxlength="18" value="" placeholder="11 5555 1234" autocomplete="off" spellcheck="false">
+        </label>
+        <label>Tipografía
+          <select id="fuente" data-testid="sel-fuente" disabled></select>
+        </label>
+        <p class="hint small">El nombre sale lo más grande que entra, sin pisar el borde ni las patitas.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="letras">
+        <legend>Letras y colores</legend>
+        <div class="row2">
+          <label>Letras
+            <select id="texto" data-testid="sel-texto" disabled></select>
+          </label>
+          <label>Colores
+            <select id="colores" data-testid="sel-colores" disabled></select>
+          </label>
+        </div>
+        <p class="hint small" id="colores-hint" hidden></p>
+        <div class="checks">
+          <label class="check" id="patitas-row"><input type="checkbox" id="patitas" data-testid="chk-patitas" checked> Patitas</label>
+        </div>
+        <label class="slider" id="borde-row"><span>Borde</span>
+          <input type="range" id="borde" data-testid="sl-borde" min="0" max="3" step="0.1" value="1.4">
+          <output id="o-borde">1,4 mm</output></label>
+        <label class="slider"><span>Grosor</span>
+          <input type="range" id="grosor" data-testid="sl-grosor" min="2" max="5" step="0.1" value="3">
+          <output id="o-grosor">3,0 mm</output></label>
+        <label class="slider"><span id="relieve-lbl">Relieve</span>
+          <input type="range" id="relieve" data-testid="sl-relieve" min="0.6" max="2" step="0.1" value="1">
+          <output id="o-relieve">1,0 mm</output></label>
+        <label class="slider"><span>Agujero</span>
+          <input type="range" id="agujero" data-testid="sl-agujero" min="3" max="7" step="0.5" value="4.5">
+          <output id="o-agujero">4,5 mm</output></label>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
+        <legend>Vista</legend>
+        <div class="row2">
+          <label>Color
+            <select id="color" data-testid="sel-color">
+              <option value="#2a5bd7">Azul</option>
+              <option value="#3fae5a">Verde</option>
+              <option value="#e05a8a">Rosa</option>
+              <option value="#7a4fd0">Violeta</option>
+              <option value="#f08a24">Naranja</option>
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#2c2c2c">Negro</option>
+            </select>
+          </label>
+          <label>Letras
+            <select id="color-letras" data-testid="sel-color-letras">
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#ffd23f">Amarillo</option>
+              <option value="#e04545">Rojo</option>
+              <option value="#2c2c2c">Negro</option>
+              <option value="#8fd0ff">Celeste</option>
+            </select>
+          </label>
+        </div>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <div class="row3 even">
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
+        </div>
+        <button type="button" id="pdf" data-testid="btn-pdf" disabled>Guía PDF</button>
+        <button type="button" id="dlletras" data-testid="btn-stl-letras" hidden disabled>STL letras</button>
+      </div>
+    </section>
+
+    <div class="column">
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings" data-testid="avisos"></ul>
+      </article>
+    </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Tipografías libres (OFL / Apache) de sus autores · motor de chapitas <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="chapita.js"></script>
+</body>
+</html>
