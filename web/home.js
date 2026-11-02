@@ -14,19 +14,25 @@ const sinTildes = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLo
 // ------------------------------------------------------------------ catálogo
 function tarjeta(h, i) {
   const c = cat[h.categoria];
+  const rubros = h.rubros || [{ icono: c.icono, texto: c.nombre }];
+  const etiqueta = h.etiqueta || { icono: c.icono, texto: c.nombre };
   return `
-    <li class="tb-card" data-id="${h.id}" data-cat="${h.categoria}" data-buscar="${esc(sinTildes(h.nombre + " " + h.corto + " " + h.descripcion + " " + c.nombre))}">
+    <li class="tb-card" data-id="${h.id}" data-cat="${h.categoria}" data-buscar="${esc(sinTildes(h.nombre + " " + h.corto + " " + h.descripcion + " " + c.nombre + " " + rubros.map((r) => r.texto).join(" ")))}">
       <button type="button" class="tb-card-foto" data-testid="tool-${h.id}" aria-haspopup="dialog" data-modal="${h.modal}">
-        <img src="${h.imagen}" srcset="${h.imagen} 450w, ${h.imagen2x} 900w" sizes="(max-width: 640px) 92vw, (max-width: 1100px) 46vw, 320px"
-          alt="${esc(h.alt)}" width="450" height="563" ${i ? 'loading="lazy"' : ""} decoding="async"
+        <img src="${h.imagen}" srcset="${h.imagen} 600w, ${h.imagen2x} 1200w" sizes="(max-width: 640px) 92vw, (max-width: 1180px) 46vw, 440px"
+          alt="${esc(h.alt)}" width="600" height="250" ${i > 2 ? 'loading="lazy"' : ""} decoding="async"
           style="object-position:${h.foco}" data-testid="${h.testImagen}">
-        <span class="tb-card-ver">Ver detalles</span><span class="tb-sr">: ${esc(h.nombre)}</span>
+        <span class="tb-chip">${ico(etiqueta.icono)}${esc(etiqueta.texto)}</span>
+        <span class="tb-card-3d" aria-hidden="true">${ico("cubo")}</span>
+        <span class="tb-sr">Ver detalles: ${esc(h.nombre)}</span>
       </button>
       <div class="tb-card-cuerpo">
         <h3>${esc(h.nombre)}</h3>
         <p class="tb-card-desc">${esc(h.descripcion)}</p>
-        <p class="tb-cat">${ico(c.icono)}${esc(c.nombre)}</p>
-        <a class="tb-btn tb-btn-card" href="${h.ruta}" data-testid="ir-${h.id}">Abrir herramienta${ico("flecha")}<span class="tb-sr">: ${esc(h.nombre)}</span></a>
+        <div class="tb-card-pie">
+          <ul class="tb-rubros">${rubros.map((r) => `<li>${ico(r.icono)}${esc(r.texto)}</li>`).join("")}</ul>
+          <a class="tb-card-ir" href="${h.ruta}" data-testid="ir-${h.id}">${ico("flecha")}<span class="tb-sr">Abrir ${esc(h.nombre)}</span></a>
+        </div>
       </div>
     </li>`;
 }

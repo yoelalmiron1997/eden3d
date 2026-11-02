@@ -154,8 +154,8 @@ components:
   tool-card:
     backgroundColor: "{colors.plate}"
     textColor: "{colors.text}"
-    rounded: "{rounded.none}"
-    padding: "18px 20px 20px"
+    rounded: "14px"
+    padding: "16px 22px 18px"
   hero-plate:
     backgroundColor: "{colors.plate}"
     rounded: "{rounded.none}"
@@ -228,7 +228,7 @@ A near-black teal-graphite neutral ramp carrying one acid lime accent and one br
 ### Hierarchy
 - **Display** (Barlow Condensed 700, clamp(3.4rem, 7.4vw, 6rem), line-height 0.88, uppercase, max 11ch): the hero title only; one accent word may take the lime stroke color. Under 640px it scales to clamp(3rem, 15.5vw, 4.4rem).
 - **Headline** (Barlow Condensed 700, clamp(2.4rem, 4.6vw, 3.75rem), 0.92, uppercase): section titles ("Herramientas disponibles", "Hechas para imprimir").
-- **Title** (Barlow Condensed 700, 1.75rem, 0.95, uppercase): tool card names; benefit titles at 1.6rem; modal titles at 2rem.
+- **Title** (Barlow Condensed 700, 1.75rem, 0.95, uppercase): benefit titles at 1.6rem; modal titles at 2rem.
 - **Title Small** (Barlow Condensed 600, 20px, 1.1, uppercase): rows of the hero tool index.
 - **Wordmark** (Barlow Condensed 700, 24px; 21px under 640px): the "TecnoBear" text beside the isotipo. Set as text, never rotated.
 - **Engraving** (Barlow Condensed 600, 15px, letter-spacing 0.28–0.32em, uppercase): the motto on and under the dial and in the footer.
@@ -246,7 +246,7 @@ A near-black teal-graphite neutral ramp carrying one acid lime accent and one br
 
 One centered container of 1360px with a fluid gutter of clamp(16px, 4vw, 48px). The background grid is 48px (32px under 640px), and spacing steps sit on an 8px-derived rhythm (8, 12, 16, 20, 28, 40). Sections are separated by clamp(64px, 7vw, 96px) of top padding; the footer opens with clamp(72px, 10vw, 128px).
 
-The nav is sticky at 64px (60px under 640px). The hero is a two-column grid (1.08fr / 0.92fr, gap clamp(32px, 5vw, 80px)): title, lead, the two CTAs and a ruled index of the tools on the left; the square hero plate (max 560px) with the motto rule beneath it on the right. Catalog and benefits use four equal columns (20px gap for cards; benefits as a single ruled strip with 1px dividers between cells).
+The nav is sticky at 64px (60px under 640px). The hero is a two-column grid (1.08fr / 0.92fr, gap clamp(32px, 5vw, 80px)): title, lead, the two CTAs and a ruled index of the tools on the left; the square hero plate (max 560px) with the motto rule beneath it on the right. The catalog uses three equal columns of tool cards (22px gap; two under 1180px, one under 640px): each card is a rounded 14px plate with a landscape 12:5 product photo (rendered from the tool's own 3D viewer with a depth-of-field background), a lime pill label top-left and a cube mark top-right, an Inter 700 title, the description, two icon tags and a lime square arrow that opens the tool. This catalog card is the one deliberate exception to the bevel/no-pill language, chosen by the owner. Benefits use four equal columns (benefits as a single ruled strip with 1px dividers between cells).
 
 Responsive: at 1180px cards and benefits go to two columns, filters become a 4-up grid, the search bar stacks; at 1080px the nav collapses to a hamburger panel and the hero stacks with the plate first (max 420px) and the motto rule hidden; at 640px everything is one column, the plate drops to 220px and CTAs go full width; at 380px the wordmark hides and only the isotipo remains. No horizontal scroll at 390px.
 
