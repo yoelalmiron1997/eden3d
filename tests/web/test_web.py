@@ -499,7 +499,7 @@ def test_home_tecnobear(browser, base_url):
     page = open_app(browser, base_url, path="")
     assert " ".join(page.locator(T % "home-titulo").inner_text().lower().split()) == "herramientas para crear en 3d"
     page.wait_for_function("(() => { const e = document.querySelector('[data-testid=tool-imagen]');"
-                           " return e.complete && e.naturalWidth > 0 && e.currentSrc.includes('macetas_v'); })()", timeout=15_000)
+                           " return e.complete && e.naturalWidth > 0 && e.currentSrc.includes('macetas_card'); })()", timeout=15_000)
     pop = page.locator(T % "popup-macetas")
     pop.wait_for(state="visible", timeout=10_000)              # primera visita: se abre solo
     assert "generador de macetas" in pop.inner_text().lower()
