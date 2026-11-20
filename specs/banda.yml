@@ -1,0 +1,63 @@
+area: Banda de recibida
+prefijo: BAN
+specs:
+  - id: BAN-001
+    titulo: Las piezas del collar salen cerradas y con su agujero
+    descripcion: >
+      Las piezas del modelo original de Rhino (Collar_ME_RECIBI): un disco por letra (Ø 38 ×
+      14 mm, borde redondeado, la letra incrustada en las dos caras), el corazón inflado y la
+      pelotita achatada, todas con el agujero para el hilo. Todo escala con el diámetro del disco.
+    criterio: >
+      Cada pieza (disco, letras, corazón, pelotita) es una malla cerrada y bien orientada con
+      volumen positivo; el disco, el corazón y la pelotita tienen exactamente un agujero que
+      las atraviesa (género 1, número de Euler 0); el disco mide el diámetro pedido ±0,2 mm y
+      14 mm × escala de alto; el agujero del disco y del corazón va de lado a lado a lo largo
+      de x a media altura y el de la pelotita es vertical; la letra de abajo es la de arriba
+      espejada; las letras llenan justo el bolsillo del disco (disco + letras = disco sin
+      bolsillo, ±0,5 %).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: BAN-002
+    titulo: El texto arma el collar
+    descripcion: >
+      Un disco por letra (en mayúsculas), un corazón, una pelotita o nada entre palabras, y el
+      resto del collar con pelotitas y corazones alternados (o de un solo tipo) hasta el largo
+      pedido, con el texto centrado adelante (donde cuelga al ponérselo).
+    criterio: >
+      "ME RECIBÍ" da 8 discos (dos E), un corazón entre las palabras y el relleno alternado
+      empieza y termina en pelotita junto al texto; el largo del collar queda a menos de una
+      cuenta del pedido; las cuentas no se pisan en el collar armado; el texto se pasa a
+      mayúsculas; sin texto, con más de 24 letras, con un carácter que la tipografía no tiene
+      o con un texto demasiado largo para el collar se rechaza con un mensaje en español; si
+      el agujero no deja pared hasta la letra se achica y se avisa.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: BAN-003
+    titulo: Descargas 3MF y STL
+    descripcion: >
+      Un 3MF con todas las cuentas (cada pieza distinta una vez, repetida en la cama; cada
+      disco es un objeto con sus partes disco y letras) y un ZIP con un STL por pieza y un LEEME.
+    criterio: >
+      El 3MF se llama Banda-<TEXTO>-<largo>cm.3mf, tiene tantos ítems como cuentas y los
+      metadatos de licencia de TecnoBear; el ZIP trae Disco_<letra>.stl y Disco_<letra>_letras.stl
+      por cada letra distinta, Corazon.stl, Pelotita.stl (binarios) y un LEEME.txt con las cantidades.
+    prioridad: media
+    nivel: motor
+    estado: activa
+  - id: BAN-004
+    titulo: Banda de recibida en la web
+    descripcion: >
+      La página banda.html arma el collar en el navegador (acostado sobre la mesa, con su
+      hilo) o muestra las piezas sueltas, y el inicio tiene la tarjeta "Banda de recibida"
+      con su pop-up.
+    criterio: >
+      La página arranca con "ME RECIBÍ" de 130 cm (mallas DISCO, LETRAS, CORAZON, PELOTITA e
+      HILO); escribir otro texto, cambiar el separador o el relleno recalculan; "Piezas" muestra
+      una de cada pieza sin el hilo; cambiar un color pinta su pieza; las descargas 3MF y STL
+      (ZIP) funcionan; la tarjeta del inicio abre el pop-up con el link a banda.html; sin
+      errores en la consola.
+    prioridad: alta
+    nivel: web
+    estado: activa

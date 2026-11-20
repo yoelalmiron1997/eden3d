@@ -126,6 +126,7 @@ Tercera herramienta: **sopas de letras para imprimir, cortadas en piezas que enc
 * **Topper para tortas:** https://yoelalmiron1997.github.io/eden3d/topper.html
 * **Chapitas para collares:** https://yoelalmiron1997.github.io/eden3d/chapita.html
 * **Trofeos para eventos:** https://yoelalmiron1997.github.io/eden3d/trofeo.html
+* **Banda de recibida:** https://yoelalmiron1997.github.io/eden3d/banda.html
 * **Generador de macetas:** https://yoelalmiron1997.github.io/eden3d/macetas.html
 * **Tablero de calidad:** https://yoelalmiron1997.github.io/eden3d/calidad/
 
@@ -201,6 +202,23 @@ Sexta herramienta: **trofeos para torneos y eventos** (`web/trofeo.html`, motor
   del grosor y el texto de la base como parte aparte para AMS). Descarga en 3MF (figura y
   base en la cama, cada una con sus partes) o STL por pieza.
 
+### Banda de recibida
+
+Séptima herramienta: **el collar de cuentas de recibida con tu texto** (`web/banda.html`, motor
+`engine/banda_core.py`), sacado del modelo de Rhino `Collar_ME_RECIBI`.
+
+* **Un disco por letra** (Ø 38 × 14 mm, borde redondeado) con la letra incrustada 1 mm en las
+  dos caras (la de abajo espejada, así se lee al darlo vuelta) y el agujero del hilo de lado a lado.
+* Entre palabras un **corazón**, una **pelotita** o nada; el resto del collar con pelotitas y
+  corazones alternados (o de un solo tipo) hasta el **largo** pedido, con el texto adelante.
+* Todo escala con el diámetro del disco; el agujero se elige para el hilo o elástico (y se
+  achica solo si no deja pared hasta la letra).
+* Sin booleanas: el disco y el corazón son un "campo de alturas" en y sobre el plano x-z, con
+  el tubo del agujero cosido en sus bordes (mallas cerradas de género 1).
+* Vista del **collar armado** (acostado en la mesa, con su hilo) o de las **piezas**. Descarga
+  en 3MF (todas las cuentas; cada disco con sus partes disco y letras para AMS) o un ZIP con
+  un STL por pieza y un LEEME con las cantidades.
+
 En todas las herramientas la vista 3D se mira **desde todos los ángulos**: la cámara gira
 libre (también por debajo; la mesa y el escenario se esconden para ver la base) y hay
 botones Frente, Atrás, Izq., Der., Arriba, Abajo, 3/4 y 360°.
@@ -214,6 +232,7 @@ engine/          motor paramétrico en Python puro (el mismo que usa Grasshopper
                  topper_core.py / topper_web.py: motor del Topper para tortas
                  chapita_core.py / chapita_web.py: motor de las Chapitas para collares
                  trofeo_core.py / trofeo_web.py: motor de los Trofeos para eventos
+                 banda_core.py / banda_web.py: motor de la Banda de recibida
 web/             página estática: visor three.js + motor corriendo en el navegador (Pyodide)
 specs/           requisitos con ID (Spec-Driven Development)
 tests/motor/     pytest: geometría, autorriego (booleanas exactas), exportación, licencia

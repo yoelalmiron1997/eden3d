@@ -81,6 +81,28 @@ const MOTORES = {
       ]],
     ],
   }),
+  banda: (s) => ({
+    titulo: "Banda de recibida",
+    datos: [["Texto", s.texto], ["Collar", `${n(s.largo_cm, 0)} cm · ${s.cuentas} cuentas`],
+      ["Discos", `${s.total_discos}: ${(s.discos || []).map((d) => d.letra + (d.cantidad > 1 ? " x" + d.cantidad : "")).join(" · ")}`],
+      ["Corazones / pelotitas", `${s.corazones} / ${s.pelotitas}`],
+      ["Letras", `${n(s.letra_mm)} mm de alto, incrustadas ${n(s.profundidad_mm)} mm ${s.caras === "dos" ? "en las dos caras" : "en una cara"}`],
+      ["Hilo", `hasta Ø ${n(s.agujero_mm - 1)} mm · unos ${s.hilo_cm} cm`]],
+    secciones: [
+      ["Preparar la impresión", [
+        "Todas las piezas van acostadas, tal como salen del archivo: no necesitan soportes (el agujero del hilo es chico y se puentea bien).",
+        "Capa de 0,2 mm (0,16 mm en los discos para que la letra salga prolija), 3 perímetros y 15 % de relleno.",
+        "Con AMS: cada disco es un objeto con dos partes, el disco y sus letras; asigná un filamento a cada una.",
+        "Sin AMS: imprimí los discos con pausa en la capa de la letra de abajo y de arriba, o pintá la letra con un marcador de pintura.",
+        "Los corazones y las pelotitas se pueden imprimir todos juntos en una o dos camas.",
+      ]],
+      ["Armado", [
+        "Pasá un elástico o cordón por el agujero de cada cuenta en el orden de la vista previa: pelotita, corazón… y el texto en el medio.",
+        "La letra de abajo está espejada: al dar vuelta el disco sobre el hilo se lee derecha.",
+        "Dejá unos centímetros de más para atarlo; con elástico, un nudo doble y una gota de pegamento lo dejan firme.",
+      ]],
+    ],
+  }),
   chapita: (s) => ({
     titulo: "Chapita para collar",
     datos: [["Nombre", [s.nombre, s.linea2].filter(Boolean).join(" / ")],

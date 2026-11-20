@@ -64,6 +64,15 @@ export const HERRAMIENTAS = [
     testImagen: "tool-imagen-trofeo", foco: "60% 50%",
     etiqueta: { icono: "destello", texto: "Nuevo" }, rubros: [{ icono: "lapiz", texto: "Personalización" }, { icono: "copa", texto: "Eventos" }],
   },
+  {
+    id: "banda", ruta: "banda.html", modal: "banda-modal", categoria: "personalizacion",
+    nombre: "Banda de recibida", corto: "Banda de recibida",
+    descripcion: "Armá el collar de cuentas con ME RECIBÍ, el nombre o la carrera, listo para imprimir.",
+    imagen: "assets/herramientas/banda_card_600.jpg", imagen2x: "assets/herramientas/banda_card.jpg",
+    alt: "Collar de recibida impreso en 3D: discos blancos con letras negras que dicen ME RECIBÍ, corazones rosas y pelotitas fucsia",
+    testImagen: "tool-imagen-banda", foco: "50% 40%",
+    etiqueta: { icono: "destello", texto: "Nuevo" }, rubros: [{ icono: "lapiz", texto: "Personalización" }, { icono: "birrete", texto: "Egresados" }],
+  },
 ];
 
 export const REDES = [

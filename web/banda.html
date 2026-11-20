@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>try{var t=localStorage.getItem("tb-tema");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banda de recibida · TecnoBear</title>
+  <meta name="description" content="Armá el collar de cuentas de recibida con tu texto (ME RECIBÍ, el nombre o la carrera), con corazones y pelotitas, y bajalo para imprimir en 3D.">
+  <meta name="copyright" content="© TecnoBear — Yoel Almirón. Todos los derechos reservados.">
+  <meta name="theme-color" content="#090E0F">
+  <link rel="icon" href="assets/marca/logo-tecnobear.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js",
+                   "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Herramientas de TecnoBear, inicio" data-testid="link-home">
+      <img class="brand-logo" src="assets/marca/logo-tecnobear.svg" alt="" width="36" height="36"><span class="brand-tb">TecnoBear</span><span class="brand-sub">Banda de recibida</span>
+    </a>
+    <nav class="nav">
+      <a href="./" class="hide-sm">Inicio</a>
+      <a href="./#herramientas" class="hide-sm">Herramientas</a>
+      <a href="calidad/" data-testid="link-calidad" class="solo-admin">Calidad</a>
+      <span id="account" class="account"></span>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="panel" aria-label="Configuración">
+      <div class="status" data-testid="estado" role="status" aria-live="polite">Cargando el motor…</div>
+
+      <fieldset class="sec" data-sec="texto">
+        <legend>Texto</legend>
+        <label>Lo que dice la banda
+          <input type="text" id="texto" data-testid="inp-texto" maxlength="40" value="ME RECIBÍ" autocomplete="off" spellcheck="false">
+        </label>
+        <p class="hint small" id="cuenta-letras" data-testid="cuenta-letras"></p>
+        <div class="row2">
+          <label>Entre palabras
+            <select id="separador" data-testid="sel-separador" disabled></select>
+          </label>
+          <label>Tipografía
+            <select id="fuente" data-testid="sel-fuente" disabled></select>
+          </label>
+        </div>
+        <p class="hint small">Una letra por disco, en mayúsculas. Probá con el nombre, la carrera o "LIC." / "DRA.".</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="collar">
+        <legend>Collar</legend>
+        <label>Resto del collar
+          <select id="relleno" data-testid="sel-relleno" disabled></select>
+        </label>
+        <label class="slider"><span>Largo</span>
+          <input type="range" id="largo" data-testid="sl-largo" min="60" max="180" step="5" value="130">
+          <output id="o-largo">130 cm</output></label>
+        <label class="slider"><span>Discos</span>
+          <input type="range" id="diametro" data-testid="sl-diametro" min="26" max="46" step="1" value="38">
+          <output id="o-diametro">Ø 38 mm</output></label>
+        <label class="slider"><span>Agujero</span>
+          <input type="range" id="agujero" data-testid="sl-agujero" min="3" max="9" step="0.5" value="7">
+          <output id="o-agujero">7,0 mm</output></label>
+        <p class="hint small">Las cuentas (corazones y pelotitas) crecen con el disco; el agujero es para el hilo o elástico.</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="letras">
+        <legend>Letras</legend>
+        <label>Caras
+          <select id="caras" data-testid="sel-caras" disabled></select>
+        </label>
+        <label class="slider"><span>Profundidad</span>
+          <input type="range" id="profundidad" data-testid="sl-profundidad" min="0.6" max="2" step="0.1" value="1">
+          <output id="o-profundidad">1,0 mm</output></label>
+        <p class="hint small">La letra va incrustada en el disco: con AMS sale de otro color (es otra parte del mismo objeto).</p>
+      </fieldset>
+
+      <fieldset class="sec" data-sec="vista" data-closed-mobile>
+        <legend>Vista</legend>
+        <div class="seg" id="vistas-modo" role="radiogroup" aria-label="Qué mostrar" data-testid="modo">
+          <button type="button" role="radio" data-modo="collar" data-testid="modo-collar" aria-pressed="true">Collar armado</button>
+          <button type="button" role="radio" data-modo="piezas" data-testid="modo-piezas" aria-pressed="false">Piezas</button>
+        </div>
+        <div class="row2">
+          <label>Discos
+            <select id="c-disco" data-testid="sel-color-disco">
+              <option value="#f4f1ea">Blanco</option>
+              <option value="#ffd6e7">Rosa</option>
+              <option value="#cfe6ff">Celeste</option>
+              <option value="#e8c76a">Dorado</option>
+              <option value="#2c2c2c">Negro</option>
+            </select>
+          </label>
+          <label>Letras
+            <select id="c-letras" data-testid="sel-color-letras">
+              <option value="#1d1d1f">Negro</option>
+              <option value="#e0457b">Fucsia</option>
+              <option value="#c79a2c">Dorado</option>
+              <option value="#2a5bd7">Azul</option>
+              <option value="#f4f1ea">Blanco</option>
+            </select>
+          </label>
+          <label>Corazones
+            <select id="c-corazon" data-testid="sel-color-corazon">
+              <option value="#f7a8c4">Rosa</option>
+              <option value="#e04545">Rojo</option>
+              <option value="#e8c76a">Dorado</option>
+              <option value="#8fd0ff">Celeste</option>
+              <option value="#b48ce0">Lila</option>
+              <option value="#f4f1ea">Blanco</option>
+            </select>
+          </label>
+          <label>Pelotitas
+            <select id="c-pelotita" data-testid="sel-color-pelotita">
+              <option value="#e0457b">Fucsia</option>
+              <option value="#f7a8c4">Rosa</option>
+              <option value="#e8c76a">Dorado</option>
+              <option value="#2a5bd7">Azul</option>
+              <option value="#3fae5a">Verde</option>
+              <option value="#f4f1ea">Blanco</option>
+            </select>
+          </label>
+        </div>
+        <div class="seg seg4" id="scenes" role="radiogroup" aria-label="Escenario" data-testid="escenarios"></div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="build" class="primary" data-testid="btn-generar" disabled>Generar</button>
+        <div class="row3 even">
+          <button type="button" id="dl3mf" data-testid="btn-3mf" disabled>3MF</button>
+          <button type="button" id="dlstl" data-testid="btn-stl" disabled>STL</button>
+          <button type="button" id="photo" data-testid="btn-foto" disabled>Foto</button>
+        </div>
+        <button type="button" id="pdf" data-testid="btn-pdf" disabled>Guía PDF</button>
+      </div>
+    </section>
+
+    <div class="column">
+    <section class="stage" aria-label="Vista 3D">
+      <div id="viewer" class="viewer" data-testid="visor"></div>
+      <div class="busy" id="busy" hidden><span class="spinner"></span><span id="busy-text">Calculando…</span></div>
+      <article class="report" data-testid="reporte" aria-live="polite">
+        <h2 id="sku" data-testid="sku">—</h2>
+        <dl id="facts"></dl>
+        <ul id="warnings" class="warnings" data-testid="avisos"></ul>
+      </article>
+    </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p data-testid="licencia">© 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados.
+      Descargas solo para <strong>uso personal</strong>: no se pueden vender ni compartir. <a href="licencia.html">Licencia</a>.</p>
+    <p class="muted">Tipografías libres (OFL / Apache) de sus autores · motor de bandas <span id="engine-v">—</span> · todo corre en tu navegador · <span id="build-id"></span></p>
+  </footer>
+
+  <script type="module" src="banda.js"></script>
+</body>
+</html>
