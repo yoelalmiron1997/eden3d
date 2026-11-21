@@ -9,7 +9,7 @@
 // El worker avisa sus pasos con postMessage({ type: "progreso", paso: 2 }); el estado de
 // la página (ready, builds, errors) dice cuándo termina.
 
-const NOMBRES = { macetas: "de macetas", mate: "del mate", sopa: "de la sopa de letras", topper: "del topper", chapita: "de chapitas", trofeo: "de trofeos" };
+const NOMBRES = { macetas: "de macetas", mate: "del mate", sopa: "de la sopa de letras", topper: "del topper", chapita: "de chapitas", trofeo: "de trofeos", banda: "de la banda de recibida" };
 
 // la pieza que imprime cada motor: silueta sobre la cama (y = 200), unos 110 mm de alto
 const PIEZAS = {
@@ -20,6 +20,9 @@ const PIEZAS = {
     <circle cx="208" cy="157" r="15"/><circle cx="208" cy="185" r="15"/><path d="M160 136a12 12 0 1 1 0 24 12 12 0 1 1 0-24zm0 6a6 6 0 1 0 0 12 6 6 0 1 0 0-12z" fill-rule="evenodd"/>`,
   trofeo: `<path d="M160 82l9 19 21 3-15 15 4 21-19-10-19 10 4-21-15-15 21-3z"/><rect x="155" y="138" width="10" height="26"/>
     <rect x="122" y="164" width="76" height="24"/><rect x="114" y="186" width="92" height="14"/>`,
+  banda: `<circle cx="108" cy="184" r="16"/><path d="M134 168h24c4 0 6 6 6 16s-2 16-6 16h-24c-4 0-6-6-6-16s2-16 6-16z"/>
+    <circle cx="190" cy="184" r="16"/><path d="M222 196l-14-14a8 8 0 0 1 14-9 8 8 0 0 1 14 9z"/><circle cx="160" cy="146" r="17"/>
+    <circle cx="124" cy="122" r="9"/><circle cx="196" cy="122" r="9"/>`,
   topper: `<path d="M160 146c-30-17-46-30-46-45 0-12 9-20 20-20 11 0 20 7 26 16 6-9 15-16 26-16 11 0 20 8 20 20 0 15-16 28-46 45z"/>
     <rect x="139" y="132" width="7" height="68"/><rect x="174" y="132" width="7" height="68"/>`,
 };

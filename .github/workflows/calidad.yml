@@ -19,7 +19,7 @@ concurrency:
 jobs:
   test:
     name: Tests + matriz de specs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -108,7 +108,7 @@ jobs:
     needs: test
     # se publica también con tests en rojo: el tablero de calidad muestra la falla
     if: always() && needs.test.result != 'cancelled' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
