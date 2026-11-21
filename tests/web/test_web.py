@@ -501,15 +501,14 @@ def test_home_tecnobear(browser, base_url):
     page.wait_for_function("(() => { const e = document.querySelector('[data-testid=tool-imagen]');"
                            " return e.complete && e.naturalWidth > 0 && e.currentSrc.includes('macetas_card'); })()", timeout=15_000)
     pop = page.locator(T % "popup-macetas")
-    pop.wait_for(state="visible", timeout=10_000)              # primera visita: se abre solo
-    assert "generador de macetas" in pop.inner_text().lower()
+    page.wait_for_timeout(1500)
+    assert not pop.is_visible(), "al entrar no se abre ningún pop-up"
+    assert page.evaluate("document.querySelectorAll('dialog[open]').length") == 0
+    page.locator(T % "tool-macetas").click()
+    assert pop.is_visible() and "generador de macetas" in pop.inner_text().lower()
     pop.locator("[data-close]").last.click()
     assert not pop.is_visible()
-    page.reload()
-    page.wait_for_timeout(1200)
-    assert not pop.is_visible(), "en la segunda visita no se abre solo"
     page.locator(T % "tool-macetas").click()
-    assert pop.is_visible()
     page.locator(T % "abrir-macetas").click()
     page.wait_for_url("**/macetas.html")
     page.context.close()
@@ -622,9 +621,8 @@ def test_panel_admin(browser, base_url):
 @pytest.mark.spec("WEB-013")
 def test_modo_claro_y_oscuro(browser, base_url):
     page = open_app(browser, base_url, path="")
-    page.locator(T % "popup-macetas").wait_for(state="visible", timeout=10_000)
-    page.keyboard.press("Escape")
     btn = page.locator(T % "btn-tema")
+    btn.wait_for(state="visible", timeout=10_000)                                  # sin pop-up al entrar
     assert btn.is_visible() and btn.get_attribute("data-tema") == "dark"          # oscuro por defecto
     fondo = lambda: page.evaluate("getComputedStyle(document.body).backgroundColor")
     oscuro = fondo()

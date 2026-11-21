@@ -7,17 +7,31 @@ importScripts("./vendor/pyodide/pyodide.js");
 let py = null;
 let api = null;
 
+// sólo los módulos del generador de macetas (el manifest trae también los de las otras herramientas)
+const MOTOR = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "eden_catalog.py",
+  "eden_web.py", "eden_selftest.py", "eden_escena.py", "eden_plantas.py", "eden_patitas.py",
+  "colecciones/catalogo_eden3d.json", "colecciones/plantas.json"];
+
+async function bajarMotor() {
+  const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
+  const files = MOTOR.filter((f) => manifest.files.includes(f));
+  const txts = await Promise.all(files.map((f) => fetch("./py/" + f + "?v=" + manifest.version).then((r) => {
+    if (!r.ok) throw new Error(`no se pudo bajar ${f} (${r.status})`);
+    return r.text();
+  })));
+  return { manifest, files, txts };
+}
+
 async function init() {
   const t0 = performance.now();
   self.postMessage({ type: "progreso", paso: 1 });
+  // Python y los archivos del motor se bajan a la vez (antes: uno detrás del otro)
+  const motor = bajarMotor();
   py = await loadPyodide({ indexURL: "./vendor/pyodide/" });
   self.postMessage({ type: "progreso", paso: 2 });     // Python listo: ahora el motor
-  const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
+  const { manifest, files, txts } = await motor;
   py.FS.mkdirTree("/eden/colecciones");
-  for (const f of manifest.files) {
-    const txt = await (await fetch("./py/" + f + "?v=" + manifest.version)).text();
-    py.FS.writeFile("/eden/" + f, txt);
-  }
+  files.forEach((f, i) => py.FS.writeFile("/eden/" + f, txts[i]));
   py.runPython("import sys; sys.path.insert(0, '/eden'); import eden_web");
   api = py.pyimport("eden_web");
   const info = api.info().toJs({ dict_converter: Object.fromEntries });

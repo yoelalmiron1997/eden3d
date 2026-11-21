@@ -25,7 +25,14 @@ def opening(V):
     z_bot = min(v[2] for v in V)
     H = z_top - z_bot
     z_s = z_top - max(6.0, 0.085 * H)          # tierra unos mm bajo el borde
-    band = [math.hypot(v[0], v[1]) for v in V if abs(v[2] - z_s) < max(0.8, 0.012 * H)]
+    # franja de vértices a la altura de la tierra; en las macetas de caras planas (hexagonal,
+    # prisma) casi no hay vértices en el medio de la pared: se ensancha la franja hasta encontrar
+    # (antes se tomaban todos los vértices, incluido el centro del fondo, y la boca daba ~2 mm)
+    tol = max(0.8, 0.012 * H)
+    band = []
+    while not band and tol <= H:
+        band = [math.hypot(v[0], v[1]) for v in V if abs(v[2] - z_s) < tol]
+        tol *= 2.0
     if not band:
         band = [math.hypot(v[0], v[1]) for v in V]
     # la pared interior es la de menor radio en esa franja (la exterior tiene relieve)
@@ -174,19 +181,21 @@ def _pebble(cx, cy, cz, a, b, c, rot, rnd, nu=22, nv=12):
     return V, F
 
 
-def pebbles(r_in, z_s, keep_r=0.0, seed=7, avoid=()):
+def pebbles(r_in, z_s, keep_r=0.0, seed=7, avoid=(), perfil=None):
     """Piedritas sobre la tierra (Poisson simple). keep_r: zona libre central (planta);
-    avoid: [(x, y, r)] otras zonas libres (varias plantas)."""
+    avoid: [(x, y, r)] otras zonas libres (varias plantas); perfil: forma de la boca."""
     rnd = random.Random(seed)
     placed = []
     out = {"piedra": ([], []), "arcilla": ([], [])}
     tries = 0
+    r_max = max(perfil) if perfil else r_in
     while tries < 9000:
         tries += 1
-        rr = r_in * math.sqrt(rnd.random())
+        rr = r_max * math.sqrt(rnd.random())
         th = rnd.uniform(0, TAU)
         size = rnd.uniform(2.6, 4.6) * (0.8 if r_in < 30 else 1.0)
-        if rr + size * 0.8 > r_in - 0.8 or rr < keep_r:
+        lim = radio_en(perfil, th) if perfil else r_in
+        if rr + size * 0.8 > lim - 0.8 or rr < keep_r:
             continue
         x, y = rr * math.cos(th), rr * math.sin(th)
         if any(math.hypot(x - ax, y - ay) < ar for ax, ay, ar in avoid):
@@ -204,10 +213,81 @@ def pebbles(r_in, z_s, keep_r=0.0, seed=7, avoid=()):
     return out
 
 
-def soil(r_in, z_s, n=64):
-    V = [(0.0, 0.0, z_s)] + [(r_in * math.cos(TAU * k / n), r_in * math.sin(TAU * k / n), z_s)
+N_PERFIL = 180
+
+
+def perfil_boca(V, F, z, r_min=0.0, n=N_PERFIL):
+    """Radio de la pared interior a la altura z en n direcciones (cada 360/n grados):
+    corta la malla con el plano z y, por cada rayo desde el eje, se queda con el primer
+    cruce (el más cercano) más allá de r_min. Así la tierra sigue la boca de las macetas
+    que no son redondas por dentro (hexagonal, olas, pliegues…). z puede ser una lista de
+    alturas: devuelve el mínimo entre todas (un solo recorrido de la malla). None si no hay
+    corte."""
+    zs_corte = list(z) if isinstance(z, (list, tuple)) else [z]
+    zv = [v[2] for v in V]
+    lo_z, hi_z = min(zs_corte), max(zs_corte)
+    hits = [None] * n
+    paso = TAU / n
+    for f in F:
+        a_, b_, c_ = f
+        za, zb, zc = zv[a_], zv[b_], zv[c_]
+        if max(za, zb, zc) <= lo_z or min(za, zb, zc) >= hi_z:
+            continue
+        P = (V[a_], V[b_], V[c_])
+        for zq in zs_corte:
+            pts = []
+            for k in range(3):
+                (x1, y1, z1), (x2, y2, z2) = P[k], P[(k + 1) % 3]
+                if (z1 - zq) * (z2 - zq) < 0:
+                    t = (zq - z1) / (z2 - z1)
+                    pts.append((x1 + (x2 - x1) * t, y1 + (y2 - y1) * t))
+            if len(pts) != 2:
+                continue
+            (ax, ay), (bx, by) = pts
+            a1, a2 = math.atan2(ay, ax), math.atan2(by, bx)
+            d = (a2 - a1 + math.pi) % TAU - math.pi          # tramo angular (corto) del segmento
+            if abs(d) < 1e-12:
+                continue
+            lo = (a1 if d > 0 else a2) % TAU
+            span = abs(d)
+            ex, ey = bx - ax, by - ay
+            k = int(math.ceil(lo / paso))
+            while k * paso - lo <= span + 1e-12:
+                th = k * paso
+                c, s_ = math.cos(th), math.sin(th)
+                den = c * ey - s_ * ex                         # rayo (c, s)·r contra el segmento
+                if abs(den) > 1e-12:
+                    r = (ax * ey - ay * ex) / den
+                    if r > r_min:
+                        j = k % n
+                        if hits[j] is None or r < hits[j]:
+                            hits[j] = r
+                k += 1
+    if all(h is None for h in hits):
+        return None
+    base = min(h for h in hits if h is not None)
+    return [h if h is not None else base for h in hits]
+
+
+def radio_en(perfil, th):
+    """Radio del perfil (lista en ángulos parejos) en el ángulo th, interpolado."""
+    n = len(perfil)
+    u = (th % TAU) / (TAU / n)
+    i = int(u) % n
+    t = u - int(u)
+    return perfil[i] * (1 - t) + perfil[(i + 1) % n] * t
+
+
+def soil(r_in, z_s, n=64, perfil=None):
+    """Disco de tierra (3 mm de espesor). Con perfil, sigue la forma de la boca."""
+    if perfil:
+        n = len(perfil)
+        rs = list(perfil)
+    else:
+        rs = [r_in] * n
+    V = [(0.0, 0.0, z_s)] + [(rs[k] * math.cos(TAU * k / n), rs[k] * math.sin(TAU * k / n), z_s)
                              for k in range(n)]
-    V += [(0.0, 0.0, z_s - 3.0)] + [(r_in * math.cos(TAU * k / n), r_in * math.sin(TAU * k / n),
+    V += [(0.0, 0.0, z_s - 3.0)] + [(rs[k] * math.cos(TAU * k / n), rs[k] * math.sin(TAU * k / n),
                                      z_s - 3.0) for k in range(n)]
     F = []
     b = n + 1

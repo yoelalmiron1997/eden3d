@@ -892,13 +892,22 @@ def build(ids, abertura, seed=3):
     return m.items()
 
 
-def abertura_de(V):
-    """Boca de la maceta (ya ubicada) a partir de sus vértices."""
+def abertura_de(V, F=None):
+    """Boca de la maceta (ya ubicada) a partir de sus vértices. Con las caras, también el
+    "perfil": el radio de la pared interior a la altura de la tierra en cada dirección, para
+    que la tierra llene las esquinas de las macetas que no son redondas por dentro."""
     import eden_escena
     z_top, r_in, z_s = eden_escena.opening(V)
-    return {"r_in": r_in - 0.6, "z_s": z_s, "z_top": z_top,
-            "r_out": max(math.hypot(x, y) for x, y, _ in V),
-            "z_bot": min(v[2] for v in V)}
+    ab = {"r_in": r_in - 0.6, "z_s": z_s, "z_top": z_top,
+          "r_out": max(math.hypot(x, y) for x, y, _ in V),
+          "z_bot": min(v[2] for v in V)}
+    if F:
+        # arriba y abajo del disco de tierra (3 mm): en las macetas torcidas la pared se mueve
+        perfil = eden_escena.perfil_boca(V, F, [z_s, z_s - 3.0], r_min=0.6 * r_in)
+        if perfil:
+            ab["perfil"] = [max(r - 0.6, 1.0) for r in perfil]
+            ab["r_in"] = min(ab["perfil"])        # círculo que entra en la boca (para ubicar las plantas)
+    return ab
 
 
 def cobertura_sugerida(ids):
@@ -911,19 +920,21 @@ def cobertura_sugerida(ids):
     return COBERTURA_SUGERIDA[orden[rs[0]]]        # manda la más sensible al exceso de agua
 
 
-def _granos(r_in, z_s, avoid, seed, size, kinds, shape, gap=0.78, nu=14, nv=8, sink=0.55):
+def _granos(r_in, z_s, avoid, seed, size, kinds, shape, gap=0.78, nu=14, nv=8, sink=0.55, perfil=None):
     """Granos sueltos sobre la tierra (Poisson simple). kinds: [(material, prob)];
-    shape(rnd, size) -> (a, b, c)."""
+    shape(rnd, size) -> (a, b, c); perfil: forma de la boca (si no, un círculo de r_in)."""
     import eden_escena
     rnd = random.Random(seed)
     placed = []
     out = {k: ([], []) for k, _ in kinds}
+    r_max = max(perfil) if perfil else r_in
     for _ in range(9000):
-        rr = r_in * math.sqrt(rnd.random())
+        rr = r_max * math.sqrt(rnd.random())
         th = rnd.uniform(0, TAU)
         sz = rnd.uniform(*size) * (0.8 if r_in < 30 else 1.0)
         a, b, c = shape(rnd, sz)
-        if rr + max(a, b) * 1.45 > r_in - 0.5:          # 1.45: abolladuras del grano
+        lim = eden_escena.radio_en(perfil, th) if perfil else r_in
+        if rr + max(a, b) * 1.45 > lim - 0.5:          # 1.45: abolladuras del grano
             continue
         x, y = rr * math.cos(th), rr * math.sin(th)
         if any(math.hypot(x - ax, y - ay) < ar + a * 1.2 for ax, ay, ar in avoid):
@@ -950,28 +961,29 @@ def decor(abertura, ids, seed=7, cobertura=None):
     cobertura: una de COBERTURAS (None = la sugerida para esas plantas)."""
     import eden_escena
     r_in, z_s = abertura["r_in"], abertura["z_s"]
+    perfil = abertura.get("perfil")
     ids = [i for i in dict.fromkeys(ids) if i in GENERADORES][:MAX_PLANTAS]
     cob = cobertura if cobertura in COBERTURAS else cobertura_sugerida(ids)
-    out = [("tierra_oscura" if cob in ("tierra", "musgo") else "tierra",) + eden_escena.soil(r_in, z_s)]
+    out = [("tierra_oscura" if cob in ("tierra", "musgo") else "tierra",) + eden_escena.soil(r_in, z_s, perfil=perfil)]
     avoid = [(x, y, R * (0.45 if ficha(pid).get("colgante") else 0.55))
              for (x, y, R), pid in zip(layout(len(ids), r_in), ids)]
     if cob == "piedra_blanca":
-        pb = eden_escena.pebbles(r_in, z_s, seed=seed, avoid=avoid)
+        pb = eden_escena.pebbles(r_in, z_s, seed=seed, avoid=avoid, perfil=perfil)
         out += [(k,) + pb[k] for k in ("piedra", "arcilla") if pb[k][0]]
     elif cob == "tierra":                      # grumos chicos de la misma tierra
         out += _granos(r_in, z_s, [(x, y, R * 0.4) for x, y, R in avoid], seed, (0.9, 1.8),
                        [("tierra_oscura", 0.7), ("tierra", 0.3)],
-                       lambda rnd, s: (s, s * rnd.uniform(0.7, 1.0), s * 0.45), gap=1.1, nu=8, nv=5, sink=0.3)
+                       lambda rnd, s: (s, s * rnd.uniform(0.7, 1.0), s * 0.45), gap=1.1, nu=8, nv=5, sink=0.3, perfil=perfil)
     elif cob == "leca":
         out += _granos(r_in, z_s, avoid, seed, (2.6, 3.8), [("leca", 1.0)],
-                       lambda rnd, s: (s, s * rnd.uniform(0.9, 1.0), s * rnd.uniform(0.85, 0.95)), gap=0.95)
+                       lambda rnd, s: (s, s * rnd.uniform(0.9, 1.0), s * rnd.uniform(0.85, 0.95)), gap=0.95, perfil=perfil)
     elif cob == "corteza":
         out += _granos(r_in, z_s, avoid, seed, (3.5, 6.0), [("corteza_pino", 1.0)],
-                       lambda rnd, s: (s, s * rnd.uniform(0.5, 0.75), s * 0.22), gap=0.72, sink=0.2)
+                       lambda rnd, s: (s, s * rnd.uniform(0.5, 0.75), s * 0.22), gap=0.72, sink=0.2, perfil=perfil)
     elif cob == "volcanica":
         out += _granos(r_in, z_s, avoid, seed, (1.8, 3.2), [("volcanica", 0.65), ("volcanica_negra", 0.35)],
-                       lambda rnd, s: (s, s * rnd.uniform(0.6, 0.9), s * rnd.uniform(0.5, 0.75)), gap=0.8, nu=9, nv=6)
+                       lambda rnd, s: (s, s * rnd.uniform(0.6, 0.9), s * rnd.uniform(0.5, 0.75)), gap=0.8, nu=9, nv=6, perfil=perfil)
     elif cob == "musgo":                       # almohadones bajos y abollados
         out += _granos(r_in, z_s, [(x, y, R * 0.35) for x, y, R in avoid], seed, (3.5, 6.0), [("musgo", 1.0)],
-                       lambda rnd, s: (s, s * rnd.uniform(0.8, 1.0), s * 0.38), gap=0.62, sink=0.15)
+                       lambda rnd, s: (s, s * rnd.uniform(0.8, 1.0), s * 0.38), gap=0.62, sink=0.15, perfil=perfil)
     return out

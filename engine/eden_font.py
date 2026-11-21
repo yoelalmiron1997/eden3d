@@ -382,11 +382,25 @@ def _near_strokes(lx, ly, idx, lim):
     return False
 
 
+_PLACE = {}
+
+
 def place(text, r_free, holes, cap_h=6.0, min_cap=3.5, gap=1.2):
     """Busca dónde grabar el texto dentro del disco r_free sin acercarse a
     menos de `gap` mm de ningún agujero. Prueba centro, desplazamientos y
     giros (texto recto); si no entra, lo curva sobre un arco cerca del borde.
-    Achica la letra hasta min_cap. Devuelve (contornos, cap_h, posición) o None."""
+    Achica la letra hasta min_cap. Devuelve (contornos, cap_h, posición) o None.
+    Guarda los resultados: al mover un control que no cambia el piso, no se recalcula."""
+    key = (text, round(r_free, 4), round(cap_h, 4), round(min_cap, 4), round(gap, 4),
+           tuple(tuple((round(x, 4), round(y, 4)) for x, y in h) for h in holes))
+    if key not in _PLACE:
+        if len(_PLACE) > 64:
+            _PLACE.clear()
+        _PLACE[key] = _place(text, r_free, holes, cap_h, min_cap, gap)
+    return _PLACE[key]
+
+
+def _place(text, r_free, holes, cap_h, min_cap, gap):
     hp = _hole_pts(holes)
     inner = [(sum(p[0] for p in h) / len(h), sum(p[1] for p in h) / len(h)) for h in holes]
     size = cap_h
