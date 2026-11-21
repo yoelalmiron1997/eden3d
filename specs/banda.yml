@@ -61,3 +61,20 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: BAN-005
+    titulo: La banda puesta y colgada, con la soga animada
+    descripcion: >
+      Dos vistas animadas: la soga (con una aguja en la punta) pasa por todas las cuentas
+      y la banda queda puesta de costado en un maniquí (del hombro a la cadera, con el
+      texto en el pecho) o colgada de dos clavos en la pared como un colgante (con el texto
+      abajo). La animación se puede repetir y la banda se queda puesta.
+    criterio: >
+      El motor da una malla por pieza distinta en el marco de la cuenta (agujero sobre el
+      eje x, centrada en el origen, letra hacia +z) y la secuencia de cuentas con su largo
+      (suma = largo del collar); en la web, "Puesta" arma el maniquí y "En la pared" la
+      pared con dos clavos, la soga termina pasando por las cuentas (todas enhebradas,
+      fase "lista") y queda; "Pasar la soga de nuevo" la repite; volver a "En la mesa"
+      saca la escena; sin errores en la consola.
+    prioridad: media
+    nivel: web
+    estado: activa
