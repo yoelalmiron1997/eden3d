@@ -87,3 +87,19 @@ specs:
     prioridad: media
     nivel: motor
     estado: activa
+  - id: PLA-009
+    titulo: La tierra llena la boca de cualquier maceta
+    descripcion: >
+      La tierra y su cobertura siguen la forma real de la boca (la pared interior a la
+      altura de la tierra), también en las macetas que no son redondas por dentro
+      (hexagonal, prisma, marea, brisa, origami…), y las plantas se ubican con el radio
+      verdadero de la boca.
+    criterio: >
+      En todos los diseños y tamaños el radio de la boca es al menos el 75 % del radio
+      máximo de la pared interior (antes, en Hexagonal y Prisma S daba ~2 mm y la tierra y
+      la planta quedaban como un punto); el borde de la tierra no se mete en la pared y no
+      deja más de 2 mm de hueco contra ella; los granos de la cobertura quedan dentro del
+      contorno de la boca.
+    prioridad: alta
+    nivel: motor
+    estado: activa

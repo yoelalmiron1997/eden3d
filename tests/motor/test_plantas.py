@@ -233,3 +233,50 @@ def test_partes_por_planta_para_animar():
         assert ps[0]["flex"] == P.FLEX[pid]
     assert P.FLEX["cardon"] < 0.2 and P.FLEX["pothos"] == 1.0 and P.FLEX["lithops"] == 0
     assert set(P.FLEX) == set(P.GENERADORES)
+
+
+# ------------------------------------------------------------------ tierra en la boca real
+def _boca(design, size):
+    import eden_core
+    o = {"design": design, "mode": "screw_dish_sw", "size": size, "quality": "preview"}
+    res = eden_core.build_pot(eden_web.params(o))
+    if not res["report"].get("valid"):
+        return None
+    for nm, V, F, dz in eden_web._placed(res):
+        if nm == "MACETA":
+            V2 = [(x, y, z + dz) for x, y, z in V]
+            return V2, F, P.abertura_de(V2, F)
+
+
+@pytest.mark.spec("PLA-009")
+@pytest.mark.parametrize("design", ["HEX", "PRISMA", "MAREA", "BRISA", "ORIGAMI", "TORSION", "ROMBO"])
+def test_tierra_sigue_la_boca(design):
+    import numpy as np
+    import trimesh
+    import eden_escena
+    for size in ("S", "L"):
+        b = _boca(design, size)
+        if b is None:
+            continue
+        V, F, ab = b
+        per = ab["perfil"]
+        assert ab["r_in"] >= 0.75 * max(per), (design, size, ab["r_in"], max(per))
+        m = trimesh.Trimesh(V, F, process=False)
+        n = 360
+        th = np.arange(n) * 2 * math.pi / n
+        z = ab["z_s"] - 1.5
+        org = np.zeros((n, 3))
+        org[:, 2] = z
+        dirs = np.stack([np.cos(th), np.sin(th), np.zeros(n)], 1)
+        loc, ray, _ = m.ray.intersects_location(org, dirs, multiple_hits=True)
+        pared = np.full(n, np.inf)
+        for i, (x, y, _) in zip(ray, loc):
+            r = math.hypot(x, y)
+            if 0.6 * ab["r_in"] < r < pared[i]:
+                pared[i] = r
+        borde = np.array([eden_escena.radio_en(per, t) for t in th])
+        hueco = pared - borde
+        assert hueco.min() > 0.0 and hueco.max() < 2.0, (design, size, hueco.min(), hueco.max())
+        for mat, Vd, Fd in P.decor(ab, ["echeveria"], cobertura="volcanica")[1:]:
+            for x, y, _ in Vd:
+                assert math.hypot(x, y) <= eden_escena.radio_en(per, math.atan2(y, x)) + 0.05, (design, mat)

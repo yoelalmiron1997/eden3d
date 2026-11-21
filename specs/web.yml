@@ -112,9 +112,9 @@ specs:
       la tarjeta del generador de macetas abre su pop-up.
     criterio: >
       La portada dice "Herramientas para crear en 3D" y tiene la tarjeta del generador de
-      macetas con su imagen (render real de la maceta desarmada en el jardín); en la
-      primera visita se abre el pop-up (después, al tocar la imagen de la tarjeta) y
-      "Abrir el generador" lleva a macetas.html.
+      macetas con su imagen (render real de la maceta desarmada en el jardín); al entrar
+      (también en el celular) no se abre ningún pop-up: el de cada herramienta aparece sólo
+      al tocar su tarjeta, y "Abrir el generador" lleva a macetas.html.
     prioridad: media
     nivel: web
     estado: activa

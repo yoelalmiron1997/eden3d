@@ -111,10 +111,7 @@ function modales() {
     const b = e.target.closest("[data-modal]");
     if (b) document.getElementById(b.dataset.modal).showModal();
   });
-  // la primera visita muestra el generador de macetas en un pop-up
-  let visto = false;
-  try { visto = localStorage.getItem("tb-popup-macetas") === "1"; localStorage.setItem("tb-popup-macetas", "1"); } catch (e) { /* sin almacenamiento */ }
-  if (!visto) setTimeout(() => { if (!document.querySelector("dialog[open]")) $("#tool-modal").showModal(); }, 500);
+  // los pop-ups se abren sólo al tocar una tarjeta: al entrar se ve la página, sin nada encima
 }
 
 // ------------------------------------------------------------------ aparición

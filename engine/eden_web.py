@@ -162,7 +162,7 @@ def build(opts):
     if rep.get("valid"):
         for nm, V, F, dz in _placed(res):
             if nm == "MACETA":
-                abertura = eden_plantas.abertura_de([(x, y, z + dz) for x, y, z in V])
+                abertura = eden_plantas.abertura_de([(x, y, z + dz) for x, y, z in V], F)
                 _ABERTURA[p["model_id"] + "|" + p["quality"]] = abertura
             pos, idx = _pack(V, F, dz)
             parts.append({"name": nm, "positions": pos, "indices": idx,
@@ -199,7 +199,7 @@ def build(opts):
         "assembly": {k: A[k] for k in keep if k in A},
         "seconds": round(time.time() - t0, 2),
         "engine": core.ENGINE_VERSION,
-        "abertura": {k: round(v, 2) for k, v in abertura.items()} if abertura else None,
+        "abertura": {k: round(v, 2) for k, v in abertura.items() if k != "perfil"} if abertura else None,
         "brand": {"text": p.get("brand", ""),
                   "pieces": dict([("MACETA", (rep.get("brand") or {}).get("cap_h_mm"))] +
                                  [(pt["name"], (pt["report"].get("brand") or {}).get("cap_h_mm"))
