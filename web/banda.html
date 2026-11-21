@@ -79,10 +79,14 @@
 
       <fieldset class="sec" data-sec="vista" data-closed-mobile>
         <legend>Vista</legend>
-        <div class="seg" id="vistas-modo" role="radiogroup" aria-label="Qué mostrar" data-testid="modo">
-          <button type="button" role="radio" data-modo="collar" data-testid="modo-collar" aria-pressed="true">Collar armado</button>
+        <div class="seg seg4" id="vistas-modo" role="radiogroup" aria-label="Qué mostrar" data-testid="modo">
+          <button type="button" role="radio" data-modo="collar" data-testid="modo-collar" aria-pressed="true">En la mesa</button>
+          <button type="button" role="radio" data-modo="persona" data-testid="modo-persona" aria-pressed="false">Puesta</button>
+          <button type="button" role="radio" data-modo="pared" data-testid="modo-pared" aria-pressed="false">En la pared</button>
           <button type="button" role="radio" data-modo="piezas" data-testid="modo-piezas" aria-pressed="false">Piezas</button>
         </div>
+        <button type="button" id="repetir" data-testid="btn-repetir" hidden>▶ Pasar la soga de nuevo</button>
+        <p class="hint small" id="hint-modo" data-testid="hint-modo" hidden></p>
         <div class="row2">
           <label>Discos
             <select id="c-disco" data-testid="sel-color-disco">

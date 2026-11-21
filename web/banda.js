@@ -6,6 +6,7 @@ import { pantallaCarga } from "./cargando.js";
 import { botonesPremium } from "./premium.js";
 import { pdfConsideraciones } from "./guia-impresion.js";
 import { Viewer, SCENES } from "./viewer.js";
+import { BandaEscena } from "./banda-escena.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
 
@@ -47,6 +48,14 @@ viewer.mats.CORAZON = mat(0xf7a8c4, 0.42);
 viewer.mats.PELOTITA = mat(0xe0457b, 0.38);
 viewer.mats.HILO = mat(0xd9cfc0, 0.8);
 window.__bandaViewer = viewer;
+const escena = new BandaEscena(viewer);
+window.__bandaEscena = escena;
+const SOMBRA0 = (({ left, right, top, bottom, near, far }) => ({ left, right, top, bottom, near, far }))(viewer.sun.shadow.camera);
+const ANIMADAS = new Set(["persona", "pared"]);
+const HINTS = {
+  persona: "La soga pasa por todas las cuentas y la banda queda puesta de costado, del hombro a la cadera.",
+  pared: "La soga pasa por todas las cuentas y la banda queda colgada de dos clavos, con el texto abajo.",
+};
 
 // normales con quiebre: las caras planas y los bordes vivos (bolsillo de la letra, tapas)
 // no se promedian con las paredes redondeadas; lo curvo (hilo, pelotita, borde) queda suave
@@ -95,6 +104,7 @@ Object.defineProperty(state, "viewer", { get: () => ({
   meshes: viewer.model.children.filter((m) => m.isMesh).map((m) => m.name), triangles: viewer.triangles,
   disco: "#" + viewer.mats.DISCO.color.getHexString(), letras: "#" + viewer.mats.LETRAS.color.getHexString(),
   corazon: "#" + viewer.mats.CORAZON.color.getHexString(), pelotita: "#" + viewer.mats.PELOTITA.color.getHexString(),
+  escena: { ...escena.stats },
 }) });
 
 // ------------------------------------------------------------------ opciones
@@ -167,7 +177,11 @@ async function build() {
     showReport(r.summary);
     if (r.summary.valid) {
       const marco = [o.vista, o.largo, o.diametro, o.texto.length > 0].join("|");   // reencuadra si cambia el tamaño
-      viewer.showModel(r.parts, null, marco !== state.marco);
+      if (ANIMADAS.has(r.summary.vista)) mostrarAnimada(r, marco !== state.marco);
+      else {
+        salirAnimada();
+        viewer.showModel(r.parts, null, marco !== state.marco);
+      }
       state.marco = marco;
       pintar();
       state.builtOpts = o;
@@ -182,6 +196,50 @@ async function build() {
     setBusy(false);
   }
   if (pendingBuild) { pendingBuild = false; build(); }
+}
+
+// vistas animadas: las mallas de cada pieza (en el marco de la cuenta) las reparte la escena
+function mostrarAnimada(r, refit) {
+  viewer.showModel([], null, false);                  // limpia el modelo (agua, despiece, etc.)
+  const unicas = {};
+  for (const p of r.parts) {
+    const base = p.name.split("#")[0];
+    const mesh = new THREE.Mesh(viewer.geom(p), viewer.mats[base]);
+    mesh.name = base;
+    (unicas[p.name] = unicas[p.name] || []).push(mesh);
+  }
+  const g = escena.montar(r.summary.vista, unicas, r.summary);
+  viewer.triangles = r.summary.triangulos;
+  const todo = new THREE.Box3().setFromObject(g);
+  const encuadre = escena.cajaEncuadre();
+  viewer.sceneBox = () => todo.clone();
+  viewer.center = encuadre.getCenter(new THREE.Vector3());
+  const sz = todo.getSize(new THREE.Vector3());
+  viewer.contact.scale.set(Math.min(sz.x, 420) * 1.2, Math.min(sz.z, 420) * 1.2, 1);
+  viewer.contact.position.set(viewer.center.x, todo.min.y + 0.3, viewer.center.z);
+  // sombras: la escena es más grande que una pieza
+  const e = encuadre.getSize(new THREE.Vector3()), rad = Math.max(e.x, e.y, e.z) * 0.75 + 80;
+  Object.assign(viewer.sun.shadow.camera, { left: -rad, right: rad, top: rad, bottom: -rad, near: -3000, far: 4000 });
+  viewer.sun.shadow.camera.updateProjectionMatrix();
+  viewer.placeSun();
+  viewer.fitScene();
+  if (refit) {
+    viewer.fit(encuadre, r.summary.vista === "persona" ? new THREE.Vector3(-0.35, 0.12, 1) : new THREE.Vector3(-0.2, 0.08, 1));
+    viewer.needFit = false;
+  }
+  $("repetir").hidden = false;
+  $("hint-modo").hidden = false;
+  $("hint-modo").textContent = HINTS[r.summary.vista];
+}
+
+function salirAnimada() {
+  if (!escena.grupo) return;
+  escena.quitar();
+  viewer.sceneBox = null;
+  Object.assign(viewer.sun.shadow.camera, SOMBRA0);
+  viewer.sun.shadow.camera.updateProjectionMatrix();
+  $("repetir").hidden = true;
+  $("hint-modo").hidden = true;
 }
 
 function save(name, buffer, mime) {
@@ -217,6 +275,7 @@ async function consideracionesPdf() {
   if (!state.ready || state.busy || !state.summary?.valid) return;
   setBusy(true, "Armando el PDF…");
   try {
+    escena.terminar();
     const foto = viewer.photo(1200, 744, "image/jpeg").url;
     const doc = await pdfConsideraciones("banda", state.summary, { foto });
     const buf = doc.output("arraybuffer");
@@ -233,6 +292,7 @@ async function consideracionesPdf() {
 }
 
 function takePhoto() {
+  escena.terminar();
   const r = viewer.photo(1080, 1350);
   const a = Object.assign(document.createElement("a"), { href: r.url, download: `${state.summary?.sku || "banda"}.png` });
   document.body.appendChild(a);
@@ -312,6 +372,7 @@ $("vistas-modo").addEventListener("click", (ev) => {
   build();
 });
 $("build").addEventListener("click", () => build());
+$("repetir").addEventListener("click", () => escena.empezar());
 $("dl3mf").addEventListener("click", () => download("3mf"));
 $("dlstl").addEventListener("click", () => download("stl"));
 botonesPremium(state, [

@@ -80,6 +80,32 @@ def piezas_sueltas(r):
     return out
 
 
+VISTAS_ANIMADAS = ("persona", "pared")
+
+
+def cuentas(r):
+    """Para las vistas animadas (puesta en una persona, colgada en la pared): una malla por
+    pieza distinta en el "marco de la cuenta" (el agujero sobre el eje x, centrado en el
+    origen; la cara con la letra hacia +z y la parte de arriba de la letra hacia +y) y la
+    secuencia de cuentas en el hilo. La página las reparte sobre el recorrido del hilo.
+    -> (parts [(nombre, V, F)], secuencia [{pieza, letra, largo}])"""
+    s = r["opciones"]["escala"]
+    zc = {"DISCO": bc.H_DISCO * s / 2.0, "LETRAS": bc.H_DISCO * s / 2.0, "CORAZON": bc.CORAZON_T * s / 2.0}
+    parts = []
+    for (nombre, ch), (V, F) in r["piezas"].items():
+        if nombre == "PELOTITA":
+            V = bc._centrar_z(V, max(v[2] for v in V) / 2.0)
+            V = [(z, y, -x) for x, y, z in V]          # el agujero (z) pasa a x
+        else:
+            V = [(x, y, z - zc[nombre]) for x, y, z in V]
+        parts.append(("%s#%s" % (nombre, ch or ""), V, F))
+    sec = []
+    for it in r["collar"]:
+        t = "letra" if it["pieza"] == "DISCO" else it["pieza"].lower()
+        sec.append({"pieza": it["pieza"], "letra": it["letra"] or "", "largo": round(bc.largo_de(t, r["opciones"]), 3)})
+    return parts, sec
+
+
 def build(opts):
     t0 = time.time()
     o = dict(opts or {})
@@ -89,6 +115,21 @@ def build(opts):
     except ValueError as e:
         return {"summary": {"valid": False, "errors": [str(e)], "warnings": [], "sku": "—",
                             "seconds": round(time.time() - t0, 2)}, "parts": []}
+    if vista in VISTAS_ANIMADAS:
+        unicas, sec = cuentas(r)
+        parts = []
+        for nombre, V, F in unicas:
+            pos, idx = _pack(V, F)
+            parts.append({"name": nombre, "positions": pos, "indices": idx, "vertices": len(V), "triangles": len(F)})
+        rep = dict(r["reporte"])
+        s = r["opciones"]["escala"]
+        rep.update({"valid": True, "errors": [], "warnings": rep.pop("avisos"), "sku": _sku(r["opciones"]),
+                    "seconds": round(time.time() - t0, 2), "motor": VERSION, "vista": vista,
+                    "triangulos": sum(p["triangles"] for p in parts),
+                    "secuencia": sec, "n_texto": len(bc.secuencia(r["opciones"])),
+                    "hueco_mm": round(bc.HUECO * s, 3), "hilo_r_mm": round(r["opciones"]["agujero"] * 0.36, 3),
+                    "grosor_mm": round(bc.PELOTITA_D * s, 3), "largo_mm": round(r["reporte"]["largo_cm"] * 10.0, 1)})
+        return {"summary": rep, "parts": parts}
     grupos = {}
     if vista == "piezas":
         for nombre, V, F in piezas_sueltas(r):

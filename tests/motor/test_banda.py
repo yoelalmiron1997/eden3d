@@ -168,3 +168,28 @@ def test_zip_de_stl_y_leeme():
     assert len(stl) == 84 + 50 * n
     leeme = z.read("LEEME.txt").decode("utf-8")
     assert "Disco_E" in leeme and "x 2" in leeme
+
+
+# ----------------------------------------------------------------- BAN-005
+@pytest.mark.spec("BAN-005")
+def test_cuentas_en_su_marco_para_animar():
+    r = bw.build({"vista": "persona"})
+    s = r["summary"]
+    assert s["valid"] and s["vista"] == "persona" and s["n_texto"] == 9
+    nombres = {p["name"] for p in r["parts"]}
+    assert {"DISCO#M", "LETRAS#M", "CORAZON#", "PELOTITA#"} <= nombres
+    total = sum(c["largo"] + s["hueco_mm"] for c in s["secuencia"])
+    assert abs(total - s["largo_mm"]) < 1.0
+    rr = bc.construir({})
+    unicas, _ = bw.cuentas(rr)
+    for nombre, V, F in unicas:
+        m = malla(V, F)
+        assert m.is_watertight
+        if nombre.startswith("LETRAS"):
+            assert min(v[2] for v in V) < 0 < max(v[2] for v in V)     # arriba y abajo del centro
+            continue
+        # el agujero sobre el eje x: el rayo por el eje no toca la pieza; la caja está centrada
+        hits, _, _ = m.ray.intersects_location([[-200.0, 0.0, 0.0]], [[1.0, 0.0, 0.0]])
+        assert len(hits) == 0, nombre
+        zs = [v[2] for v in V]
+        assert abs(max(zs) + min(zs)) < 0.05, nombre
