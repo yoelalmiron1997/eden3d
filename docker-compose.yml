@@ -1,0 +1,28 @@
+# © 2026 Eden3D — levantar en un VPS:  docker compose up -d --build
+# Variables en un archivo .env al lado (SUPABASE_URL, SUPABASE_ANON_KEY, DOMINIO).
+services:
+  web:
+    build:
+      context: .
+      args:
+        SUPABASE_URL: ${SUPABASE_URL:-}
+        SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+    restart: unless-stopped
+    expose: ["80"]
+
+  # HTTPS automático con Let's Encrypt (necesita que DOMINIO apunte al VPS)
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMINIO: ${DOMINIO:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web]
+
+volumes:
+  caddy_data:
+  caddy_config:

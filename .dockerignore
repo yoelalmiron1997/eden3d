@@ -1,0 +1,15 @@
+.git
+node_modules
+_site
+reports
+test-results
+__pycache__
+**/__pycache__
+.pytest_cache
+tests
+grasshopper
+docs
+engine/renders
+*.3mf
+*.stl
+.env
