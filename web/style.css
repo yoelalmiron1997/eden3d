@@ -496,6 +496,9 @@ dialog.modal::backdrop { background: rgba(5, 8, 9, .78); backdrop-filter: none; 
 .row2 > *, .row3 > *, .topper-linea > *, .panel label { min-width: 0; }
 .row2 select, .row2 input:not([type=checkbox]):not([type=radio]), .panel label > select, .panel label > input[type=text] { width: 100%; min-width: 0; }
 .panel, fieldset, #numero-opts { min-width: 0; }
+/* las opciones del número de años: el mismo espaciado que el resto del panel (antes se pisaban) */
+#numero-opts { display: flex; flex-direction: column; gap: 10px; }
+#numero-opts[hidden] { display: none; }
 .slider output { white-space: nowrap; font-size: 12.5px; }
 
 /* ---- pantalla de carga de cada motor (cargando.js): una impresora imprimiendo ---- */
