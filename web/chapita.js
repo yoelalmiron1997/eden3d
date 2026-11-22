@@ -95,7 +95,7 @@ const SL = { ancho: [0, " mm"], borde: [1, " mm"], grosor: [1, " mm"], relieve: 
 
 function opts() {
   const o = { forma: state.forma, nombre: $("nombre").value.trim(), linea2: $("linea2").value.trim(), fuente: $("fuente").value,
-    texto: $("texto").value, colores: $("colores").value, patitas: $("patitas").checked };
+    texto: $("texto").value, colores: $("colores").value, patitas: $("patitas").checked, impresora: $("impresora").value };
   for (const k of Object.keys(SL)) o[k] = +$(k).value;
   return o;
 }
@@ -117,7 +117,7 @@ function setBusy(on, text = "Calculando…") {
 
 function colores(s) {
   if (s.cambio_mm) return [["Dos colores", `letras ${num(s.relieve_mm)} mm arriba · pausá y cambiá el filamento a los ${num(s.cambio_mm)} mm`, "f-colores"]];
-  if (s.capa_color_mm) return [["Dos colores", `misma altura: las letras de color en las últimas ${num(s.capa_color_mm)} mm (AMS)`, "f-colores"]];
+  if (s.capa_color_mm) return [["Dos colores", `misma capa: letras al ras en las últimas ${s.capas_color} capas (${num(s.capa_color_mm)} mm) · ${s.capas_color} cambios de filamento con AMS`, "f-colores"]];
   return [];
 }
 
@@ -126,7 +126,8 @@ function showReport(s) {
   const facts = s.valid ? [
     ["Medidas", `${Math.round(s.medidas_mm[0])} × ${Math.round(s.medidas_mm[1])} × ${num(s.medidas_mm[2])} mm`, "f-medidas"],
     ["Letra", `${num(s.letra_mm)} mm de alto`, "f-letra"],
-    ["Letras", s.texto === "grabado" ? `grabadas ${num(s.relieve_mm)} mm` : `en relieve ${num(s.relieve_mm)} mm`, "f-texto"],
+    ["Letras", s.texto === "grabado" ? `grabadas ${num(s.relieve_mm)} mm`
+      : (s.capa_color_mm ? `al ras de la placa (de color ${num(s.relieve_mm)} mm)` : `en relieve ${num(s.relieve_mm)} mm`), "f-texto"],
     ["Agujero", `Ø ${num(s.agujero_mm)} mm para la argollita`, "f-agujero", "minor"],
     ...colores(s),
     ["Cálculo", `${s.seconds} s`, "f-tiempo", "minor"],
@@ -267,7 +268,7 @@ function ui() {
   h.textContent = c === "doble"
     ? "Letras, patitas y borde en relieve arriba de la placa: en cualquier impresora, pausá en esa capa y cambiá el filamento."
     : (grabado ? "Las letras grabadas se rellenan de otro color al ras: para AMS / multicolor."
-      : "Letras al ras de la placa, del mismo alto: cada capa de arriba lleva los dos colores (AMS / multicolor).");
+      : "Letras al ras: cada capa de arriba lleva los dos colores. Para AMS / AMS lite (A1 mini): el 3MF ya trae las letras en el filamento 2. Cada capa de color es un cambio de filamento: con 0,6 mm son 3 y se purga menos.");
 }
 
 function sliderText(k) {
@@ -287,7 +288,9 @@ async function main() {
     $("fuente").value = I.defecto.fuente;
     $("texto").innerHTML = I.textos.map((e) => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
     $("colores").innerHTML = I.colores.map((e) => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
-    for (const id of ["fuente", "texto", "colores"]) $(id).disabled = false;
+    $("impresora").innerHTML = I.impresoras.map((e) => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
+    $("impresora").value = I.defecto.impresora;
+    for (const id of ["fuente", "texto", "colores", "impresora"]) $(id).disabled = false;
     formaButtons();
     ui();
     $("engine-v").textContent = I.motor;
@@ -304,7 +307,7 @@ async function main() {
 
 let tTexto = null;
 for (const id of ["nombre", "linea2"]) $(id).addEventListener("input", () => { clearTimeout(tTexto); tTexto = setTimeout(build, 600); });
-for (const id of ["fuente", "texto", "colores", "patitas"]) $(id).addEventListener("change", () => { ui(); build(); });
+for (const id of ["fuente", "texto", "colores", "patitas", "impresora"]) $(id).addEventListener("change", () => { ui(); build(); });
 for (const k of Object.keys(SL)) {
   $(k).addEventListener("input", () => { $("o-" + k).textContent = sliderText(k); });
   $(k).addEventListener("change", () => build());
