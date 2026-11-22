@@ -61,24 +61,43 @@ def _sobre_mesa(V):
     return [(x, y, z - z0) for x, y, z in V]
 
 
+def cama(lado, grosor=1.6, r=8.0, n=10):
+    """Cama de impresora (placa de lado x lado mm, esquinas redondeadas) bajo z = 0."""
+    import math as _m
+    h = lado / 2.0
+    pts = []
+    for cx, cy, a0 in ((h - r, h - r, 0), (-h + r, h - r, 90), (-h + r, -h + r, 180), (h - r, -h + r, 270)):
+        for k in range(n + 1):
+            a = _m.radians(a0 + 90.0 * k / n)
+            pts.append((cx + r * _m.cos(a), cy + r * _m.sin(a)))
+    return bc.prisma([(pts, [])], -grosor, 0.0)
+
+
 def piezas_sueltas(r):
-    """Una de cada pieza distinta, como se imprimen, en fila (para la vista "Piezas")."""
+    """Una de cada pieza distinta, como se imprimen, acomodadas y centradas sobre una cama de
+    impresora (la de la A1 mini, 180 mm; si no entran, una de 256 mm)."""
     out = []
     orden = [k for k in r["piezas"] if k[0] == "DISCO"]
     orden += [k for k in (("CORAZON", None), ("PELOTITA", None)) if k in r["piezas"]]
-    cols = max(3, int(math.ceil(math.sqrt(len(orden) * 1.6))))
+    n = len(orden)
+    cols = max(2, int(math.ceil(math.sqrt(n))))
+    filas = int(math.ceil(n / float(cols)))
     paso = max(max(v[0] for v in V) - min(v[0] for v in V) for k, (V, F) in r["piezas"].items()) + SEPARACION
     for i, k in enumerate(orden):
         V, F = r["piezas"][k]
         xs, ys = [v[0] for v in V], [v[1] for v in V]
-        dx = (i % cols) * paso - (min(xs) + max(xs)) / 2.0
-        dy = -(i // cols) * paso - (min(ys) + max(ys)) / 2.0
-        out.append((k[0], [(a + dx, b + dy, c) for a, b, c in V], F))
+        c, f = i % cols, i // cols
+        en_fila = min(cols, n - f * cols)                 # la última fila, centrada
+        dx = (c - (en_fila - 1) / 2.0) * paso - (min(xs) + max(xs)) / 2.0
+        dy = ((filas - 1) / 2.0 - f) * paso - (min(ys) + max(ys)) / 2.0
+        out.append((k[0], [(a + dx, b + dy, z) for a, b, z in V], F))
         if k[0] == "DISCO":
             Vl, Fl = r["piezas"][("LETRAS", k[1])]
-            out.append(("LETRAS", [(a + dx, b + dy, c) for a, b, c in Vl], Fl))
+            out.append(("LETRAS", [(a + dx, b + dy, z) for a, b, z in Vl], Fl))
+    lado = 180.0 if max(cols, filas) * paso + 10 <= 180.0 else max(256.0, max(cols, filas) * paso + 20)
+    Vc, Fc = cama(lado)
+    out.append(("CAMA", Vc, Fc))
     return out
-
 
 VISTAS_ANIMADAS = ("persona", "pared")
 
@@ -141,7 +160,7 @@ def build(opts):
         s = r["opciones"]["escala"]
         grupos["HILO"] = [bc.hilo(r["radio"], r["sube"], r["opciones"]["agujero"] * 0.36, 240, 10)]
     parts = []
-    for nombre in ("DISCO", "LETRAS", "CORAZON", "PELOTITA", "HILO"):
+    for nombre in ("DISCO", "LETRAS", "CORAZON", "PELOTITA", "HILO", "CAMA"):
         if nombre not in grupos:
             continue
         V, F = bc.unir(grupos[nombre])

@@ -28,7 +28,7 @@ FORMAS = [("hueso", "Hueso"), ("gato", "Gato"), ("corazon", "Corazón"), ("circu
           ("escudo", "Escudo"), ("casita", "Casita"), ("nube", "Nube"), ("perro", "Cara de perro")]
 TEXTOS = [("relieve", "En relieve"), ("grabado", "Grabado")]
 COLORES = [("uno", "Un color"), ("doble", "Dos colores · letras más altas (pausa y cambio a mano)"),
-           ("ams", "Dos colores · misma capa, al ras (AMS / A1 mini)")]
+           ("ams", "Dos colores · todo plano, misma capa (AMS / A1 mini)")]
 # impresora: tamaño de la cama (para centrar el 3MF) y si tiene multicolor
 IMPRESORAS = [("a1mini", "Bambu Lab A1 mini (AMS lite)", 180.0), ("bambu", "Bambu Lab A1 / P1 / X1 (AMS)", 256.0),
               ("otra", "Otra impresora", 220.0)]

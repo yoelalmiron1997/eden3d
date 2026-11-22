@@ -268,7 +268,7 @@ function ui() {
   h.textContent = c === "doble"
     ? "Letras, patitas y borde en relieve arriba de la placa: en cualquier impresora, pausá en esa capa y cambiá el filamento."
     : (grabado ? "Las letras grabadas se rellenan de otro color al ras: para AMS / multicolor."
-      : "Letras al ras: cada capa de arriba lleva los dos colores. Para AMS / AMS lite (A1 mini): el 3MF ya trae las letras en el filamento 2. Cada capa de color es un cambio de filamento: con 0,6 mm son 3 y se purga menos.");
+      : "Todo plano: la placa y las letras terminan a la misma altura y las últimas capas llevan los dos colores. En Bambu Studio las letras son otra parte del mismo objeto y ya vienen en el filamento 2: le cambiás el color (o la pintás) ahí. Cada capa de color es un cambio de filamento: con 0,6 mm son 3 y se purga menos.");
 }
 
 function sliderText(k) {
@@ -290,6 +290,7 @@ async function main() {
     $("colores").innerHTML = I.colores.map((e) => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
     $("impresora").innerHTML = I.impresoras.map((e) => `<option value="${e.id}">${esc(e.nombre)}</option>`).join("");
     $("impresora").value = I.defecto.impresora;
+    $("colores").value = colorDeImpresora($("impresora").value, $("colores").value);
     for (const id of ["fuente", "texto", "colores", "impresora"]) $(id).disabled = false;
     formaButtons();
     ui();
@@ -307,7 +308,17 @@ async function main() {
 
 let tTexto = null;
 for (const id of ["nombre", "linea2"]) $(id).addEventListener("input", () => { clearTimeout(tTexto); tTexto = setTimeout(build, 600); });
-for (const id of ["fuente", "texto", "colores", "patitas", "impresora"]) $(id).addEventListener("change", () => { ui(); build(); });
+// con una Bambu con AMS / AMS lite (A1 mini) la chapita sale plana: placa y letras en la misma capa
+function colorDeImpresora(imp, actual) {
+  if (imp === "a1mini" || imp === "bambu") return "ams";
+  return actual === "ams" ? "doble" : actual;
+}
+$("impresora").addEventListener("change", () => {
+  $("colores").value = colorDeImpresora($("impresora").value, $("colores").value);
+  ui();
+  build();
+});
+for (const id of ["fuente", "texto", "colores", "patitas"]) $(id).addEventListener("change", () => { ui(); build(); });
 for (const k of Object.keys(SL)) {
   $(k).addEventListener("input", () => { $("o-" + k).textContent = sliderText(k); });
   $(k).addEventListener("change", () => build());
