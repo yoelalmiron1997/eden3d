@@ -22,7 +22,7 @@ El sitio armado pesa ~24 MB (14 MB son Pyodide). Con gzip, el `.wasm` baja de 9 
 cp .env.example .env    # DOMINIO, SUPABASE_URL, SUPABASE_ANON_KEY
 docker compose up -d --build
 ```
-- `Dockerfile`: 3 etapas (node → npm ci, python → build_site, nginx → sirve). Imagen final ~50 MB.
+- `Dockerfile`: 3 etapas (node → npm ci, python → build_site, nginx → sirve). Imagen final ≈ 75 MB (nginx alpine + 24 MB de sitio).
 - `deploy/nginx.conf`: tipo MIME del wasm, gzip, caché larga en `vendor/ fonts/ assets/`
   y `no-cache` en html/js/py (cada deploy se ve al instante). `/salud` para el healthcheck.
 - `deploy/Caddyfile`: HTTPS automático (Let's Encrypt) delante de nginx.
