@@ -557,6 +557,19 @@ def _area(P):
     return 0.5 * sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(P, P[1:] + P[:1]))
 
 
+def _suave(P, vueltas=2):
+    """Suaviza un lazo sin achicarlo (Taubin: un paso hacia adentro y otro hacia afuera):
+    saca el "escalón" de la grilla y las curvas de las letras quedan redondas."""
+    n = len(P)
+    if n < 8:
+        return P
+    for _ in range(vueltas):
+        for k in (0.5, -0.53):
+            P = [(x + k * ((P[i - 1][0] + P[(i + 1) % n][0]) * 0.5 - x),
+                  y + k * ((P[i - 1][1] + P[(i + 1) % n][1]) * 0.5 - y)) for i, (x, y) in enumerate(P)]
+    return P
+
+
 def _simplificar(P, eps):
     """Douglas–Peucker en un lazo cerrado."""
     if len(P) < 8:
@@ -795,7 +808,7 @@ def opciones_numero(opts):
 def _pieza(polys, grupos, mpoly, o, ext, nombres=("TOPPER", "LETRAS")):
     """Lo común del topper y del número: grilla, contorno (sin tapar los huecos), marco,
     apoyos entre líneas, puentes, contornos suaves, palitos y las partes de color."""
-    res = 0.32 if o["calidad"] == "preview" else 0.2
+    res = 0.26 if o["calidad"] == "preview" else 0.16
     pad = o["contorno"] + CIERRE + MARCO_ANCHO + 3.0
     g = Grilla(ext[0] - pad, ext[1] - pad, ext[2] + pad, ext[3] + pad, res)
     T = g.llenar(polys)
@@ -823,8 +836,8 @@ def _pieza(polys, grupos, mpoly, o, ext, nombres=("TOPPER", "LETRAS")):
     apoyos = reforzar_lineas(S, g, lineas_m)
     puentes = unir(S, g)
     f = campo(S, g)
-    eps = 0.05 if o["calidad"] == "normal" else 0.09
-    lz = [_simplificar(P, eps) for P in lazos(f, g)]
+    eps = 0.03 if o["calidad"] == "normal" else 0.06
+    lz = [_simplificar(_suave(P), eps) for P in lazos(f, g)]
     lz = [P for P in lz if abs(_area(P)) > 0.3]
     z1 = o["grosor"]
     ams = o["estilo"] == "ams"
@@ -840,7 +853,9 @@ def _pieza(polys, grupos, mpoly, o, ext, nombres=("TOPPER", "LETRAS")):
     piezas = []
     if o["estilo"] != "simple":
         fl = campo(T, g)
-        ll = [_simplificar(P, eps) for P in lazos(fl, g)]
+        # al ras (AMS) las letras y el anillo que las rodea comparten el borde: sin suavizar,
+        # así calzan justo (y el anillo, que puede ser finito entre letras, no se cruza)
+        ll = [_simplificar(P if ams else _suave(P), eps) for P in lazos(fl, g)]
         ll = [P for P in ll if abs(_area(P)) > 0.2]
         if ams:
             # el borde (la base sin las letras) completa las últimas capas, al ras de las
@@ -912,6 +927,23 @@ def _palitos(S, g, o, ext):
                 break
             elegido = elegido or mejor
             x = centro + (x - centro) * 0.82        # más cerca del centro (la punta del corazón)
+        if elegido is None:
+            # letras cursivas con la parte de abajo lejos del centro: el punto más bajo que
+            # haya en cualquier columna (el palito igual baja hasta la misma punta)
+            for i in range(g.nx):
+                xi = g.x0 + (i + 0.5) * res
+                if n == 2 and (xi - centro) * (x - centro) < 0:
+                    continue                          # con dos palitos, cada uno de su lado
+                j = next((jj for jj in range(jmin, g.ny) if S[jj][i]), None)
+                if j is None:
+                    continue
+                run = 0
+                while j + run < g.ny and S[j + run][i]:
+                    run += 1
+                maciza = min(run * res, 6.0)
+                clave = (j, -round(maciza, 1), abs(xi - x))
+                if elegido is None or clave < elegido[0]:
+                    elegido = (clave, i, j, maciza)
         if elegido is None:
             raise ValueError("No encontré dónde clavar el palito")
         _, i, j, maciza = elegido

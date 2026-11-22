@@ -50,7 +50,16 @@ window.__topperViewer = viewer;
 // la torta (apoyada en la mesa) con el topper y el número clavados; modo cumpleaños
 const tortaV = new Torta(viewer);
 const torta = tortaV.grupo;
-viewer.ocultarAbajo.push(torta);                 // mirando desde abajo se ve el topper solo
+// la torta se esconde sólo mirando bien desde abajo (más de ~30°), para ver el topper solo;
+// apenas por debajo de la mesa sigue a la vista (antes desaparecía enseguida)
+let tortaOn = true;
+viewer.tickers = viewer.tickers || [];
+viewer.tickers.push(() => {
+  const rel = viewer.camera.position.clone().sub(viewer.controls.target);
+  const elev = Math.asin(THREE.MathUtils.clamp(rel.y / (rel.length() || 1), -1, 1));
+  const ver = tortaOn && elev > -0.55;
+  if (torta.visible !== ver) torta.visible = ver;
+});
 window.__topperTorta = tortaV;
 const pose = new THREE.Group();            // el topper parado y clavado en la torta
 pose.name = "POSE";
@@ -82,13 +91,18 @@ function encuadrar() {
   const box = new THREE.Box3().setFromObject(viewer.model);
   if (box.isEmpty()) return;
   const parado = $("torta").checked;
-  // las estrellas son el topper y el número: se encuadran con la parte de arriba de la torta
-  const foco = parado ? new THREE.Box3().setFromObject(pose) : box.clone();
-  if (parado && poseN.parent && poseN.children.length) foco.union(new THREE.Box3().setFromObject(poseN));
-  if (parado) foco.expandByPoint(new THREE.Vector3(box.min.x * 0.8, tortaV.arriba * 0.45, box.max.z * 0.8));
-  viewer.viewDir = parado ? new THREE.Vector3(-0.16, 0.36, 1) : new THREE.Vector3(0, 1.4, 0.5);
-  viewer.viewDist = parado ? 1.15 : 1.1;
+  // la torta entera, con el topper y el número clavados arriba (antes se cortaba la torta
+  // abajo y el número arriba)
+  const foco = box.clone();
+  viewer.viewDir = parado ? new THREE.Vector3(-0.2, 0.42, 1) : new THREE.Vector3(0, 1.4, 0.5);
+  viewer.viewDist = parado ? 1.08 : 1.1;
   viewer.fit(foco);
+  if (parado) {                                  // un poco más abajo: entra el plato de la torta
+    const baja = new THREE.Vector3(0, -foco.getSize(new THREE.Vector3()).y * 0.1, 0);
+    viewer.camera.position.add(baja);
+    viewer.controls.target.add(baja);
+    viewer.controls.update();
+  }
   const c = box.getCenter(new THREE.Vector3());
   viewer.contact.position.set(c.x, 0.3, c.z);
   const sz = box.getSize(new THREE.Vector3());
@@ -123,6 +137,7 @@ function posar(animar = true) {
   if (parado) {
     tortaV.armar(L.total, $("torta-tipo").value);
     if (!torta.parent) m.add(torta);
+    tortaOn = true;
     torta.visible = true;
     const largo = +$("largo").value;
     tortaV.clavar(pose, largo, false, { x: L.xT });
@@ -133,6 +148,7 @@ function posar(animar = true) {
       if (L.conN) tortaV.clavar(poseN, largo, true, { x: L.xN, y: -16, retraso: 0.35 });
     }
   } else {
+    tortaOn = false;
     torta.visible = false;
     if (tortaV.fiesta) fiesta(false);
     const inv = m.matrixWorld.clone().invert();
