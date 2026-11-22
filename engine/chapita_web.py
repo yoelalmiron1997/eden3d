@@ -28,6 +28,7 @@ def info():
             "formas": [{"id": k, "nombre": n} for k, n in cc.FORMAS],
             "textos": [{"id": k, "nombre": n} for k, n in cc.TEXTOS],
             "colores": [{"id": k, "nombre": n} for k, n in cc.COLORES],
+            "impresoras": [{"id": k, "nombre": n, "cama": c} for k, n, c in cc.IMPRESORAS],
             "fuentes": [{"id": f, "nombre": n} for f, n in tc.FUENTES],
             "con_patitas": list(cc.CON_PATITAS),
             "defecto": dict(cc.DEFECTO),
@@ -99,6 +100,7 @@ def export_3mf(opts):
     laminador se le asigna un filamento a cada parte."""
     o = _normal(opts)
     r = cc.construir(o)
+    r["opciones"] = cc.opciones(o)
     sku = _sku(o)
     meta = {"Title": sku, "Designer": "TecnoBear", "Copyright": "© TecnoBear — Yoel Almirón.",
             "LicenseTerms": LICENSE_NOTE, "Application": "TecnoBear Chapitas %s" % VERSION,
@@ -116,9 +118,19 @@ def export_3mf(opts):
     oid = len(r["piezas"]) + 1
     res.append('<object id="%d" type="model" name="%s"><components>%s</components></object>' % (oid, _xml(sku), "".join(comps)))
     md = "".join('<metadata name="%s">%s</metadata>' % (k, _xml(v)) for k, v in meta.items())
+    cama = dict((k, c) for k, _, c in cc.IMPRESORAS)[r["opciones"]["impresora"]]
     model = ('<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="es-AR" '
              'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">%s<resources>%s</resources>'
-             '<build><item objectid="%d" transform="1 0 0 0 1 0 0 0 1 128 128 0"/></build></model>') % (md, "".join(res), oid)
+             '<build><item objectid="%d" transform="1 0 0 0 1 0 0 0 1 %.1f %.1f 0"/></build></model>'
+             ) % (md, "".join(res), oid, cama / 2.0, cama / 2.0)
+    # Bambu Studio / Orca: qué filamento usa cada parte (la placa el 1, las letras el 2)
+    partes = "".join(
+        '<part id="%d" subtype="normal_part"><metadata key="name" value="%s"/>'
+        '<metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>'
+        '<metadata key="extruder" value="%d"/></part>' % (i + 1, _xml(nombre), 2 if nombre == "LETRAS" else 1)
+        for i, (nombre, _, _) in enumerate(r["piezas"]))
+    ajustes = ('<?xml version="1.0" encoding="UTF-8"?>\n<config><object id="%d"><metadata key="name" value="%s"/>'
+               '<metadata key="extruder" value="1"/>%s</object></config>\n') % (oid, _xml(sku), partes)
     ctypes = ('<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
               '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
               '<Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>')
@@ -131,6 +143,7 @@ def export_3mf(opts):
         z.writestr("[Content_Types].xml", ctypes)
         z.writestr("_rels/.rels", rels)
         z.writestr("3D/3dmodel.model", model)
+        z.writestr("Metadata/model_settings.config", ajustes)
     with open(path, "rb") as fh:
         data = fh.read()
     os.remove(path)

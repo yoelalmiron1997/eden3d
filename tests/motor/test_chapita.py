@@ -128,4 +128,19 @@ def test_descargas():
     assert m.count("<component ") == 2 and "TecnoBear" in m and "LicenseTerms" in m
     with pytest.raises(ValueError):
         cw.export_stl({"nombre": "Roma"}, "LETRAS")
-    assert len(cw.info()["formas"]) == 6
+    assert len(cw.info()["formas"]) == 12
+
+
+@pytest.mark.spec("CHA-004")
+@pytest.mark.parametrize("impresora,centro", [("a1mini", 90.0), ("bambu", 128.0), ("otra", 110.0)])
+def test_3mf_para_bambu_con_filamentos(impresora, centro):
+    import re
+    name, data = cw.export_3mf({"nombre": "Roma", "forma": "huella", "colores": "ams", "impresora": impresora})
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        m = z.read("3D/3dmodel.model").decode()
+        cfg = z.read("Metadata/model_settings.config").decode()
+    t = re.search(r'<item objectid="(\d+)" transform="([^"]+)"', m)
+    assert [float(v) for v in t.group(2).split()[-3:]] == [centro, centro, 0.0]
+    assert '<object id="%s">' % t.group(1) in cfg
+    partes = re.findall(r'<part id="(\d+)".*?key="name" value="(\w+)".*?key="extruder" value="(\d)"', cfg)
+    assert [(n, e) for _, n, e in partes] == [("CHAPITA", "1"), ("LETRAS", "2")]

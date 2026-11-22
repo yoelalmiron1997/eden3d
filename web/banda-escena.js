@@ -6,6 +6,8 @@
 import * as THREE from "three";
 
 const TAU = Math.PI * 2;
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
+const _uno = new THREE.Vector3(1, 1, 1), _x = new THREE.Vector3(1, 0, 0);
 const ease = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
 
 // --- maniquí (medidas a escala 1, en mm): medio ancho a(z) y media profundidad b(z) del torso
@@ -175,6 +177,8 @@ export class BandaEscena {
       this.grupo.traverse((o) => { if (o.geometry && o.userData.propia) o.geometry.dispose(); });
     }
     if (this.hilo) { this.hilo.geometry.dispose(); this.hilo = null; }
+    for (const im of this.instancias || []) im.dispose();
+    this.instancias = [];
     this.grupo = null;
     this.cuentas = [];
     this.anim = null;
@@ -182,13 +186,16 @@ export class BandaEscena {
     this.stats.fase = "—";
   }
 
-  // unicas: { "DISCO#M": [mesh,...] } mallas del visor en el marco de la cuenta
+  // unicas: { "DISCO#M": [mesh,...] } mallas del visor en el marco de la cuenta.
+  // Optimizado: una InstancedMesh por pieza distinta (pocas llamadas de dibujo) y la soga se
+  // arma una sola vez y se va "destapando" con drawRange (antes se rehacía en cada cuadro).
   montar(modo, unicas, s) {
     this.quitar();
     const g = new THREE.Group();
     g.name = "BANDA_" + modo.toUpperCase();
     const L = s.largo_mm, grosor = s.grosor_mm;
     this.hiloR = s.hilo_r_mm;
+    this.grosor = grosor;
     const rec = modo === "persona" ? recorridoPersona(L, grosor) : recorridoPared(L, grosor);
     this.rec = rec;
     // posiciones de las cuentas sobre el hilo (el texto centrado en el frente)
@@ -197,6 +204,23 @@ export class BandaEscena {
     for (const c of sec) { pos.push(acc + c.largo / 2); acc += c.largo + s.hueco_mm; }
     const nt = Math.max(1, s.n_texto);
     const mitad = (pos[0] + pos[nt - 1]) / 2;
+    // cuántas cuentas usa cada malla
+    const claves = (c) => (c.pieza === "DISCO" ? ["DISCO#" + c.letra, "LETRAS#" + c.letra] : [c.pieza + "#"]);
+    const cuantas = {};
+    for (const c of sec) for (const k of claves(c)) cuantas[k] = (cuantas[k] || 0) + 1;
+    const inst = {};
+    for (const [k, n] of Object.entries(cuantas)) {
+      inst[k] = (unicas[k] || []).map((base) => {
+        const im = new THREE.InstancedMesh(base.geometry, base.material, n);
+        im.name = base.name;
+        im.castShadow = im.receiveShadow = true;
+        im.frustumCulled = false;                  // las cuentas se mueven: la esfera de la base no sirve
+        im.userData.libre = 0;
+        g.add(im);
+        return im;
+      });
+    }
+    this.instancias = Object.values(inst).flat();
     const m = new THREE.Matrix4(), X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3();
     sec.forEach((c, i) => {
       const sc = rec.sFrente + pos[i] - mitad;
@@ -205,26 +229,29 @@ export class BandaEscena {
       if (i >= nt && Y.z < -0.3) { X.negate(); Y.negate(); }   // las cuentas del relleno, derechas
       m.makeBasis(X, Y, Z);
       const q = new THREE.Quaternion().setFromRotationMatrix(m);
-      const obj = new THREE.Group();
-      const claves = c.pieza === "DISCO" ? ["DISCO#" + c.letra, "LETRAS#" + c.letra] : [c.pieza + "#"];
-      for (const k of claves) for (const base of unicas[k] || []) {
-        const me = new THREE.Mesh(base.geometry, base.material);
-        me.name = base.name;
-        me.castShadow = me.receiveShadow = true;
-        obj.add(me);
-      }
-      obj.name = "CUENTA_" + i;
+      const slots = [];
+      for (const k of claves(c)) for (const im of inst[k] || []) slots.push([im, im.userData.libre++]);
       // antes de enhebrar: flotando un poco afuera del recorrido, apenas giradas
       const fuera = f.p.clone().addScaledVector(f.n, grosor * 2.2 + 18).addScaledVector(Y, (i % 2 ? 1 : -1) * grosor * 0.5);
       const q0 = q.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.5 * Math.sin(i * 1.7), 0.6 * Math.cos(i * 2.3), 0.4 * Math.sin(i))));
       const sFix = ((sc % rec.L) + rec.L) % rec.L;
-      this.cuentas.push({ obj, p1: f.p.clone(), q1: q, p0: fuera, q0, s: sFix, largo: c.largo });
-      obj.position.copy(fuera);
-      obj.quaternion.copy(q0);
-      g.add(obj);
+      this.cuentas.push({ slots, p1: f.p.clone(), q1: q, p0: fuera, q0, s: sFix, largo: c.largo, k: -1 });
     });
+    this.cuentas.sort((a, b) => a.s - b.s);          // en el orden en que pasa la aguja
+    // la soga entera, de una vez (se muestra hasta la punta con drawRange)
+    const r = this.hiloR || 2.5;
+    const pts = [];
+    for (let k = 0; k < rec.M; k += 2) pts.push(rec.P[k].clone());
+    this.SEG = 720;
+    this.RAD = 8;
+    const tubo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true, "centripetal"), this.SEG, r, this.RAD, true);
+    this.hilo = new THREE.Mesh(tubo, this.v.mats.HILO);
+    this.hilo.name = "HILO";
+    this.hilo.castShadow = true;
+    this.hilo.frustumCulled = false;
+    tubo.setDrawRange(0, 0);
+    g.add(this.hilo);
     // aguja en la punta del hilo
-    const r = s.hilo_r_mm;
     const aguja = new THREE.Mesh(new THREE.ConeGeometry(r * 1.6, r * 14, 10), new THREE.MeshStandardMaterial({ color: 0xb8bcc4, metalness: 0.85, roughness: 0.25 }));
     aguja.geometry.rotateZ(-Math.PI / 2);                // la punta hacia +x
     aguja.userData.propia = true;
@@ -250,9 +277,35 @@ export class BandaEscena {
   // caja para encuadrar: la banda (y el torso), sin el pie del maniquí ni toda la pared
   cajaEncuadre() {
     const b = new THREE.Box3();
-    for (const c of this.cuentas) b.expandByObject(c.obj);
+    const pad = new THREE.Vector3(1, 1, 1).multiplyScalar(this.grosor || 20);
+    const tmp = new THREE.Box3();
+    for (const c of this.cuentas) for (const p of [c.p0, c.p1]) {
+      tmp.min.copy(p).sub(pad); tmp.max.copy(p).add(pad);
+      b.union(tmp);
+    }
+    this.grupo.updateWorldMatrix(true, true);
+    b.applyMatrix4(this.grupo.matrixWorld);
     if (this.torso) b.expandByObject(this.torso);
     return b;
+  }
+
+  _poner(c, k) {
+    if (k === c.k) return false;
+    c.k = k;
+    _p.lerpVectors(c.p0, c.p1, k);
+    _q.slerpQuaternions(c.q0, c.q1, k);
+    _m.compose(_p, _q, _uno);
+    for (const [im, i] of c.slots) im.setMatrixAt(i, _m);
+    return true;
+  }
+
+  _marcar() {
+    for (const im of this.instancias) im.instanceMatrix.needsUpdate = true;
+  }
+
+  _hasta(tip) {
+    const segs = Math.max(0, Math.min(this.SEG, Math.floor((tip / this.rec.L) * this.SEG)));
+    this.hilo.geometry.setDrawRange(0, segs * this.RAD * 6);
   }
 
   empezar() {
@@ -261,7 +314,12 @@ export class BandaEscena {
     this.stats.fase = "enhebrando";
     this.stats.enhebradas = 0;
     this.aguja.visible = true;
-    this.dibujarHilo(0);
+    for (const c of this.cuentas) { c.k = -1; this._poner(c, 0); }
+    this._marcar();
+    this._hasta(0);
+    const f = this.rec.en(0);
+    this.aguja.position.copy(f.p);
+    this.aguja.quaternion.setFromUnitVectors(_x, f.t);
   }
 
   // terminar ya (para fotos y descargas)
@@ -275,49 +333,30 @@ export class BandaEscena {
     const A = this.anim;
     if (!A || A.listo || !this.grupo) return;
     this.stats.frames++;
-    A.tip += A.vel * Math.min(dt, 0.05);
+    A.tip += A.vel * Math.min(dt, 0.1);
     const L = this.rec.L;
-    let n = 0;
+    let n = 0, cambio = false;
     for (const c of this.cuentas) {
-      // la cuenta baja al hilo cuando la punta llega a ella
+      // la cuenta baja al hilo cuando la punta llega a ella (sólo se tocan las que se mueven)
       const k = ease((A.tip - c.s + c.largo) / (c.largo * 2.5 + 40));
       if (k >= 1) n++;
-      c.obj.position.lerpVectors(c.p0, c.p1, k);
-      c.obj.quaternion.slerpQuaternions(c.q0, c.q1, k);
+      if (this._poner(c, k)) cambio = true;
     }
+    if (cambio) this._marcar();
     this.stats.enhebradas = n;
     const tip = Math.min(Math.max(A.tip, 0), L);
-    this.dibujarHilo(tip);
+    this._hasta(tip);
+    const f = this.rec.en(tip);
+    this.aguja.position.copy(f.p).addScaledVector(f.t, (this.hiloR || 2.5) * 6);
+    this.aguja.quaternion.setFromUnitVectors(_x, f.t);
     if (A.tip >= L + 60) {
       A.listo = true;
-      for (const c of this.cuentas) { c.obj.position.copy(c.p1); c.obj.quaternion.copy(c.q1); }
+      for (const c of this.cuentas) this._poner(c, 1);
+      this._marcar();
       this.stats.enhebradas = this.cuentas.length;
       this.aguja.visible = false;
-      this.dibujarHilo(L, true);
+      this.hilo.geometry.setDrawRange(0, Infinity);
       this.stats.fase = "lista";
-    }
-  }
-
-  dibujarHilo(tip, cerrado = false) {
-    const rec = this.rec;
-    const pts = [];
-    const paso = rec.L / 360;
-    for (let s = 0; s < tip; s += paso) pts.push(rec.en(s).p);
-    const f = rec.en(tip);
-    if (!cerrado) pts.push(f.p);
-    if (this.hilo) { this.grupo.remove(this.hilo); this.hilo.geometry.dispose(); this.hilo = null; }
-    const r = this.hiloR || 2.5;
-    if (pts.length >= 2) {
-      const curva = new THREE.CatmullRomCurve3(pts, cerrado, "centripetal");
-      const geo = new THREE.TubeGeometry(curva, Math.max(8, Math.min(720, pts.length * 2)), r, 8, cerrado);
-      this.hilo = new THREE.Mesh(geo, this.v.mats.HILO);
-      this.hilo.name = "HILO";
-      this.hilo.castShadow = true;
-      this.grupo.add(this.hilo);
-    }
-    if (!cerrado) {
-      this.aguja.position.copy(f.p).addScaledVector(f.t, r * 6);
-      this.aguja.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), f.t);
     }
   }
 

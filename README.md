@@ -173,14 +173,17 @@ Cuarta herramienta: **toppers para tortas en una sola pieza** (`web/topper.html`
 Quinta herramienta: **chapitas con el nombre de tu perro o gato** (`web/chapita.html`,
 motor `engine/chapita_core.py`, que reusa la grilla y las tipografías del topper).
 
-* Formas: **hueso, gato, corazón, círculo, óvalo y pescado**, del ancho pedido, con un
+* Formas: **hueso, gato, corazón, círculo, óvalo, pescado, huella, estrella, escudo, casita,
+  nube y cara de perro**, del ancho pedido, con un
   ojal arriba al centro y el agujero para la argolla del collar (la argolla se ve en el visor).
 * El **nombre** (hasta 14 letras) y una **segunda línea** opcional (teléfono, apellido)
   salen lo más grandes que entran sin pisar el borde, el ojal ni las patitas; si la letra
   queda de menos de 4 mm, se avisa.
 * Letras **en relieve** (con borde y patitas en el hueso y el óvalo) o **grabadas**.
 * Colores: uno; **dos** (las letras arriba, cambio de filamento a mano en la altura que
-  indica el reporte); o **al ras para AMS**. Descarga en 3MF (una pieza con sus partes) o STL.
+  indica el reporte); o **al ras, los dos colores en la misma capa, para AMS / AMS lite**. El
+  3MF se centra en la cama de la impresora elegida (A1 mini, A1 / P1 / X1 u otra) y ya trae la
+  placa en el filamento 1 y las letras en el 2 para Bambu Studio. También se baja en STL.
 * **Llavero en el visor** (`web/llavero.js`): argolla partida, cadenita y ganchito. Puesto, la
   chapita cuelga y se hamaca; "Sacar la argolla" anima todo hasta quedar en la mesa con el
   ganchito abierto, y "Poner la argolla" lo vuelve a colgar.

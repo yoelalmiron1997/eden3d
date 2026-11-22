@@ -107,16 +107,16 @@ const MOTORES = {
     titulo: "Chapita para collar",
     datos: [["Nombre", [s.nombre, s.linea2].filter(Boolean).join(" / ")],
       ["Forma", s.forma], ["Medidas", `${Math.round(s.medidas_mm[0])} x ${Math.round(s.medidas_mm[1])} x ${n(s.medidas_mm[2])} mm`],
-      ["Letras", `${s.texto === "grabado" ? "grabadas" : "en relieve"} ${n(s.relieve_mm)} mm · ${n(s.letra_mm)} mm de alto`],
+      ["Letras", `${s.texto === "grabado" ? "grabadas" : (s.capa_color_mm ? "al ras, de color" : "en relieve")} ${n(s.relieve_mm)} mm · ${n(s.letra_mm)} mm de alto`],
       ["Agujero", `Ø ${n(s.agujero_mm)} mm`],
       ["Colores", s.cambio_mm ? `dos alturas: cambio de filamento a los ${n(s.cambio_mm)} mm`
-        : (s.capa_color_mm ? `misma altura: letras en las últimas ${n(s.capa_color_mm)} mm (AMS)` : "un color")]],
+        : (s.capa_color_mm ? `misma capa: letras al ras en las últimas ${n(s.capa_color_mm)} mm (AMS)` : "un color")]],
     secciones: [
       ["Preparar la impresión", [
         "Imprimila acostada, tal como sale el archivo: no necesita soportes.",
         "Capa de 0,16 a 0,2 mm y 100 % de relleno: queda dura y no se quiebra con el uso.",
         s.cambio_mm ? `Dos colores en cualquier impresora: pausá en la capa de los ${n(s.cambio_mm)} mm y cambiá el filamento.`
-          : (s.capa_color_mm ? "Dos colores con AMS: asigná un filamento a la placa y otro a las letras (son partes del mismo objeto)."
+          : (s.capa_color_mm ? `Dos colores en la misma capa con AMS / AMS lite (A1 mini): abrí el 3MF en Bambu Studio; la placa ya va con el filamento 1 y las letras con el 2. Son ${s.capas_color} capas de color (${s.capas_color} cambios de filamento).`
             : "Un color: elegí uno que se vea bien sobre el pelo de tu mascota."),
         "PETG o TPU aguantan mejor el agua, el sol y los mordiscos que el PLA.",
       ]],

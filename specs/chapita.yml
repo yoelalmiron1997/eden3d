@@ -4,8 +4,8 @@ specs:
   - id: CHA-001
     titulo: La chapita sale en una sola pieza con su agujero
     descripcion: >
-      Hueso, gato, corazón, círculo, óvalo o pescado, con un ojal arriba al centro y el
-      agujero para la argolla del collar.
+      Hueso, gato, corazón, círculo, óvalo, pescado, huella, estrella, escudo, casita,
+      nube o cara de perro, con un ojal arriba al centro y el agujero para la argolla del collar.
     criterio: >
       Para cada forma la placa es UNA sola componente conectada; el agujero está abierto
       (el centro del ojal queda fuera de la placa) y tiene al menos 2 mm de pared alrededor;
@@ -42,10 +42,15 @@ specs:
     estado: activa
   - id: CHA-004
     titulo: Descargas STL y 3MF
-    descripcion: STL de cada pieza y un 3MF con un objeto y sus partes de color.
+    descripcion: >
+      STL de cada pieza y un 3MF con un objeto y sus partes de color, listo para Bambu
+      Studio (A1 mini con AMS lite, A1 / P1 / X1 con AMS u otra impresora).
     criterio: >
       El STL es binario y se llama Chapita-<Forma>-<Nombre>_<PIEZA>.stl; el 3MF trae un
-      objeto con un componente por pieza y los metadatos de licencia de TecnoBear.
+      objeto con un componente por pieza y los metadatos de licencia de TecnoBear, centrado
+      en la cama de la impresora elegida (90 mm para la A1 mini, 128 mm para 256 mm), y un
+      Metadata/model_settings.config que asigna la placa al filamento 1 y las letras al 2
+      (Bambu Studio las abre así, verificado en Bambu Studio 2.2 con la A1 mini).
     prioridad: media
     nivel: motor
     estado: activa

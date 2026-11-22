@@ -3,7 +3,8 @@
 """
 CHAPITAS PARA COLLARES (perros y gatos) — una placa con forma, argolla y el nombre
 ==================================================================================
-Se imprime acostada. La forma (hueso, gato, corazón, círculo, óvalo o pescado) lleva
+Se imprime acostada. La forma (hueso, gato, corazón, círculo, óvalo, pescado, huella,
+estrella, escudo, casita, nube o cara de perro) lleva
 arriba una argolla con su agujero para la argollita del collar; el nombre (y una segunda
 línea opcional, por ejemplo el teléfono) va en el centro, del tamaño más grande que entra
 sin pisar el borde ni las patitas.
@@ -23,14 +24,18 @@ import topper_core as tc
 
 TAU = 2.0 * math.pi
 FORMAS = [("hueso", "Hueso"), ("gato", "Gato"), ("corazon", "Corazón"), ("circulo", "Círculo"),
-          ("ovalo", "Óvalo"), ("pescado", "Pescado")]
+          ("ovalo", "Óvalo"), ("pescado", "Pescado"), ("huella", "Huella"), ("estrella", "Estrella"),
+          ("escudo", "Escudo"), ("casita", "Casita"), ("nube", "Nube"), ("perro", "Cara de perro")]
 TEXTOS = [("relieve", "En relieve"), ("grabado", "Grabado")]
-COLORES = [("uno", "Un color"), ("doble", "Dos colores · dos alturas (cambio a mano)"),
-           ("ams", "Dos colores · misma altura (AMS / multicolor)")]
+COLORES = [("uno", "Un color"), ("doble", "Dos colores · letras más altas (pausa y cambio a mano)"),
+           ("ams", "Dos colores · misma capa, al ras (AMS / A1 mini)")]
+# impresora: tamaño de la cama (para centrar el 3MF) y si tiene multicolor
+IMPRESORAS = [("a1mini", "Bambu Lab A1 mini (AMS lite)", 180.0), ("bambu", "Bambu Lab A1 / P1 / X1 (AMS)", 256.0),
+              ("otra", "Otra impresora", 220.0)]
 CON_PATITAS = ("hueso", "ovalo")
 DEFECTO = {"forma": "hueso", "nombre": "Roma", "linea2": "", "fuente": "lilita_one", "ancho": 45.0,
            "grosor": 3.0, "relieve": 1.0, "texto": "relieve", "colores": "uno", "borde": 1.4,
-           "patitas": True, "agujero": 4.5, "calidad": "preview"}
+           "patitas": True, "agujero": 4.5, "calidad": "preview", "impresora": "a1mini"}
 LIMITES = {"ancho": (28.0, 70.0), "grosor": (2.0, 5.0), "relieve": (0.6, 2.0), "borde": (0.0, 3.0),
            "agujero": (3.0, 7.0), "caracteres": 14, "caracteres2": 18}
 MARGEN = 1.2            # mm entre las letras y el borde o las patitas
@@ -69,6 +74,8 @@ def opciones(o):
         o[k] = _f(o.get(k), DEFECTO[k], *LIMITES[k])
     o["relieve"] = min(o["relieve"], o["grosor"] - 0.8) if o["colores"] == "ams" or o["texto"] == "grabado" else o["relieve"]
     o["patitas"] = bool(o.get("patitas")) and o["forma"] in CON_PATITAS
+    if o.get("impresora") not in [k for k, _, _ in IMPRESORAS]:
+        o["impresora"] = DEFECTO["impresora"]
     o["calidad"] = o.get("calidad") if o.get("calidad") in ("preview", "normal") else "preview"
     return o
 
@@ -133,6 +140,51 @@ def _forma(tipo, W):
         cuerpo = _elipse(-0.08 * W, 0, 0.36 * W, 0.25 * W)
         cola = [(0.12 * W, -0.09 * W), (0.5 * W, -0.26 * W), (0.42 * W, 0.0), (0.5 * W, 0.26 * W), (0.12 * W, 0.09 * W)]
         return [cuerpo, cola], (-0.1 * W, 0.0), []
+    if tipo == "huella":
+        # almohadilla grande (lleva el nombre) y cuatro deditos que se tocan con ella
+        # los deditos se meten un poco en la almohadilla pero no se tocan entre ellos: así no
+        # quedan huequitos cerrados y se sigue leyendo la huella
+        pad = _elipse(0.0, -0.12 * W, 0.34 * W, 0.3 * W)
+        dedos = [_circ(-0.31 * W, 0.06 * W, 0.12 * W, 60), _circ(-0.125 * W, 0.24 * W, 0.11 * W, 60),
+                 _circ(0.125 * W, 0.24 * W, 0.11 * W, 60), _circ(0.31 * W, 0.06 * W, 0.12 * W, 60)]
+        return [pad] + dedos, (0.0, -0.13 * W), []
+    if tipo == "estrella":
+        R, r = 0.5 * W, 0.29 * W                    # estrella gordita: el nombre entra en el centro
+        pts = []
+        for k in range(10):
+            a = math.pi / 2 + math.pi * k / 5
+            rr = R if k % 2 == 0 else r
+            pts.append((rr * math.cos(a), rr * math.sin(a)))
+        return [pts], (0.0, -0.03 * W), []
+    if tipo == "escudo":
+        # arriba recto, costados rectos y abajo dos curvas (Bézier) que terminan en punta
+        pts = [(-0.5 * W, 0.42 * W), (0.5 * W, 0.42 * W)]
+        for i in range(0, 31):
+            t = i / 30.0
+            x = (1 - t) ** 2 * 0.5 + 2 * (1 - t) * t * 0.5 + t * t * 0.0
+            y = (1 - t) ** 2 * 0.0 + 2 * (1 - t) * t * (-0.4) + t * t * (-0.6)
+            pts.append((x * W, y * W))
+        for i in range(29, -1, -1):
+            t = i / 30.0
+            x = (1 - t) ** 2 * 0.5 + 2 * (1 - t) * t * 0.5
+            y = 2 * (1 - t) * t * (-0.4) + t * t * (-0.6)
+            pts.append((-x * W, y * W))
+        return [pts], (0.0, 0.0), []
+    if tipo == "casita":
+        cuerpo = _rect(-0.4 * W, -0.42 * W, 0.4 * W, 0.12 * W)
+        techo = [(-0.5 * W, 0.08 * W), (0.5 * W, 0.08 * W), (0.0, 0.5 * W)]
+        chimenea = _rect(0.2 * W, 0.2 * W, 0.31 * W, 0.42 * W)
+        return [cuerpo, techo, chimenea], (0.0, -0.14 * W), []
+    if tipo == "nube":
+        bolas = [_circ(-0.3 * W, -0.06 * W, 0.2 * W, 80), _circ(-0.08 * W, 0.1 * W, 0.26 * W, 90),
+                 _circ(0.2 * W, 0.06 * W, 0.22 * W, 80), _circ(0.3 * W, -0.1 * W, 0.18 * W, 70)]
+        base = _rect(-0.3 * W, -0.26 * W, 0.3 * W, -0.06 * W)
+        return bolas + [base], (0.0, -0.06 * W), []
+    if tipo == "perro":
+        cara = _elipse(0.0, -0.04 * W, 0.34 * W, 0.36 * W, 120)
+        orejas = [_elipse(-0.36 * W, -0.04 * W, 0.14 * W, 0.27 * W, 60), _elipse(0.36 * W, -0.04 * W, 0.14 * W, 0.27 * W, 60)]
+        hocico = _elipse(0.0, -0.3 * W, 0.2 * W, 0.15 * W, 60)
+        return [cara, hocico] + orejas, (0.0, -0.02 * W), []
     raise ValueError("forma desconocida: %s" % tipo)
 
 
@@ -311,6 +363,8 @@ def construir(opts):
            "grosor_mm": h, "relieve_mm": r,
            "cambio_mm": round(h, 2) if (o["texto"] == "relieve" and o["colores"] == "doble") else None,
            "capa_color_mm": round(r, 2) if o["colores"] == "ams" else None,
+           "capas_color": int(round(r / 0.2)) if o["colores"] == "ams" else None,
+           "impresora": o["impresora"],
            "medidas_mm": [round(max(xs) - min(xs), 1), round(max(ys) - min(ys), 1), round(max(zs) - min(zs), 2)],
            "triangulos": sum(len(F) for _, _, F in piezas), "res_mm": res, "avisos": avisos,
            "ojal": {"x": 0.0, "y": round(ay, 3), "r_agujero": ra, "r_ojal": re}}
