@@ -20,10 +20,8 @@ function tarjeta(h, i) {
     <li class="tb-card" data-id="${h.id}" data-cat="${h.categoria}" data-buscar="${esc(sinTildes(h.nombre + " " + h.corto + " " + h.descripcion + " " + c.nombre + " " + rubros.map((r) => r.texto).join(" ")))}">
       <button type="button" class="tb-card-foto" data-testid="tool-${h.id}" aria-haspopup="dialog" data-modal="${h.modal}">
         <img src="${h.imagen}" srcset="${h.imagen} 600w, ${h.imagen2x} 1200w" sizes="(max-width: 640px) 92vw, (max-width: 1180px) 46vw, 440px"
-          alt="${esc(h.alt)}" width="600" height="250" ${i > 2 ? 'loading="lazy"' : ""} decoding="async"
-          style="object-position:${h.foco}" data-testid="${h.testImagen}">
-        <span class="tb-chip">${ico(etiqueta.icono)}${esc(etiqueta.texto)}</span>
-        <span class="tb-card-3d" aria-hidden="true">${ico("cubo")}</span>
+          alt="${esc(h.alt)}" width="600" height="338" ${i > 2 ? 'loading="lazy"' : ""} decoding="async"
+          data-etiqueta="${esc(etiqueta.texto)}" data-testid="${h.testImagen}">
         <span class="tb-sr">Ver detalles: ${esc(h.nombre)}</span>
       </button>
       <div class="tb-card-cuerpo">

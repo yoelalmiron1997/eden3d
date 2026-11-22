@@ -319,7 +319,7 @@ html.es-admin .solo-admin { display: revert !important; }
 .theme-btn:hover { border-color: var(--green-2); }
 
 .modal-hero { margin: -24px -24px 4px; border-radius: 18px 18px 0 0; overflow: hidden; aspect-ratio: 16 / 9; }
-.modal-hero img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; display: block; }
+.modal-hero img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; display: block; }
 
 /* ---- mate con hueco: subir el STL del inserto ---- */
 .file-row { display: grid; gap: 6px; }
