@@ -47,6 +47,7 @@ viewer.mats.LETRAS = mat(0x1d1d1f, 0.5);
 viewer.mats.CORAZON = mat(0xf7a8c4, 0.42);
 viewer.mats.PELOTITA = mat(0xe0457b, 0.38);
 viewer.mats.HILO = mat(0xd9cfc0, 0.8);
+viewer.mats.CAMA = new THREE.MeshStandardMaterial({ color: 0x2e3034, roughness: 0.75, metalness: 0.15 });   // cama de la impresora
 window.__bandaViewer = viewer;
 const escena = new BandaEscena(viewer);
 window.__bandaEscena = escena;
@@ -181,6 +182,13 @@ async function build() {
       else {
         salirAnimada();
         viewer.showModel(r.parts, null, marco !== state.marco);
+        // piezas: de cerca y desde arriba, como se ven en el laminador
+        if (r.summary.vista === "piezas" && marco !== state.marco) {
+          const caja = new THREE.Box3();
+          for (const m of viewer.model.children) if (m.isMesh && m.name !== "CAMA") caja.expandByObject(m);
+          viewer.fit(caja, new THREE.Vector3(0, 1.25, 0.95));
+          viewer.needFit = false;
+        }
       }
       state.marco = marco;
       pintar();

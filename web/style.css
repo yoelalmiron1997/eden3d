@@ -195,7 +195,7 @@ fieldset.sec.closed > :not(legend) { display: none !important; }
 .row-play button { min-height: 34px; padding: 6px 10px; font-size: 13px; }
 .row-play button[aria-pressed="true"] { background: #2f4f2e; color: #fff; border-color: #2f4f2e; }
 .row3.even { grid-template-columns: 1fr 1fr 1fr; }
-.panel .slider { grid-template-columns: 64px 1fr 44px; }
+.panel .slider { grid-template-columns: 86px 1fr 44px; }   /* entra "Profundidad", "Repeticiones" */
 
 /* etiquetas de las piezas (despiece) */
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }

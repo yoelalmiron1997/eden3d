@@ -27,7 +27,10 @@ def test_chapita_en_la_web(browser, base_url):
     s = pg.evaluate("window.__chapita.summary")
     assert s["valid"] and s["sku"] == "Chapita-Hueso-Roma"
     v = pg.evaluate("window.__chapita.viewer")
-    assert v["meshes"] == ["CHAPITA"] and v["argolla"]
+    # con la A1 mini (la impresora por defecto) arranca plana: placa y letras en la misma capa
+    assert pg.locator(T % "sel-impresora").input_value() == "a1mini"
+    assert pg.locator(T % "sel-colores").input_value() == "ams" and s["capa_color_mm"]
+    assert v["meshes"] == ["CHAPITA", "LETRAS"] and v["argolla"]
     L = v["llavero"]
     assert L["puesto"] and L["colgada"] and L["piezas"] == 8 and L["gap"] < 0.1
     # sacar la argolla: se anima hasta quedar todo en la mesa, con el ganchito abierto
@@ -52,6 +55,15 @@ def test_chapita_en_la_web(browser, base_url):
     pg.locator(T % "inp-nombre").fill("Michi")
     esperar(pg, b)
     assert pg.locator(T % "sku").inner_text() == "Chapita-Gato-Michi"
+    # otra impresora: sin AMS pasa a dos alturas (cambio a mano); un color, una sola malla
+    b = pg.evaluate("window.__chapita.builds")
+    pg.locator(T % "sel-impresora").select_option("otra")
+    esperar(pg, b)
+    assert pg.locator(T % "sel-colores").input_value() == "doble"
+    b = pg.evaluate("window.__chapita.builds")
+    pg.locator(T % "sel-colores").select_option("uno")
+    esperar(pg, b)
+    assert pg.evaluate("window.__chapita.viewer.meshes") == ["CHAPITA"]
     # dos colores: aparece la malla de las letras y su STL
     b = pg.evaluate("window.__chapita.builds")
     pg.locator(T % "sel-colores").select_option("doble")
