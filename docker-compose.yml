@@ -7,8 +7,25 @@ services:
       args:
         SUPABASE_URL: ${SUPABASE_URL:-}
         SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+        TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+        EDEN3D_API: /api               # descargas y PDF desde el servidor (api)
     restart: unless-stopped
     expose: ["80"]
+
+  # descargas (3MF/STL) y PDF: comprueba la cuenta en Supabase antes de generar
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL:?falta SUPABASE_URL en .env}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?falta SUPABASE_ANON_KEY en .env}
+      EDEN3D_WORKERS: ${EDEN3D_WORKERS:-2}
+    expose: ["8000"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    mem_limit: ${EDEN3D_MEMORIA:-1500m}
 
   # HTTPS automático con Let's Encrypt (necesita que DOMINIO apunte al VPS)
   caddy:
@@ -21,7 +38,7 @@ services:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on: [web]
+    depends_on: [web, api]
 
 volumes:
   caddy_data:

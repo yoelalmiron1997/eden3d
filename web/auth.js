@@ -97,12 +97,18 @@ function traducir(m) {
     "Invalid login credentials": "Email o contraseña incorrectos.",
     "Email not confirmed": "Confirmá tu email: te mandamos un link.",
     "User already registered": "Ese email ya tiene cuenta. Ingresá.",
+    "captcha protection: request disallowed (invalid-input-response)": "La verificación anti-robots venció. Probá de nuevo.",
   };
+  if (/captcha/i.test(m) && !t[m]) return "Falta la verificación anti-robots. Probá de nuevo.";
+  if (/rate limit/i.test(m)) return "Demasiados intentos seguidos. Esperá unos minutos y probá de nuevo.";
   if (/at least 6 characters/i.test(m)) return "La contraseña tiene que tener al menos 6 caracteres.";
   return t[m] || m;
 }
 
-export async function signIn(email, password) {
+// captcha: token de Cloudflare Turnstile (lo pide Supabase si el captcha está activado)
+const conCaptcha = (o, captcha) => (captcha ? { ...o, captchaToken: captcha } : o);
+
+export async function signIn(email, password, captcha) {
   if (auth.mock) {
     const m = window.__EDEN_AUTH_MOCK;
     if (m.password && password !== m.password) throw new Error("Email o contraseña incorrectos.");
@@ -111,21 +117,21 @@ export async function signIn(email, password) {
     emit();
     return;
   }
-  const { error } = await auth.client.auth.signInWithPassword({ email, password });
+  const { error } = await auth.client.auth.signInWithPassword({ email, password, options: conCaptcha({}, captcha) });
   fail(error);
 }
 
-export async function signUp(email, password) {
+export async function signUp(email, password, captcha) {
   if (auth.mock) return signIn(email, password);
   const redirect = SITIO;
-  const { data, error } = await auth.client.auth.signUp({ email, password, options: { emailRedirectTo: redirect } });
+  const { data, error } = await auth.client.auth.signUp({ email, password, options: conCaptcha({ emailRedirectTo: redirect }, captcha) });
   fail(error);
   return { confirm: !data.session };
 }
 
-export async function resetPassword(email) {
+export async function resetPassword(email, captcha) {
   if (auth.mock) return;
-  const { error } = await auth.client.auth.resetPasswordForEmail(email, { redirectTo: SITIO });
+  const { error } = await auth.client.auth.resetPasswordForEmail(email, conCaptcha({ redirectTo: SITIO }, captcha));
   fail(error);
 }
 

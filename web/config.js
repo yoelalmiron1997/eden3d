@@ -7,3 +7,9 @@ export const SUPABASE = {
   url: "https://xjyerniuhecwdgfbteez.supabase.co",
   anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqeWVybml1aGVjd2RnZmJ0ZWV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNDc2NDQsImV4cCI6MjEwODcyMzY0NH0._ot9U5JN_aUJsgKaLqbcZ2b6PqmGu7G6CSzsgSySOE4",
 };
+
+// Clave pública del sitio de Cloudflare Turnstile (captcha). Vacía = sin captcha.
+export const CAPTCHA = { siteKey: "" };
+
+// Servidor de descargas (server/api.py). Vacío = todo se genera en el navegador.
+export const API = { url: "" };

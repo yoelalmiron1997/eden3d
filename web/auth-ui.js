@@ -4,6 +4,7 @@ import { initAuth, onAuth, signIn, signUp, signOut, resetPassword, ROLES, perfil
 import { mountTheme } from "./theme.js";
 import { AVATARES, srcCara, caraHTML, esAvatar } from "./avatares.js";
 import { mountFeedback, abrirFeedback } from "./feedback.js";
+import { widgetCaptcha } from "./captcha.js";
 
 const RAIZ = new URL("./", import.meta.url).href;
 
@@ -22,6 +23,7 @@ function buildDialog() {
       <p class="muted small" id="login-why"></p>
       <label>Email <input type="email" name="email" autocomplete="email" required data-testid="login-email"></label>
       <label>Contraseña <input type="password" name="pass" autocomplete="current-password" minlength="6" required data-testid="login-pass"></label>
+      <div class="login-captcha" id="login-captcha" data-testid="login-captcha"></div>
       <p class="login-msg" id="login-msg" role="alert"></p>
       <button type="submit" class="primary" data-testid="login-ok" id="login-ok">Ingresar</button>
       <div class="login-alt">
@@ -32,6 +34,7 @@ function buildDialog() {
   document.body.appendChild(dialog);
   let mode = "in";
   const $ = (id) => dialog.querySelector("#" + id);
+  const captcha = widgetCaptcha($("login-captcha"));
   const setMode = (m) => {
     mode = m;
     $("login-title").textContent = m === "in" ? "Ingresar" : "Crear cuenta";
@@ -45,8 +48,9 @@ function buildDialog() {
   $("login-reset").addEventListener("click", async () => {
     const email = dialog.querySelector("[name=email]").value.trim();
     if (!email) { $("login-msg").textContent = "Escribí tu email primero."; return; }
-    try { await resetPassword(email); $("login-msg").textContent = "Te mandamos un email para cambiarla."; }
+    try { await resetPassword(email, await captcha.token()); $("login-msg").textContent = "Te mandamos un email para cambiarla."; }
     catch (e) { $("login-msg").textContent = e.message; }
+    finally { captcha.reiniciar(); }
   });
   $("login-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -55,9 +59,10 @@ function buildDialog() {
     $("login-ok").disabled = true;
     $("login-msg").textContent = "";
     try {
-      if (mode === "in") { await signIn(email, pass); dialog.close(); }
+      const token = await captcha.token();
+      if (mode === "in") { await signIn(email, pass, token); dialog.close(); }
       else {
-        const r = await signUp(email, pass);
+        const r = await signUp(email, pass, token);
         if (r && r.confirm) $("login-msg").textContent = "Listo: confirmá tu email con el link que te mandamos y después ingresá.";
         else dialog.close();
       }
@@ -65,6 +70,7 @@ function buildDialog() {
       $("login-msg").textContent = e.message;
     } finally {
       $("login-ok").disabled = false;
+      captcha.reiniciar();
     }
   });
   dialog.setMode = setMode;

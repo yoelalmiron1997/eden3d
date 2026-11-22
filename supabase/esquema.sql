@@ -137,3 +137,45 @@ create policy "votos: cada uno el suyo" on public.feedback_votos
 drop policy if exists "votos: cada uno saca el suyo" on public.feedback_votos;
 create policy "votos: cada uno saca el suyo" on public.feedback_votos
   for delete to authenticated using (autor = auth.uid());
+
+-- ============================================================ límites anti-spam del feedback
+-- Cada cuenta puede publicar hasta 10 mensajes y 30 respuestas cada 24 horas, con al
+-- menos 15 segundos entre uno y otro. El registro de envíos no se puede leer ni borrar
+-- desde la web (sin políticas), así que borrar y volver a publicar no saltea el límite.
+-- Los administradores no tienen límite. La fecha "creado" la pone siempre la base.
+create table if not exists public.feedback_envios (
+  autor uuid not null references auth.users (id) on delete cascade,
+  tabla text not null,
+  creado timestamptz not null default now()
+);
+create index if not exists feedback_envios_autor on public.feedback_envios (autor, tabla, creado desc);
+alter table public.feedback_envios enable row level security;
+
+create or replace function public.limite_feedback()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  tope int := case tg_table_name when 'feedback' then 10 else 30 end;
+  n int;
+  ultimo timestamptz;
+begin
+  new.creado := now();
+  if public.es_admin() then return new; end if;
+  select count(*), max(creado) into n, ultimo from public.feedback_envios
+    where autor = auth.uid() and tabla = tg_table_name and creado > now() - interval '24 hours';
+  if ultimo is not null and ultimo > now() - interval '15 seconds' then
+    raise exception 'limite_feedback: espera' using errcode = 'P0001';
+  end if;
+  if n >= tope then
+    raise exception 'limite_feedback: tope %', tope using errcode = 'P0001';
+  end if;
+  insert into public.feedback_envios (autor, tabla) values (auth.uid(), tg_table_name);
+  delete from public.feedback_envios where creado < now() - interval '2 days';
+  return new;
+end $$;
+
+drop trigger if exists limite_feedback on public.feedback;
+create trigger limite_feedback before insert on public.feedback
+  for each row execute function public.limite_feedback();
+drop trigger if exists limite_feedback on public.feedback_respuestas;
+create trigger limite_feedback before insert on public.feedback_respuestas
+  for each row execute function public.limite_feedback();

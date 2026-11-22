@@ -3,7 +3,7 @@ import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { botonesPremium } from "./premium.js";
 import { pantallaCarga } from "./cargando.js";
 import { renderCare, renderCompat } from "./care.js";
-import { makeGuide } from "./guia.js";
+import { exportar, guiaArchivo } from "./servidor.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
 import { Patitas } from "./patitas.js";
@@ -310,7 +310,7 @@ async function download(kind, part) {
   }
   setBusy(true, kind === "3mf" ? "Armando el 3MF (calidad de impresión)…" : "Armando el STL…");
   try {
-    const r = await call(kind, { opts: opts(), part });
+    const r = await exportar("macetas", kind, { opts: opts(), pieza: part }, call);
     state.lastDownload = { name: r.name, bytes: r.data.byteLength };
     save(r.name, r.data, kind === "3mf" ? "model/3mf" : "model/stl");
     setStatus(`Descargado ${r.name}`, "ok");
@@ -488,7 +488,7 @@ async function guidePdf() {
   try {
     const fichas = state.plants.map((id) => state.info.plantas.find((p) => p.id === id)).filter(Boolean);
     const cobId = state.cobertura || state.coberturaUsada;
-    const doc = await makeGuide({
+    const pdf = await guiaArchivo({
       summary: state.summary, plantas: fichas, compat: state.compat || [],
       cobertura: $("decor").checked ? state.info.coberturas.find((c) => c.id === cobId) : null,
       selfWatering: ["screw_dish_sw", "screw_dish"].includes($("mode").value) && !!state.summary.assembly?.water_reservoir_ml,
@@ -496,10 +496,8 @@ async function guidePdf() {
       layers: viewer.pieceLayers(),
       fecha: new Date().toLocaleDateString("es-AR"),
     });
-    const buf = doc.output("arraybuffer");
-    const name = `${state.summary.sku}_guia.pdf`;
-    save(name, buf, "application/pdf");
-    state.lastPdf = { name, bytes: buf.byteLength, pages: doc.getNumberOfPages() };
+    save(pdf.name, pdf.data, "application/pdf");
+    state.lastPdf = { name: pdf.name, bytes: pdf.data.byteLength, pages: pdf.pages };
     setStatus("Guía descargada", "ok");
   } catch (e) {
     state.errors.push(String(e));

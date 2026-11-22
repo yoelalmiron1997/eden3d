@@ -24,7 +24,11 @@ COPY LICENSE THIRD_PARTY_NOTICES.md ./
 # Las claves "anon" de Supabase son públicas por diseño; si no se pasan, queda web/config.js
 ARG SUPABASE_URL=""
 ARG SUPABASE_ANON_KEY=""
-ENV SUPABASE_URL=${SUPABASE_URL} SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+# captcha (Cloudflare Turnstile) y servidor de descargas ("/api"; vacío = todo en el navegador)
+ARG TURNSTILE_SITE_KEY=""
+ARG EDEN3D_API=""
+ENV SUPABASE_URL=${SUPABASE_URL} SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \
+    TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY} EDEN3D_API=${EDEN3D_API}
 RUN python tools/build_site.py --out /site
 
 # 3) Servidor
