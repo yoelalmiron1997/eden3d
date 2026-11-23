@@ -28,3 +28,15 @@ specs:
     prioridad: baja
     nivel: web
     estado: activa
+  - id: REN-004
+    titulo: Foto de producto con más calidad
+    descripcion: >
+      La foto (botón Foto y la imagen del PDF) se dibuja al doble de resolución y se achica
+      con el mejor filtro del navegador: bordes, cadenas y relieves sin serrucho. En un
+      equipo que el visor pasó a bajos recursos igual sale con sombras, piso y reflejos.
+    criterio: >
+      La foto sale del tamaño pedido, dibujada a escala 2 (o lo que permita la placa) y,
+      en bajos recursos, completa; después el visor vuelve a quedar como estaba.
+    prioridad: media
+    nivel: web
+    estado: activa

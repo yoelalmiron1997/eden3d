@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
+import { tomarWorker } from "./motor-temprano.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { Cebado, ESTILOS } from "./mate-cebado.js";
@@ -23,7 +24,7 @@ const state = { ready: false, busy: false, info: null, summary: null, parts: [],
 window.__mate = state;
 
 // ------------------------------------------------------------------ worker
-const worker = new Worker("mate-worker.js");
+const worker = tomarWorker("mate-worker.js");      // ya arrancó en el <head>
 pantallaCarga({ motor: "mate", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();

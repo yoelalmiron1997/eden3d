@@ -17,6 +17,7 @@ import math
 
 TAU = 2.0 * math.pi
 _CACHE = {}
+_LOOPS = {}
 
 
 def _arc(cx, cy, rx, ry, a0, a1, steps=14):
@@ -250,6 +251,52 @@ def outlines(text, cap_h, stroke_ratio=0.17, res=None, mirror=True):
     key = (text, round(cap_h, 3), stroke_ratio, mirror)
     if key in _CACHE:
         return _CACHE[key]
+    # la versión espejada es la misma curva con x invertida: se calcula una sola vez
+    crudo = (text, round(cap_h, 3), stroke_ratio, res)
+    if crudo not in _LOOPS:
+        if len(_LOOPS) > 64:
+            _LOOPS.clear()
+        _LOOPS[crudo] = _loops_crudos(text, cap_h, stroke_ratio, res)
+    loops0, segs, hw, width = _LOOPS[crudo]
+    loops = [[(-x, y) for x, y in L] for L in loops0] if mirror else loops0
+    _CACHE[key] = (_anidar(loops), segs, hw, width)
+    return _CACHE[key]
+
+
+def _campo(segs, hw, res, x0, y0, nx, ny):
+    """f = hw - distancia al trazo más cercano (positivo dentro). Cada trazo sólo toca
+    los puntos de su entorno (hw + 2 celdas): más lejos basta con saber que es "afuera",
+    y los cruces que interpola el contorno siempre caen dentro de ese entorno. Mismo
+    resultado que medir contra todos los trazos, ~10 veces menos cuentas."""
+    lejos = hw - 1e9
+    f = [[lejos] * ny for _ in range(nx)]
+    m = hw + 2 * res
+    sqrt = math.sqrt
+    for ax, ay, bx, by in segs:
+        vx, vy = bx - ax, by - ay
+        L2 = vx * vx + vy * vy
+        i0 = max(0, int(math.floor((min(ax, bx) - m - x0) / res)))
+        i1 = min(nx - 1, int(math.ceil((max(ax, bx) + m - x0) / res)))
+        j0 = max(0, int(math.floor((min(ay, by) - m - y0) / res)))
+        j1 = min(ny - 1, int(math.ceil((max(ay, by) + m - y0) / res)))
+        for i in range(i0, i1 + 1):
+            px = x0 + i * res
+            col = f[i]
+            dxa = px - ax
+            for j in range(j0, j1 + 1):
+                py = y0 + j * res
+                dya = py - ay
+                t = 0.0 if L2 == 0 else (dxa * vx + dya * vy) / L2
+                t = 0.0 if t < 0.0 else (1.0 if t > 1.0 else t)
+                dx, dy = dxa - t * vx, dya - t * vy
+                v = hw - sqrt(dx * dx + dy * dy)
+                if v > col[j]:
+                    col[j] = v
+    return f
+
+
+def _loops_crudos(text, cap_h, stroke_ratio, res):
+    """Contornos del texto engordado, sin espejar ni ordenar (marching squares)."""
     segs, width = strokes(text, cap_h)
     hw = cap_h * stroke_ratio / 2.0
     res = res or max(0.06, min(0.14, hw / 4.0))
@@ -258,14 +305,7 @@ def outlines(text, cap_h, stroke_ratio=0.17, res=None, mirror=True):
     x0, y0 = -width / 2.0 - pad, ylo - pad
     nx = int(math.ceil((width + 2 * pad) / res)) + 1
     ny = int(math.ceil((yhi - ylo + 2 * pad) / res)) + 1
-    # campo f = hw - distancia (positivo dentro); por columnas para acotar
-    f = [[0.0] * ny for _ in range(nx)]
-    for i in range(nx):
-        px = x0 + i * res
-        near = [s for s in segs if min(s[0], s[2]) - hw - res <= px <= max(s[0], s[2]) + hw + res]
-        for j in range(ny):
-            py = y0 + j * res
-            f[i][j] = hw - (min(_dist_seg(px, py, s) for s in near) if near else 1e9)
+    f = _campo(segs, hw, res, x0, y0, nx, ny)
 
     def P(i, j):
         return (x0 + i * res, y0 + j * res)
@@ -321,11 +361,12 @@ def outlines(text, cap_h, stroke_ratio=0.17, res=None, mirror=True):
             if cur == start or cur in seen:
                 break
         if len(loop) >= 3:
-            loop = _simplify_loop(loop, res * 0.25)
-            if mirror:
-                loop = [(-x, y) for x, y in loop]
-            loops.append(loop)
-    # anidamiento: profundidad par = exterior (CCW), impar = contraforma (CW)
+            loops.append(_simplify_loop(loop, res * 0.25))
+    return loops, segs, hw, width
+
+
+def _anidar(loops):
+    """[(exterior CCW, [contraformas CW])]: profundidad par = exterior, impar = contraforma."""
     info = []
     for L in loops:
         depth = sum(1 for M in loops if M is not L and _inside(L[0], M))
@@ -339,8 +380,7 @@ def outlines(text, cap_h, stroke_ratio=0.17, res=None, mirror=True):
                 if dm == dpt + 1 and _inside(M[0], L):
                     holes.append(M if _area(M) < 0 else M[::-1])
             result.append((ext, holes))
-    _CACHE[key] = (result, segs, hw, width)
-    return _CACHE[key]
+    return result
 
 
 def _transform(loops_pack, cx, cy, ang):
@@ -400,9 +440,28 @@ def place(text, r_free, holes, cap_h=6.0, min_cap=3.5, gap=1.2):
     return _PLACE[key]
 
 
+def _rejilla_pts(pts, cell=2.0):
+    g = {}
+    for q in pts:
+        g.setdefault((int(math.floor(q[0] / cell)), int(math.floor(q[1] / cell))), []).append(q)
+    return g, cell
+
+
+def _pts_en(rej, x0, x1, y0, y1):
+    """Puntos de la rejilla dentro (o cerca) del rectángulo [x0,x1]×[y0,y1]."""
+    g, cell = rej
+    out = []
+    for i in range(int(math.floor(x0 / cell)), int(math.floor(x1 / cell)) + 1):
+        for j in range(int(math.floor(y0 / cell)), int(math.floor(y1 / cell)) + 1):
+            out.extend(g.get((i, j), ()))
+    return out
+
+
 def _place(text, r_free, holes, cap_h, min_cap, gap):
     hp = _hole_pts(holes)
     inner = [(sum(p[0] for p in h) / len(h), sum(p[1] for p in h) / len(h)) for h in holes]
+    # cada posición candidata sólo revisa los puntos de agujero cercanos al texto
+    rej = _rejilla_pts(hp + inner)
     size = cap_h
     while size >= min_cap - 1e-9:
         pack, segs, hw, width = outlines(text, size, mirror=False)
@@ -426,7 +485,9 @@ def _place(text, r_free, holes, cap_h, min_cap, gap):
                     x, y = q[0] - cx, q[1] - cy
                     return (-(x * ca + y * sa), -x * sa + y * ca)     # (espejado)
                 ok = True
-                for q in hp + inner:
+                bw, bh = half_w + gap, half_h + gap
+                ex, ey = abs(ca) * bw + abs(sa) * bh, abs(sa) * bw + abs(ca) * bh
+                for q in _pts_en(rej, cx - ex, cx + ex, cy - ey, cy + ey):
                     lx, ly = local(q)
                     if abs(lx) > half_w + gap or abs(ly) > half_h + gap:
                         continue

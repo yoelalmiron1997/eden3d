@@ -836,14 +836,30 @@ export class Viewer {
   }
 
   // ------------------------------------------------------------ foto
-  // PNG 1080×1350 (formato Instagram) del encuadre actual.
+  // Render del encuadre actual (PNG 1080×1350, formato Instagram, o el tamaño pedido):
+  // se dibuja al doble de resolución y se achica con el mejor filtro del navegador
+  // (bordes y relieves finos sin serrucho). En un equipo de bajos recursos igual sale con
+  // sombras, piso y reflejos.
   photo(w = 1080, h = 1350, mime = "image/png") {
     const r = this.renderer;
+    const gl = r.getContext();
     const prevPR = r.getPixelRatio(), prevSize = r.getSize(new THREE.Vector2());
     const prevAspect = this.camera.aspect;
     const prevBg = this.scene.background;
+    // sin placa de video (el navegador dibuja por software) la foto sale como siempre: al
+    // doble y con todo encendido tardaría decenas de segundos con la página congelada
+    if (this.porSoftware === undefined) {
+      const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+      const nombre = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : "";
+      this.porSoftware = /swiftshader|llvmpipe|softpipe|software|microsoft basic render/i.test(nombre);
+    }
+    const mejorar = !this.porSoftware;
+    // supermuestreo: hasta 2× por lado, sin pasar de ~9 Mpx ni del máximo de la placa
+    const maxLado = Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE), gl.getParameter(gl.MAX_TEXTURE_SIZE), 8192);
+    const k = mejorar ? Math.max(1, Math.min(2, Math.sqrt(9e6 / (w * h)), maxLado / w, maxLado / h)) : 1;
+    const W = Math.round(w * k), H = Math.round(h * k);
     r.setPixelRatio(1);
-    r.setSize(w, h, false);
+    r.setSize(W, H, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     // fondo: el del escenario o un degradé con el color del visor
@@ -857,14 +873,41 @@ export class Viewer {
     const tex = new THREE.CanvasTexture(cv);
     tex.colorSpace = THREE.SRGBColorSpace;
     if (!prevBg) this.scene.background = tex;
+    // en un equipo que el visor pasó a "bajos recursos" la foto igual sale completa: es un
+    // solo cuadro, así que se encienden sombras, piso y reflejos sólo para dibujarlo
+    const bajo = !!this.lowPower && mejorar;
+    const prevEnv = this.scene.environment, prevGround = this.ground.visible;
+    const materiales = () => this.scene.traverse((o) => {
+      if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true;
+    });
+    if (bajo) {
+      r.shadowMap.enabled = true;
+      this.ground.visible = !(SCENES[this.sceneKey] || {}).build;
+      if (!this.scene.environment) this.scene.environment = this.envTex;
+      materiales();
+    }
     r.render(this.scene, this.camera);
-    const url = r.domElement.toDataURL(mime, 0.9);
+    // se achica al tamaño pedido con el filtro de mejor calidad del navegador
+    const out = document.createElement("canvas");
+    out.width = w; out.height = h;
+    const oc = out.getContext("2d");
+    oc.imageSmoothingEnabled = true;
+    oc.imageSmoothingQuality = "high";
+    oc.drawImage(r.domElement, 0, 0, W, H, 0, 0, w, h);
+    const url = out.toDataURL(mime, 0.92);
+    if (bajo) {
+      r.shadowMap.enabled = false;
+      this.ground.visible = prevGround;
+      this.scene.environment = prevEnv;
+      materiales();
+    }
     this.scene.background = prevBg;
     tex.dispose();
     r.setPixelRatio(prevPR);
     r.setSize(prevSize.x, prevSize.y, false);
     this.camera.aspect = prevAspect;
     this.camera.updateProjectionMatrix();
+    this.ultimaFoto = { width: w, height: h, escala: +k.toFixed(2), completa: bajo };
     return { url, width: w, height: h };
   }
 }

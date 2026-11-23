@@ -149,3 +149,23 @@ planes();
 modales();
 aparicion();
 mountAccount($("#account"));
+
+// ------------------------------------------------------------------ precarga del motor
+// Mientras la persona mira el inicio, se bajan en segundo plano Python (Pyodide) y three.js:
+// al entrar a cualquier generador ya están en la caché y sólo falta iniciarlos. No se hace
+// con "ahorro de datos" ni en conexiones lentas.
+const PRECARGA = ["vendor/pyodide/pyodide.js", "vendor/pyodide/pyodide.asm.js", "vendor/pyodide/pyodide.asm.wasm",
+  "vendor/pyodide/python_stdlib.zip", "vendor/pyodide/pyodide-lock.json", "vendor/three/three.module.js"];
+function precargarMotor() {
+  const c = navigator.connection;
+  if (c && (c.saveData || /(^|-)2g|3g/.test(c.effectiveType || ""))) return;
+  for (const href of PRECARGA) {
+    if (document.querySelector(`link[rel=prefetch][href="${href}"]`)) continue;
+    const l = Object.assign(document.createElement("link"), { rel: "prefetch", href });
+    document.head.appendChild(l);
+  }
+}
+window.__precargaMotor = PRECARGA;
+const enCalma = window.requestIdleCallback || ((f) => setTimeout(f, 1500));
+if (document.readyState === "complete") enCalma(precargarMotor);
+else window.addEventListener("load", () => enCalma(precargarMotor), { once: true });

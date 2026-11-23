@@ -3,6 +3,7 @@
 // con la argolla para el collar, lista para imprimir.
 import * as THREE from "three";
 import { pantallaCarga } from "./cargando.js";
+import { tomarWorker } from "./motor-temprano.js";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { Viewer, SCENES } from "./viewer.js";
@@ -20,7 +21,7 @@ const state = { ready: false, busy: false, info: null, summary: null, parts: [],
 window.__chapita = state;
 
 // ------------------------------------------------------------------ worker
-const worker = new Worker("chapita-worker.js");
+const worker = tomarWorker("chapita-worker.js");      // ya arrancó en el <head>
 pantallaCarga({ motor: "chapita", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();
