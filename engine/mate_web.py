@@ -32,6 +32,7 @@ import mate_core as mc
 import mate_deco
 import mate_fuentes
 from eden_core import write_3mf_multi, write_stl
+import cotizador
 
 LICENSE_NOTE = ("© Eden3D — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
                 "Prohibida la venta, redistribución o modificación para vender.")
@@ -265,6 +266,22 @@ def export_stl(opts, pieza="MATE"):
     except OSError:
         pass
     return name, data
+
+
+def cotizar(opts):
+    """El mate (y la cuna o el medallón, si van) medidos para el cotizador."""
+    o = dict(opts or {})
+    o["calidad"] = o.get("cotizar_calidad", "preview")    # para gramos alcanza la vista previa
+    res = _resultado(o)
+    rep = res["report"]
+    if not rep["valid"]:
+        raise ValueError("; ".join(rep["errors"]) or "modelo inválido")
+    piezas = [cotizador.pieza("Mate", res["V"], res["F"])]
+    if res.get("cuna"):
+        piezas.append(cotizador.pieza("Cuna", *res["cuna"]))
+    if res.get("medallon"):
+        piezas.append(cotizador.pieza("Medallón", *_unir(res["medallon"]["cama"])))
+    return cotizador.resultado(piezas, rep["sku"], ["El vaso o la calabaza que va adentro no se imprime."])
 
 
 def export_3mf(opts):

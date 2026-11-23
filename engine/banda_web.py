@@ -19,6 +19,7 @@ import zipfile
 
 import banda_core as bc
 import mate_fuentes
+import cotizador
 
 VERSION = bc.VERSION
 LICENSE_NOTE = ("© TecnoBear — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
@@ -205,6 +206,20 @@ def lista_impresion(r):
             V, F = r["piezas"][k]
             out.append((nombre, [(k[0], V, F)], r["reporte"][clave]))
     return out
+
+
+def cotizar(opts):
+    """Todas las cuentas del collar (cada disco con su cantidad) medidas para el cotizador."""
+    o = _normal(opts)
+    o["calidad"] = o.get("cotizar_calidad", "preview")    # para gramos alcanza la vista previa
+    r = bc.construir(o)
+    piezas = []
+    for nombre, partes, cant in lista_impresion(r):
+        g = nombre.replace("_", " ").replace(" tilde", " con tilde")
+        for parte, V, F in partes:
+            piezas.append(cotizador.pieza(g if parte != "LETRAS" else g + " · letra", V, F, cantidad=cant,
+                                          color=2 if parte == "LETRAS" else 1, grupo=g))
+    return cotizador.resultado(piezas, _sku(r["opciones"]), ["El hilo o la cinta del collar no se imprime."])
 
 
 def export_3mf(opts):

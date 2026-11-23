@@ -24,6 +24,7 @@ import eden_catalog as ec
 import eden_core as core
 import eden_patitas
 import eden_plantas
+import cotizador
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CAT_PATH = os.path.join(HERE, "colecciones", "catalogo_eden3d.json")
@@ -282,6 +283,19 @@ def build_json(opts_json):
     """Atajo para JavaScript: recibe y devuelve JSON (sin los bytes)."""
     r = build(json.loads(opts_json))
     return json.dumps(r["summary"])
+
+
+def cotizar(opts):
+    """Las piezas del 3MF (maceta, plato, patitas…) medidas para el cotizador."""
+    o = dict(opts)
+    o["quality"] = o.get("cotizar_calidad", "preview")    # para gramos alcanza la vista previa
+    p = params(o)
+    res = core.build_pot(p)
+    if not res["report"].get("valid"):
+        raise ValueError("; ".join(res["report"].get("errors", [])) or "modelo inválido")
+    if o.get("patitas"):
+        eden_patitas.agregar(res, o["patitas"])
+    return cotizador.resultado([cotizador.pieza(nm, V, F) for nm, V, F in ec.pieces(res)], p["model_id"])
 
 
 def export_3mf(opts):

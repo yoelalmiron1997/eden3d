@@ -152,7 +152,8 @@ def test_build_en_modo_servidor_sin_exportacion(tmp_path):
     # el motor podado sigue armando la vista previa
     cod = ("import sys; sys.path.insert(0, %r); import chapita_web, eden_web; "
            "assert chapita_web.build({'nombre': 'Roma'})['summary']['valid']; "
-           "assert eden_web.build({})['summary']" % str(out / "py"))
+           "assert eden_web.build({})['summary']; "
+           "assert chapita_web.cotizar({'nombre': 'Roma'})['piezas']" % str(out / "py"))   # el cotizador sigue andando
     subprocess.check_call([sys.executable, "-c", cod])
 
 

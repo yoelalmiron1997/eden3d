@@ -8,7 +8,7 @@ let api = null;
 let version = "";
 
 async function init() {
-  const m = await cargarMotor({ archivos: ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_fuentes.py",
+  const m = await cargarMotor({ archivos: ["eden_core.py", "cotizador.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_fuentes.py",
     "topper_core.py", "chapita_core.py", "chapita_web.py"], modulo: "chapita_web" });
   py = m.py;
   api = m.api;
@@ -77,6 +77,12 @@ self.onmessage = async (ev) => {
       await fuentesDe(opts);
       const r = build(opts);
       self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
+    } else if (type === "cotizar") {           // piezas para imprimir medidas (cotizador.js)
+      await fuentesDe(opts);
+      const r = api.cotizar(py.toPy(opts));
+      const out = r.toJs({ dict_converter: Object.fromEntries });
+      r.destroy();
+      self.postMessage({ id, ok: true, result: out });
     } else if (type === "3mf" || type === "stl") {
       await fuentesDe(opts);
       const r = exportFile(type, opts, pieza);

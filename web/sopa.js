@@ -5,6 +5,7 @@ import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
+import { montarCotizador } from "./cotizador.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -398,3 +399,11 @@ mountAccount($("account"));
 onAuth((a) => { state.auth = a; });
 window.addEventListener("error", (e) => state.errors.push(String(e.message)));
 main();
+
+// cotizador: gramos de filamento y costo con el precio del kilo de cada uno
+window.__cotizador = montarCotizador({
+  dentro: document.getElementById("dl3mf").closest(".actions"),
+  pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
+  version: () => state.builds,
+  nombre: "la sopa de letras",
+});

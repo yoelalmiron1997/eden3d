@@ -3,6 +3,7 @@ import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { botonesPremium } from "./premium.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
+import { montarCotizador } from "./cotizador.js";
 import { renderCare, renderCompat } from "./care.js";
 import { exportar, guiaArchivo } from "./servidor.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -641,4 +642,12 @@ $("sentar").addEventListener("click", () => {
   $("sentar").setAttribute("aria-pressed", String(on));
   $("sentar").textContent = on ? "■ Bajarla" : "▶ Sentarla";     // cortos: entran en el celular
   setTimeout(() => viewer.fit(), 1300);                 // encuadra la maceta con el estante
+});
+
+// cotizador: gramos de filamento y costo con el precio del kilo de cada uno
+window.__cotizador = montarCotizador({
+  dentro: document.getElementById("dl3mf").closest(".actions"),
+  pedir: () => call("cotizar", { opts: opts() }),
+  version: () => state.builds,
+  nombre: "la maceta",
 });

@@ -8,7 +8,7 @@ let api = null;
 let version = "";
 
 async function init() {
-  const m = await cargarMotor({ archivos: ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "sopa_core.py", "sopa_web.py"], modulo: "sopa_web" });
+  const m = await cargarMotor({ archivos: ["eden_core.py", "cotizador.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "sopa_core.py", "sopa_web.py"], modulo: "sopa_web" });
   py = m.py;
   api = m.api;
   version = m.version;
@@ -67,6 +67,11 @@ self.onmessage = async (ev) => {
     } else if (type === "build") {
       const r = build(opts);
       self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
+    } else if (type === "cotizar") {           // piezas para imprimir medidas (cotizador.js)
+      const r = api.cotizar(py.toPy(opts));
+      const out = r.toJs({ dict_converter: Object.fromEntries });
+      r.destroy();
+      self.postMessage({ id, ok: true, result: out });
     } else if (type === "3mf" || type === "stl") {
       const r = exportFile(type, opts);
       self.postMessage({ id, ok: true, result: r }, [r.data]);

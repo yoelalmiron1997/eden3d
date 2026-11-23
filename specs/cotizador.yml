@@ -1,0 +1,47 @@
+area: Cotizador de filamento
+prefijo: COT
+specs:
+  - id: COT-001
+    titulo: El motor mide lo mismo que se descarga
+    descripcion: >
+      Cada generador mide las mismas piezas que van al 3MF (con su cantidad: todos los
+      discos, corazones y pelotitas de la banda; la cuna o el medallón del mate; el número
+      del topper) y no lo que sólo se ve (agua, plantas, argolla, el vaso del mate). Para
+      que sea rápido se mide la malla de la vista previa, que da el mismo volumen (±6 %).
+    criterio: >
+      cotizar() de los 7 motores devuelve las piezas del 3MF con volumen, superficie
+      (total, arriba y abajo) y cantidad; la banda suma tantos discos, corazones y
+      pelotitas como dice su reporte; en vista previa el volumen difiere menos de 6 % del
+      de calidad normal; un cubo de 10 mm mide 1000 mm³, 600 mm² y 100 mm² arriba y abajo.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: COT-002
+    titulo: Los gramos se parecen a los del laminador
+    descripcion: >
+      Paredes con los perímetros elegidos, 5 capas de techo y 3 de piso macizas y el resto
+      con el relleno elegido, calibrado contra PrusaSlicer con piezas de todos los
+      generadores.
+    criterio: >
+      Contra los gramos de PrusaSlicer guardados (15 % y 2 perímetros, 40 % y 3, 100 %), el
+      error medio por pieza es menor a 8 % y el total de cada producto queda dentro de ±15 %;
+      al 100 % coincide con volumen × densidad (±3 %).
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: COT-003
+    titulo: Cotizar en la página, con el precio de cada uno
+    descripcion: >
+      Botón "Cotizar" en los 7 generadores, sin necesidad de cuenta: material
+      (PLA, PETG, ABS, ASA, TPU, con fibra de carbono, nylon, PC u otro con su densidad),
+      relleno, perímetros, desperdicio, unidades y precio del kilo en pesos argentinos o
+      la moneda que use la persona (se recuerda para la próxima). Muestra gramos, metros
+      de filamento, color 1 y color 2, el detalle por pieza y el costo.
+    criterio: >
+      En la chapita y la banda el panel muestra gramos y, con precio, el costo en la moneda
+      elegida; cambiar material o relleno cambia los gramos al instante; con 10 unidades
+      los gramos se multiplican por 10; la configuración queda guardada al recargar; si se
+      cambia el modelo con el panel abierto, se vuelve a medir.
+    prioridad: alta
+    nivel: web
+    estado: activa

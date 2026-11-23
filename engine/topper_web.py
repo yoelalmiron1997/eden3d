@@ -24,6 +24,7 @@ import zipfile
 
 import mate_fuentes
 import topper_core as tc
+import cotizador
 
 TOPPER_VERSION = "1.1.0"
 LICENSE_NOTE = ("© Eden3D — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
@@ -150,6 +151,19 @@ def export_stl(opts, pieza="TOPPER"):
 def _xml(s):
     return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             .replace('"', "&quot;"))
+
+
+def cotizar(opts):
+    """El topper (y el número, si está activo) medidos para el cotizador."""
+    o = _normal(opts)
+    o["calidad"] = o.get("cotizar_calidad", "preview")    # para gramos alcanza la vista previa
+    objetos = [("Topper", tc.construir(o))]
+    if _numero_activo(o):
+        objetos.append(("Número", tc.construir_numero(o)))
+    piezas = [cotizador.pieza("%s · %s" % (g, n.lower()) if n != "TOPPER" else g, V, F,
+                              color=2 if "LETRAS" in n else 1, grupo=g)
+              for g, r in objetos for n, V, F in r["piezas"]]
+    return cotizador.resultado(piezas, _sku(o), ["El palito que va en la torta va incluido en la pieza."])
 
 
 def export_3mf(opts):

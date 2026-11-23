@@ -18,6 +18,7 @@ import zipfile
 
 import topper_core as tc
 import trofeo_core as tr
+import cotizador
 
 VERSION = "1.0.0"
 LICENSE_NOTE = ("© TecnoBear — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
@@ -93,6 +94,17 @@ def export_stl(opts, pieza="FIGURA"):
 
 def _xml(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def cotizar(opts):
+    """Figura y base del trofeo (con sus partes de color) medidas para el cotizador."""
+    o = _normal(opts)
+    o["calidad"] = o.get("cotizar_calidad", "preview")    # para gramos alcanza la vista previa
+    r = tr.construir(o)
+    grupo = {"FIGURA": "Figura", "DETALLE": "Figura", "BASE": "Base", "TEXTO": "Base"}
+    return cotizador.resultado([cotizador.pieza(n.capitalize(), V, F, color=2 if n in ("DETALLE", "TEXTO") else 1,
+                                                grupo=grupo.get(n, n.capitalize()))
+                                for n, V, F in r["piezas"]], _sku(o))
 
 
 def export_3mf(opts):
