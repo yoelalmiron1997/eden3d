@@ -2,6 +2,7 @@
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { botonesPremium } from "./premium.js";
 import { pantallaCarga } from "./cargando.js";
+import { tomarWorker } from "./motor-temprano.js";
 import { renderCare, renderCompat } from "./care.js";
 import { exportar, guiaArchivo } from "./servidor.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -32,11 +33,8 @@ window.__eden = state;
 // ------------------------------------------------------------------ worker
 // el worker lo arranca macetas.html apenas abre (así Pyodide baja mientras carga three.js);
 // los pasos que avisó antes de llegar acá se repiten para la pantalla de carga
-const worker = window.__edenWorker || new Worker("worker.js");
+const worker = tomarWorker("worker.js");      // ya arrancó en el <head>
 pantallaCarga({ motor: "macetas", worker, estado: state });   // la impresora imprimiendo mientras carga
-const pasosPrevios = window.__edenPasos || [];
-window.__edenPasos = null;                 // primero se corta el registro (si no, se repetiría solo)
-for (const paso of pasosPrevios) worker.dispatchEvent(new MessageEvent("message", { data: { type: "progreso", paso } }));
 let seq = 0;
 const pending = new Map();
 worker.onmessage = (ev) => {

@@ -3,6 +3,7 @@
 // parada sobre una base con el texto del evento. Dos piezas que encastran, listas para imprimir.
 import * as THREE from "three";
 import { pantallaCarga } from "./cargando.js";
+import { tomarWorker } from "./motor-temprano.js";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { Viewer, SCENES } from "./viewer.js";
@@ -19,7 +20,7 @@ const state = { ready: false, busy: false, info: null, summary: null, parts: [],
 window.__trofeo = state;
 
 // ------------------------------------------------------------------ worker
-const worker = new Worker("trofeo-worker.js");
+const worker = tomarWorker("trofeo-worker.js");      // ya arrancó en el <head>
 pantallaCarga({ motor: "trofeo", worker, estado: state });
 let seq = 0;
 const pending = new Map();

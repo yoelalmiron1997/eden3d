@@ -1,42 +1,26 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // Web Worker de los trofeos para eventos: carga Pyodide y el motor (trofeo_web.py).
 /* global importScripts, loadPyodide */
-importScripts("./vendor/pyodide/pyodide.js");
+importScripts("./vendor/pyodide/pyodide.js", "./motor-carga.js");
 
 let py = null;
 let api = null;
 let version = "";
-const fuentes = new Set();
 
 async function init() {
-  const t0 = performance.now();
-  self.postMessage({ type: "progreso", paso: 1 });
-  py = await loadPyodide({ indexURL: "./vendor/pyodide/" });
-  self.postMessage({ type: "progreso", paso: 2 });     // Python listo: ahora el motor
-  const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
-  version = manifest.version;
-  py.FS.mkdirTree("/eden/colecciones");
-  py.FS.mkdirTree("/eden/fuentes");
-  const need = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_fuentes.py",
-    "topper_core.py", "trofeo_core.py", "trofeo_web.py"];
-  for (const f of manifest.files.filter((x) => need.includes(x))) {
-    const txt = await (await fetch("./py/" + f + "?v=" + manifest.version)).text();
-    py.FS.writeFile("/eden/" + f, txt);
-  }
-  py.runPython("import sys; sys.path.insert(0, '/eden'); import trofeo_web");
-  api = py.pyimport("trofeo_web");
+  const m = await cargarMotor({ archivos: ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_fuentes.py",
+    "topper_core.py", "trofeo_core.py", "trofeo_web.py"], modulo: "trofeo_web" });
+  py = m.py;
+  api = m.api;
+  version = m.version;
   const info = api.info().toJs({ dict_converter: Object.fromEntries });
-  return { info, seconds: (performance.now() - t0) / 1000, version };
+  fuentesDe(info.defecto).catch(() => {});      // la tipografía por defecto, ya mismo
+  return { info, seconds: (performance.now() - m.t0) / 1000, version };
 }
 
 // cada tipografía se baja sólo cuando se usa (100–460 KB)
-async function fuente(id) {
-  if (!id || fuentes.has(id)) return;
-  const res = await fetch("./py/fuentes/" + id + ".json?v=" + version);
-  if (!res.ok) throw new Error("No se pudo bajar la tipografía " + id);
-  py.FS.writeFile("/eden/fuentes/" + id + ".json", new Uint8Array(await res.arrayBuffer()));
-  fuentes.add(id);
-}
+const estadoMotor = { get py() { return py; }, get version() { return version; } };
+const fuente = crearFuentes(estadoMotor);
 async function fuentesDe(opts) {
   await fuente(opts && opts.fuente);
   if (opts && opts.figura === "numero") await fuente(opts.fuente_figura);

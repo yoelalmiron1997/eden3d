@@ -1,27 +1,19 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // Web Worker de la "Sopa de letras 3D": carga Pyodide y el motor (sopa_web.py).
 /* global importScripts, loadPyodide */
-importScripts("./vendor/pyodide/pyodide.js");
+importScripts("./vendor/pyodide/pyodide.js", "./motor-carga.js");
 
 let py = null;
 let api = null;
+let version = "";
 
 async function init() {
-  const t0 = performance.now();
-  self.postMessage({ type: "progreso", paso: 1 });
-  py = await loadPyodide({ indexURL: "./vendor/pyodide/" });
-  self.postMessage({ type: "progreso", paso: 2 });     // Python listo: ahora el motor
-  const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
-  py.FS.mkdirTree("/eden/colecciones");
-  const need = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "sopa_core.py", "sopa_web.py"];
-  for (const f of manifest.files.filter((x) => need.includes(x))) {
-    const txt = await (await fetch("./py/" + f + "?v=" + manifest.version)).text();
-    py.FS.writeFile("/eden/" + f, txt);
-  }
-  py.runPython("import sys; sys.path.insert(0, '/eden'); import sopa_web");
-  api = py.pyimport("sopa_web");
+  const m = await cargarMotor({ archivos: ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "sopa_core.py", "sopa_web.py"], modulo: "sopa_web" });
+  py = m.py;
+  api = m.api;
+  version = m.version;
   const info = api.info().toJs({ dict_converter: Object.fromEntries });
-  return { info, seconds: (performance.now() - t0) / 1000, version: manifest.version };
+  return { info, seconds: (performance.now() - m.t0) / 1000, version };
 }
 
 function bytesOf(proxy) {

@@ -1,44 +1,27 @@
 // © 2026 Eden3D — Yoel Almirón. Todos los derechos reservados.
 // Web Worker del "Mate con hueco": carga Pyodide y el motor de mates (mate_web.py).
 /* global importScripts, loadPyodide */
-importScripts("./vendor/pyodide/pyodide.js");
+importScripts("./vendor/pyodide/pyodide.js", "./motor-carga.js");
 
 let py = null;
 let api = null;
 let version = "";
-const fuentes = new Set();
 
 // las tipografías se bajan sólo cuando se eligen (cada una pesa 100–400 KB)
-async function fuente(id) {
-  if (!id || id === "eden" || fuentes.has(id)) return;
-  const res = await fetch("./py/fuentes/" + id + ".json?v=" + version);
-  if (!res.ok) throw new Error("No se pudo bajar la tipografía " + id);
-  py.FS.writeFile("/eden/fuentes/" + id + ".json", new Uint8Array(await res.arrayBuffer()));
-  fuentes.add(id);
-}
+const estadoMotor = { get py() { return py; }, get version() { return version; } };
+const fuente = crearFuentes(estadoMotor, (id) => id === "eden");
 const fuenteDe = (o) => (o && o.deco && o.deco.tipo === "texto" ? o.deco.fuente || "archivo_black" : null);
 const STL_PATH = "/tmp/inserto_propio.stl";
 const SVG_PATH = "/tmp/deco.svg";
 
 async function init() {
-  const t0 = performance.now();
-  self.postMessage({ type: "progreso", paso: 1 });
-  py = await loadPyodide({ indexURL: "./vendor/pyodide/" });
-  self.postMessage({ type: "progreso", paso: 2 });     // Python listo: ahora el motor
-  const manifest = await (await fetch("./py/manifest.json", { cache: "no-cache" })).json();
-  py.FS.mkdirTree("/eden/colecciones");
-  const need = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_core.py", "mate_web.py",
-    "mate_deco.py", "mate_fuentes.py"];
-  version = manifest.version;
-  py.FS.mkdirTree("/eden/fuentes");
-  for (const f of manifest.files.filter((x) => need.includes(x))) {
-    const txt = await (await fetch("./py/" + f + "?v=" + manifest.version)).text();
-    py.FS.writeFile("/eden/" + f, txt);
-  }
-  py.runPython("import sys; sys.path.insert(0, '/eden'); import mate_web");
-  api = py.pyimport("mate_web");
+  const m = await cargarMotor({ archivos: ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "mate_core.py", "mate_web.py",
+    "mate_deco.py", "mate_fuentes.py"], modulo: "mate_web" });
+  py = m.py;
+  api = m.api;
+  version = m.version;
   const info = api.info().toJs({ dict_converter: Object.fromEntries });
-  return { info, seconds: (performance.now() - t0) / 1000, version: manifest.version };
+  return { info, seconds: (performance.now() - m.t0) / 1000, version };
 }
 
 function bytesOf(proxy) {

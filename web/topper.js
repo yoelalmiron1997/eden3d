@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
+import { tomarWorker } from "./motor-temprano.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -20,7 +21,7 @@ const state = { ready: false, busy: false, info: null, summary: null, summaryNum
 window.__topper = state;
 
 // ------------------------------------------------------------------ worker
-const worker = new Worker("topper-worker.js");
+const worker = tomarWorker("topper-worker.js");      // ya arrancó en el <head>
 pantallaCarga({ motor: "topper", worker, estado: state });   // la impresora imprimiendo mientras carga
 let seq = 0;
 const pending = new Map();

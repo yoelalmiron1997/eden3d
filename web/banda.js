@@ -3,6 +3,7 @@
 // nombre, la carrera…), con corazones y pelotitas, listo para imprimir.
 import * as THREE from "three";
 import { pantallaCarga } from "./cargando.js";
+import { tomarWorker } from "./motor-temprano.js";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { Viewer, SCENES } from "./viewer.js";
@@ -20,7 +21,7 @@ const state = { ready: false, busy: false, info: null, summary: null, parts: [],
 window.__banda = state;
 
 // ------------------------------------------------------------------ worker
-const worker = new Worker("banda-worker.js");
+const worker = tomarWorker("banda-worker.js");      // ya arrancó en el <head>
 pantallaCarga({ motor: "banda", worker, estado: state });
 let seq = 0;
 const pending = new Map();

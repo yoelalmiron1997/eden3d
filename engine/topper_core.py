@@ -272,17 +272,36 @@ def _edt1(f, n):
     return d
 
 
+def _edt1_bin(es, n, INF):
+    """La primera pasada (0 en las celdas objetivo, infinito en el resto) es sólo la
+    distancia al objetivo más cercano: dos barridos en vez de la envolvente de parábolas.
+    Da exactamente los mismos valores que _edt1."""
+    if not any(es):
+        return [INF] * n
+    d = [0.0] * n
+    ult = None
+    for q in range(n):
+        if es[q]:
+            ult = q
+        d[q] = INF if ult is None else float((q - ult) * (q - ult))
+    ult = None
+    for q in range(n - 1, -1, -1):
+        if es[q]:
+            ult = q
+        elif ult is not None:
+            v = float((ult - q) * (ult - q))
+            if v < d[q]:
+                d[q] = v
+    return d
+
+
 def edt(M, nx, ny, objetivo=1):
     """Distancia al cuadrado (en celdas) de cada celda a la celda más cercana con valor
     `objetivo`."""
     INF = 1e20
     cols = [[0.0] * ny for _ in range(nx)]
     for i in range(nx):
-        f = [0.0 if M[j][i] == objetivo else INF for j in range(ny)]
-        if any(x == 0.0 for x in f):
-            cols[i] = _edt1(f, ny)
-        else:
-            cols[i] = [INF] * ny
+        cols[i] = _edt1_bin([M[j][i] == objetivo for j in range(ny)], ny, INF)
     D = []
     for j in range(ny):
         f = [cols[i][j] for i in range(nx)]

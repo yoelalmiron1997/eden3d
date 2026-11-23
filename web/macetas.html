@@ -11,14 +11,14 @@
   <link rel="icon" href="assets/marca/logo-tecnobear.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script>
-    // el motor (Python en WebAssembly, ~13 MB) empieza a bajar ya, sin esperar a three.js y al resto
+    // el motor (Python en WebAssembly) empieza a bajar ya, sin esperar a three.js y al resto
     try {
-      window.__edenPasos = [];
-      window.__edenWorker = new Worker("worker.js");
-      window.__edenWorker.addEventListener("message", function (e) {
-        if (window.__edenPasos && e.data && e.data.type === "progreso") window.__edenPasos.push(e.data.paso);
+      window.__motor = { url: "worker.js", pasos: [], w: new Worker("worker.js") };
+      window.__motor.w.addEventListener("message", function (e) {
+        var m = window.__motor;
+        if (m && m.pasos && e.data && e.data.type === "progreso") m.pasos.push(e.data.paso);
       });
-    } catch (e) { window.__edenWorker = null; }
+    } catch (e) { window.__motor = null; }
   </script>
   <script type="importmap">
     { "imports": { "three": "./vendor/three/three.module.js",

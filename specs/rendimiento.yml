@@ -22,3 +22,30 @@ specs:
     prioridad: media
     nivel: web
     estado: activa
+  - id: PER-004
+    titulo: Los generadores arrancan el motor enseguida
+    descripcion: >
+      El motor (Pyodide) arranca desde el <head> de cada generador, sin esperar a three.js
+      y al resto de los módulos; los archivos de Python se bajan todos a la vez mientras
+      Python se inicia, y la tipografía por defecto se pide apenas está el motor. El inicio
+      precarga Pyodide y three.js en segundo plano (no con ahorro de datos ni en 2G/3G).
+    criterio: >
+      Las 7 páginas crean el worker en el <head> y la página lo toma (tomarWorker); los 6
+      workers de herramientas usan cargarMotor (archivos en paralelo) y las tipografías no
+      se bajan dos veces; el inicio agrega los <link rel=prefetch> del motor.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: PER-005
+    titulo: El motor arma más rápido, con el mismo resultado
+    descripcion: >
+      El texto del piso calcula su campo de distancias sólo cerca de cada trazo, calcula una
+      vez la versión espejada y busca su lugar mirando sólo los puntos cercanos; la primera
+      pasada de la transformada de distancia (topper, chapita, trofeo) usa dos barridos.
+    criterio: >
+      El campo optimizado es igual al de medir contra todos los trazos, el contorno espejado
+      es el normal con x invertida, la pasada binaria es igual a la de Felzenszwalb, y la
+      maceta por defecto se arma en menos de 1,5 s en CPython (antes ~2 s).
+    prioridad: media
+    nivel: rendimiento
+    estado: activa
