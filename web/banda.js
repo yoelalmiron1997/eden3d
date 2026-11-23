@@ -4,7 +4,7 @@
 import * as THREE from "three";
 import { pantallaCarga } from "./cargando.js";
 import { botonesPremium } from "./premium.js";
-import { pdfConsideraciones } from "./guia-impresion.js";
+import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { BandaEscena } from "./banda-escena.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -267,7 +267,7 @@ async function download(kind) {
   }
   setBusy(true, kind === "3mf" ? "Armando el 3MF…" : "Armando los STL…");
   try {
-    const r = await call(kind, { opts: state.builtOpts || opts() });
+    const r = await exportar("banda", kind, { opts: state.builtOpts || opts() }, call);
     state.lastDownload = { name: r.name, bytes: r.data.byteLength };
     save(r.name, r.data, kind === "3mf" ? "model/3mf" : "application/zip");
     setStatus(`Descargado ${r.name}`, "ok");
@@ -285,11 +285,9 @@ async function consideracionesPdf() {
   try {
     escena.terminar();
     const foto = viewer.photo(1200, 744, "image/jpeg").url;
-    const doc = await pdfConsideraciones("banda", state.summary, { foto });
-    const buf = doc.output("arraybuffer");
-    const name = `${state.summary.sku}_consideraciones.pdf`;
-    save(name, buf, "application/pdf");
-    state.lastPdf = { name, bytes: buf.byteLength, pages: doc.getNumberOfPages() };
+    const pdf = await pdfConsideracionesArchivo("banda", state.summary, { foto });
+    save(pdf.name, pdf.data, "application/pdf");
+    state.lastPdf = { name: pdf.name, bytes: pdf.data.byteLength, pages: pdf.pages };
     setStatus("PDF descargado", "ok");
   } catch (e) {
     state.errors.push(String(e));

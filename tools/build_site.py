@@ -11,9 +11,11 @@
   * genera licencia.html a partir de LICENSE y el .nojekyll.
 """
 import argparse
+import ast
 import hashlib
 import html
 import json
+import re
 import os
 import shutil
 
@@ -85,10 +87,19 @@ def build(out, node_modules):
     shutil.copy2(os.path.join(node_modules, "@supabase", "supabase-js", "LICENSE"), os.path.join(vs, "LICENSE"))
     # login: la URL y la clave pública de Supabase salen de las variables del repo
     url, key = os.environ.get("SUPABASE_URL", "").strip(), os.environ.get("SUPABASE_ANON_KEY", "").strip()
+    captcha = os.environ.get("TURNSTILE_SITE_KEY", "").strip()
     if url and key:
         with open(os.path.join(out, "config.js"), "w", encoding="utf-8") as fh:
             fh.write("// generado por tools/build_site.py desde las variables del repositorio\n"
-                     "export const SUPABASE = %s;\n" % json.dumps({"url": url, "anonKey": key}))
+                     "export const SUPABASE = %s;\n" % json.dumps({"url": url, "anonKey": key}) +
+                     "export const CAPTCHA = %s;\n" % json.dumps({"siteKey": captcha}) +
+                     "export const API = %s;\n" % json.dumps({"url": ""}))
+    elif captcha:
+        cfg = os.path.join(out, "config.js")
+        with open(cfg, encoding="utf-8") as fh:
+            txt = fh.read()
+        with open(cfg, "w", encoding="utf-8") as fh:
+            fh.write(re.sub(r'export const CAPTCHA = .*', "export const CAPTCHA = %s;" % json.dumps({"siteKey": captcha}), txt))
     vj = os.path.join(out, "vendor", "jspdf")
     os.makedirs(vj, exist_ok=True)
     shutil.copy2(os.path.join(node_modules, "jspdf", "dist", "jspdf.umd.min.js"), vj)
@@ -105,9 +116,86 @@ def build(out, node_modules):
 <main style="max-width:860px;margin:0 auto;padding:20px 16px"><pre data-testid="licencia-texto"
 style="white-space:pre-wrap;font:14px/1.5 ui-monospace,Consolas,monospace">%s</pre></main></body></html>"""
                  % html.escape(lic))
+    api = os.environ.get("EDEN3D_API", "").strip()
+    if api:
+        modo_servidor(out, api)
     open(os.path.join(out, ".nojekyll"), "w").close()
     os.makedirs(os.path.join(out, "calidad"), exist_ok=True)
     return version
+
+
+# ---------------------------------------------------------------- web para el VPS
+# Con EDEN3D_API (p. ej. "/api") los archivos para imprimir y los PDF los arma el
+# servidor (server/api.py) después de comprobar la cuenta. Entonces la web publicada no
+# lleva el código que los genera: se sacan export_3mf / export_stl del motor (y lo que
+# sólo usaban ellos) y el armado de los PDF (guia.js, guia-impresion.js, jsPDF).
+QUITAR = {"export_3mf", "export_stl"}
+
+
+def _nombres_usados(arboles, js):
+    usados = set()
+    for t in arboles.values():
+        for n in ast.walk(t):
+            if isinstance(n, ast.Name):
+                usados.add(n.id)
+            elif isinstance(n, ast.Attribute):
+                usados.add(n.attr)
+            elif isinstance(n, ast.Constant) and isinstance(n.value, str) and n.value.isidentifier():
+                usados.add(n.value)          # getattr / tablas por nombre
+    return usados | set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", js))
+
+
+def podar_motor(pyd, web_js):
+    """Saca del motor de la web las funciones de exportación. Devuelve las quitadas."""
+    rutas = [os.path.join(pyd, f) for f in sorted(os.listdir(pyd)) if f.endswith(".py")]
+    arboles = {r: ast.parse(open(r, encoding="utf-8").read()) for r in rutas}
+    quitadas = []
+    for r, t in arboles.items():
+        antes = len(t.body)
+        t.body = [n for n in t.body if not (isinstance(n, ast.FunctionDef) and n.name in QUITAR)]
+        quitadas += [(os.path.basename(r), q) for q in QUITAR] if len(t.body) < antes else []
+    # lo que quedó huérfano (privado o de 3MF/STL) también se va, hasta que no cambie nada
+    while True:
+        usados = _nombres_usados(arboles, web_js)
+        cambio = False
+        for r, t in arboles.items():
+            nuevo = []
+            for n in t.body:
+                huerfana = (isinstance(n, ast.FunctionDef) and n.name not in usados
+                            and (n.name.startswith("_") or re.search(r"3mf|stl|model_settings", n.name, re.I)))
+                if huerfana:
+                    quitadas.append((os.path.basename(r), n.name))
+                    cambio = True
+                else:
+                    nuevo.append(n)
+            t.body = nuevo
+        if not cambio:
+            break
+    for r, t in arboles.items():
+        with open(r, "w", encoding="utf-8") as fh:
+            fh.write("# © 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.\n")
+            fh.write(ast.unparse(t) + "\n")
+    return quitadas
+
+
+def modo_servidor(out, api):
+    cfg = os.path.join(out, "config.js")
+    with open(cfg, encoding="utf-8") as fh:
+        txt = fh.read()
+    linea = "export const API = %s;" % json.dumps({"url": api})
+    txt = re.sub(r"export const API = .*", linea, txt) if "export const API" in txt else txt + linea + "\n"
+    with open(cfg, "w", encoding="utf-8") as fh:
+        fh.write(txt)
+    for f in ("guia.js", "guia-impresion.js"):
+        os.remove(os.path.join(out, f))
+    shutil.rmtree(os.path.join(out, "vendor", "jspdf"))
+    js = ""
+    for f in os.listdir(out):
+        if f.endswith(".js"):
+            with open(os.path.join(out, f), encoding="utf-8") as fh:
+                js += fh.read()
+    quitadas = podar_motor(os.path.join(out, "py"), js)
+    print("modo servidor (%s): sin exportación en la web (%d funciones quitadas)" % (api, len(quitadas)))
 
 
 if __name__ == "__main__":

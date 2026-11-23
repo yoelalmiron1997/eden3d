@@ -122,3 +122,60 @@ specs:
     prioridad: alta
     nivel: motor
     estado: activa
+  - id: CUE-010
+    titulo: Captcha al crear cuenta, ingresar y recuperar la contraseña
+    descripcion: >
+      Para frenar cuentas creadas en masa, la ventana de ingreso trae Cloudflare
+      Turnstile (casi siempre invisible). La clave pública del sitio sale de la variable
+      TURNSTILE_SITE_KEY al armar la web; la secreta va en Supabase (Attack Protection).
+      Sin clave no hay captcha y todo sigue igual.
+    criterio: >
+      Con la clave, el build la escribe en config.js, la ventana de ingreso carga
+      Turnstile con esa clave y cada pedido de ingreso, registro o recuperación lleva el
+      token, que se renueva después de cada intento; sin clave no se carga nada.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: CUE-011
+    titulo: Límite de publicaciones del feedback
+    descripcion: >
+      Cada cuenta publica hasta 10 mensajes y 30 respuestas cada 24 horas, con 15
+      segundos entre uno y otro. Lo controla la base con un registro que la web no puede
+      leer ni borrar (borrar y volver a publicar no saltea el límite); el admin no tiene
+      límite y la fecha la pone la base.
+    criterio: >
+      esquema.sql crea feedback_envios con RLS y sin políticas, y el trigger
+      limite_feedback (security definer) en feedback y feedback_respuestas con los topes;
+      la web traduce los avisos a un mensaje claro.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: CUE-012
+    titulo: Descargas y Premium los genera el servidor
+    descripcion: >
+      En el VPS, server/api.py arma los 3MF/STL y los PDF después de comprobar la sesión
+      en Supabase y el rol en perfiles. Sin sesión no descarga; sin Pro no hay PDF y la
+      marca personalizada se descarta; las rutas de archivos que manda el cliente se
+      ignoran; hay un pedido a la vez por cuenta y un tope por hora. La web armada con
+      EDEN3D_API no trae el código de exportación del motor ni el de los PDF.
+    criterio: >
+      Sin token o con token inválido responde 401; una cuenta gratis baja el 3MF y su
+      marca propia no cambia el archivo; Pro sí; el PDF da 403 sin Pro y un PDF con Pro;
+      stl_path del cliente no se usa; un segundo pedido simultáneo da 429; el build en
+      modo servidor no tiene export_3mf / export_stl ni guia*.js ni jsPDF.
+    prioridad: alta
+    nivel: motor
+    estado: activa
+  - id: CUE-013
+    titulo: La web pide las descargas al servidor
+    descripcion: >
+      Con un servidor configurado (API en config.js), los botones 3MF/STL y PDF piden el
+      archivo a /api con el token de la sesión en vez de generarlo en el navegador, y
+      muestran el mensaje del servidor si lo rechaza.
+    criterio: >
+      Al tocar 3MF el pedido va a /api/descargar con Authorization y las opciones del
+      modelo, y se descarga lo que devuelve; si el servidor responde un error, el estado
+      muestra ese mensaje.
+    prioridad: alta
+    nivel: web
+    estado: activa

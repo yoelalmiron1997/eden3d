@@ -58,7 +58,10 @@ def test_la_config_sale_de_las_variables(tmp_path):
     subprocess.check_call([sys.executable, os.path.join(REPO, "tools", "build_site.py"), "--out", str(out)],
                           env=env, stdout=subprocess.DEVNULL)
     cfg = (out / "config.js").read_text(encoding="utf-8")
-    data = json.loads(cfg.split("SUPABASE = ")[1].rstrip().rstrip(";"))
+    data = json.loads(cfg.split("SUPABASE = ")[1].split("\n")[0].rstrip().rstrip(";"))
+    # config.js tiene que exportar todo lo que importan auth.js, captcha.js y servidor.js
+    for nombre in ("SUPABASE", "CAPTCHA", "API"):
+        assert "export const %s = " % nombre in cfg
     assert data == {"url": "https://ejemplo.supabase.co", "anonKey": "clave-publica"}
     assert (out / "vendor" / "supabase" / "supabase.js").is_file()
     for page in ("index.html", "macetas.html", "admin.html"):

@@ -33,12 +33,16 @@ def test_chapita_en_la_web(browser, base_url):
     assert v["meshes"] == ["CHAPITA", "LETRAS"] and v["argolla"]
     L = v["llavero"]
     assert L["puesto"] and L["colgada"] and L["piezas"] == 8 and L["gap"] < 0.1
+    # colgada no tira sombra dura corrida sobre la mesa (se veía en el render y en el PDF):
+    # sólo una sombra de contacto finita y más suave justo debajo
+    assert not L["sombra"]["tira"] and L["sombra"]["contacto"] < 0.7 and L["sombra"]["fondo"] < 20
     # sacar la argolla: se anima hasta quedar todo en la mesa, con el ganchito abierto
     pg.locator(T % "btn-llavero").click()
     assert pg.evaluate("window.__chapita.viewer.llavero.animando")
     pg.wait_for_function("!window.__chapita.viewer.llavero.animando", timeout=30_000)
     L = pg.evaluate("window.__chapita.viewer.llavero")
     assert not L["puesto"] and not L["colgada"] and L["gap"] > 0.9
+    assert L["sombra"]["tira"] and L["sombra"]["contacto"] == 1 and L["sombra"]["fondo"] > 30
     assert "poner" in pg.locator(T % "btn-llavero").inner_text().lower()
     pg.locator(T % "btn-llavero").click()
     pg.wait_for_function("!window.__chapita.viewer.llavero.animando", timeout=30_000)

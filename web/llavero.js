@@ -55,7 +55,9 @@ export class Llavero {
 
   get estado() {
     return { puesto: this.puesto, animando: this.dir !== 0, tau: +this.tau.toFixed(3), piezas: this.grupo.children.length,
-      gap: this.gap ? +this.gap.toFixed(2) : 0, colgada: Math.abs(this.v.model.rotation.x) < 0.01 };
+      gap: this.gap ? +this.gap.toFixed(2) : 0, colgada: Math.abs(this.v.model.rotation.x) < 0.01,
+      sombra: { tira: this.tiraSombra !== false, contacto: +this.v.contact.material.opacity.toFixed(2),
+        fondo: +this.v.contact.scale.y.toFixed(1) } };
   }
 
   // caja de la chapita (sólo sus mallas) como si estuviera acostada en la mesa
@@ -113,6 +115,9 @@ export class Llavero {
     for (const p of piezas) { p.castShadow = true; p.receiveShadow = true; p.matrixAutoUpdate = false; this.grupo.add(p); }
     this.piezas = piezas;
     // colgada: el pivote en el aire, centrado en x y en el grosor
+    this.huella = box.getSize(new THREE.Vector3());     // la chapita acostada: x ancho, y largo, z grosor
+    const cen = box.getCenter(new THREE.Vector3());
+    this.sombraXZ = [cen.x, -cen.y, cen.x - O.x, 0];     // centro de la sombra: acostada → colgada
     const cy = this.pivote.y - box.min.y + ALTO;
     this.pivoteMundo = new THREE.Vector3(0, cy, 0);
     this.listo = true;
@@ -151,8 +156,28 @@ export class Llavero {
       p.matrixWorldNeedsUpdate = true;
     });
     // el ganchito se cierra al final (se abre al principio del camino de vuelta)
+    this.sombras(uTag);
     const gap = 1.0 - 0.94 * tramo(t, T_CIE);
     if (Math.abs(gap - this.gap) > 0.01) { this.gancho.geometry.dispose(); this.gancho.geometry = this.geoGancho(gap); }
+  }
+
+  // colgada en el aire, una sombra dura del sol sobre la mesa queda corrida y despegada
+  // (se veía en el render y en el PDF): ahí sólo va una sombra de contacto suave y finita
+  // justo debajo. Acostada, todo vuelve a tirar sombra normal.
+  sombras(u) {
+    const tira = u < 0.5;
+    if (this.tiraSombra !== tira) {
+      this.tiraSombra = tira;
+      for (const m of [...this.v.model.children, ...this.piezas]) if (m.isMesh) m.castShadow = tira;
+    }
+    const c = this.v.contact, H = this.huella;
+    if (!c || !H) return;
+    const k = THREE.MathUtils.smoothstep(u, 0, 1);
+    c.scale.set(H.x * THREE.MathUtils.lerp(1.45, 1.1, k), THREE.MathUtils.lerp(H.y * 1.45, H.z * 4 + 6, k), 1);
+    c.material.opacity = THREE.MathUtils.lerp(1, 0.55, k);
+    const [x0, z0, x1, z1] = this.sombraXZ;
+    c.position.x = THREE.MathUtils.lerp(x0, x1, k);
+    c.position.z = THREE.MathUtils.lerp(z0, z1, k);
   }
 
   poner(puesto, animar = true) {

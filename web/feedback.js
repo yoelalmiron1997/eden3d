@@ -24,6 +24,9 @@ function noActivado(error) {
 }
 function falla(error) {
   if (!error) return;
+  const m = error.message || "";
+  if (/limite_feedback: espera/.test(m)) throw new Error("Esperá unos segundos antes de publicar de nuevo.");
+  if (/limite_feedback: tope/.test(m)) throw new Error("Llegaste al máximo de publicaciones por hoy. ¡Gracias por tanto feedback! Probá mañana.");
   if (noActivado(error)) throw new Error("El feedback todavía no está activado: falta correr supabase/esquema.sql en Supabase (SQL Editor).");
   throw new Error(error.message || "No se pudo conectar con el feedback.");
 }

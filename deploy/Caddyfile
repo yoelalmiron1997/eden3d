@@ -1,0 +1,13 @@
+{$DOMINIO} {
+    encode zstd gzip
+    handle /api/* {
+        reverse_proxy api:8000 {
+            transport http {
+                read_timeout 180s
+            }
+        }
+    }
+    handle {
+        reverse_proxy web:80
+    }
+}
