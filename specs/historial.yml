@@ -1,0 +1,42 @@
+area: Historial de cambios
+prefijo: HIS
+specs:
+  - id: HIS-001
+    titulo: Deshacer y rehacer en los generadores
+    descripcion: >
+      Cada modelo que arma el motor es un paso. Arriba a la izquierda del visor hay
+      deshacer (↶) y rehacer (↷), y también Ctrl+Z, Ctrl+Shift+Z y Ctrl+Y (⌘ en Mac).
+      Vuelven los valores del modelo y el estado propio de cada página (la forma de la
+      chapita, la figura del trofeo, la semilla de la sopa, el relieve y la marca del mate)
+      y se vuelve a armar, sin crear un paso nuevo. Los colores, el escenario y las plantas
+      no son parte del historial. En un campo de texto, Ctrl+Z deshace lo escrito como
+      siempre. Un cambio nuevo después de deshacer descarta lo que se podía rehacer.
+    criterio: >
+      En los 7 generadores: dos cambios, deshacer dos veces vuelve exactamente a los
+      valores de cada paso, rehacer vuelve al siguiente, Ctrl+Z y Ctrl+Y hacen lo mismo
+      fuera de los campos de texto, y los botones se apagan cuando no hay nada para hacer.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: HIS-002
+    titulo: Empezar de cero
+    descripcion: >
+      El botón "De cero" vuelve a los datos con los que arrancó el generador (el primer
+      modelo armado) como un paso más del historial, así que se puede deshacer.
+    criterio: >
+      Después de cambios, "De cero" deja los mismos valores que al cargar la página y
+      Ctrl+Z vuelve a lo que había antes; con los datos de arranque el botón está apagado.
+    prioridad: alta
+    nivel: web
+    estado: activa
+  - id: HIS-003
+    titulo: Volver a la vista inicial
+    descripcion: >
+      La barra de vistas del visor suma "Inicio": la cámara vuelve, en un vuelo corto, al
+      encuadre automático del modelo y deja de girar si estaba en 360°.
+    criterio: >
+      Después de mover la cámara (otra vista, 360° o arrastrando), "Inicio" la deja en la
+      posición y el punto de mira del encuadre del modelo.
+    prioridad: media
+    nivel: web
+    estado: activa

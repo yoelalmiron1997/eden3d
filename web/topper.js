@@ -7,6 +7,7 @@ import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
 import { montarCotizador } from "./cotizador.js";
+import { montarHistorial } from "./historial.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -481,4 +482,18 @@ window.__cotizador = montarCotizador({
   pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
   version: () => state.builds,
   nombre: "el topper",
+});
+
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+window.__historial = montarHistorial({
+  controles: () => ["linea-1", "fuente-1", "escala-1", "linea-2", "fuente-2", "escala-2", "linea-3", "fuente-3", "escala-3",
+    "numero-on", "numero", "estilo-num", "fuente-num", "palitos-num", "alto-num", "estilo", "marco", "palitos", ...Object.keys(SL)],
+  refrescar: () => {
+    letrasUi();
+    $("o-alto-num").textContent = $("alto-num").value + " mm";
+  },
+  generar: () => build(),
+  version: () => state.builds,
+  ocupado: () => state.busy,
+  viewer,
 });

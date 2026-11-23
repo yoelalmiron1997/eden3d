@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
 import { montarCotizador } from "./cotizador.js";
+import { montarHistorial } from "./historial.js";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { Viewer, SCENES } from "./viewer.js";
@@ -368,4 +369,16 @@ window.__cotizador = montarCotizador({
   pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
   version: () => state.builds,
   nombre: "el trofeo",
+});
+
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+window.__historial = montarHistorial({
+  controles: () => ["caracter", "texto_figura", "fuente_figura", "linea1", "linea2", "fuente", "base", "texto", "colores",
+    ...Object.keys(SL)],
+  extra: { capturar: () => ({ figura: state.figura }), restaurar: (x) => { state.figura = x.figura; figuraButtons(); } },
+  refrescar: () => ui(),
+  generar: () => build(),
+  version: () => state.builds,
+  ocupado: () => state.busy,
+  viewer,
 });

@@ -4,6 +4,7 @@ import { botonesPremium } from "./premium.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
 import { montarCotizador } from "./cotizador.js";
+import { montarHistorial } from "./historial.js";
 import { renderCare, renderCompat } from "./care.js";
 import { exportar, guiaArchivo } from "./servidor.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
@@ -650,4 +651,22 @@ window.__cotizador = montarCotizador({
   pedir: () => call("cotizar", { opts: opts() }),
   version: () => state.builds,
   nombre: "la maceta",
+});
+
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+window.__historial = montarHistorial({
+  controles: () => ["design", "size", "mode", "drain", "patitas", "pies", "eslabones", "holgura-patas", "hq",
+    ...SLIDERS.map(([k]) => "s-" + k)],
+  extra: {
+    capturar: () => ({ brand: state.brand }),
+    restaurar: (x) => { state.brand = x.brand; if (x.brand !== null) $("brand").value = x.brand; },
+  },
+  refrescar: () => {
+    $("patitas-ui").hidden = !$("patitas").value;
+    $("mode").disabled = !!$("patitas").value || !state.ready;
+  },
+  generar: () => build(),
+  version: () => state.builds,
+  ocupado: () => state.busy,
+  viewer,
 });
