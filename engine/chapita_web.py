@@ -17,6 +17,7 @@ import zipfile
 
 import chapita_core as cc
 import topper_core as tc
+import cotizador
 
 VERSION = "1.0.0"
 LICENSE_NOTE = ("© TecnoBear — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
@@ -93,6 +94,15 @@ def export_stl(opts, pieza="CHAPITA"):
 
 def _xml(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def cotizar(opts):
+    """La chapita del 3MF medida para el cotizador (las letras de color, aparte)."""
+    o = _normal(opts)
+    o["calidad"] = o.get("cotizar_calidad", "preview")    # para gramos alcanza la vista previa
+    r = cc.construir(o)
+    return cotizador.resultado([cotizador.pieza(n, V, F, color=2 if n == "LETRAS" else 1, grupo="Chapita")
+                                for n, V, F in r["piezas"]], _sku(o))
 
 
 def export_3mf(opts):

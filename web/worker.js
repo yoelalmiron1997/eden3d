@@ -8,7 +8,7 @@ let py = null;
 let api = null;
 
 // sólo los módulos del generador de macetas (el manifest trae también los de las otras herramientas)
-const MOTOR = ["eden_core.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "eden_catalog.py",
+const MOTOR = ["eden_core.py", "cotizador.py", "eden_surface.py", "eden_floor.py", "eden_font.py", "eden_catalog.py",
   "eden_web.py", "eden_selftest.py", "eden_escena.py", "eden_plantas.py", "eden_patitas.py",
   "colecciones/catalogo_eden3d.json", "colecciones/plantas.json"];
 
@@ -123,6 +123,11 @@ self.onmessage = async (ev) => {
     } else if (type === "plants") {
       const r = plants(opts, ids || [], decor !== false, cobertura);
       self.postMessage({ id, ok: true, result: r }, r.parts.flatMap((p) => [p.positions, p.indices]));
+    } else if (type === "cotizar") {           // piezas para imprimir medidas (cotizador.js)
+      const r = api.cotizar(py.toPy(opts));
+      const out = r.toJs({ dict_converter: Object.fromEntries });
+      r.destroy();
+      self.postMessage({ id, ok: true, result: out });
     } else if (type === "3mf" || type === "stl") {
       const r = exportFile(type, opts, part);
       self.postMessage({ id, ok: true, result: r }, [r.data]);

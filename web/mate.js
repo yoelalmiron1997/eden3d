@@ -5,6 +5,7 @@ import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
+import { montarCotizador } from "./cotizador.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { Cebado, ESTILOS } from "./mate-cebado.js";
@@ -746,3 +747,11 @@ onAuth((a) => {
 });
 window.addEventListener("error", (e) => state.errors.push(String(e.message)));
 main();
+
+// cotizador: gramos de filamento y costo con el precio del kilo de cada uno
+window.__cotizador = montarCotizador({
+  dentro: document.getElementById("dl3mf").closest(".actions"),
+  pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
+  version: () => state.builds,
+  nombre: "el mate",
+});

@@ -19,6 +19,7 @@ import time
 import zipfile
 
 import sopa_core as sc
+import cotizador
 
 LICENSE_NOTE = ("© Eden3D — Yoel Almirón. Diseño protegido: uso personal y no comercial. "
                 "Prohibida la venta, redistribución o modificación para vender.")
@@ -140,6 +141,14 @@ def _resultado(opts):
     if not res["report"]["valid"]:
         raise ValueError("; ".join(res["report"]["errors"]) or "sopa inválida")
     return res
+
+
+def cotizar(opts):
+    """Las piezas de la sopa de letras (y los bloques de relleno) medidas para el cotizador."""
+    res = _resultado(opts)
+    rep = res["report"]
+    return cotizador.resultado([cotizador.pieza(n.split("_", 1)[-1] if "_" in n else n, V, F)
+                                for n, V, F in _layout(res)], rep["sku"])
 
 
 def export_3mf(opts):
