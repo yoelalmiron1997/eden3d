@@ -2,6 +2,7 @@
 # © 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.
 """Trofeos para eventos (TRO-001..004)."""
 import io
+import math
 import re
 import struct
 import zipfile
@@ -190,3 +191,52 @@ def test_descargas():
     assert "TecnoBear" in model and "LicenseTerms" in model
     with pytest.raises(ValueError):
         tw.export_stl({}, "DETALLE")                              # en un color no hay detalle aparte
+
+
+# ----------------------------------------------------------------- TRO-006
+@pytest.mark.spec("TRO-006")
+@pytest.mark.parametrize("figura", ["estrella", "rayo", "numero"])
+def test_redondeo_de_puntas_y_esquinas(figura):
+    filoso = trofeo(figura=figura, redondeo=0.0, caracter="7")
+    romo = trofeo(figura=figura, redondeo=3.0, caracter="7")
+    g = romo["figura"]["grilla"]
+    a0 = sum(sum(f) for f in filoso["figura"]["silueta"])
+    a1 = sum(sum(f) for f in romo["figura"]["silueta"])
+    assert 0.9 * a0 <= a1 < a0, "las puntas se redondean y no se pierde más que las puntas"
+    _, n, _ = tc.componentes(romo["figura"]["solido"], g.nx, g.ny)
+    assert n == 1
+    rep = romo["reporte"]
+    assert 0 < rep["redondeo_figura_mm"] <= 3.0 and rep["redondeo_base_mm"] == 3.0
+    for nombre, V, F in romo["piezas"]:
+        assert ew.mesh_check(F)["closed"], nombre
+        assert volumen(V, F) > 0, nombre
+    # la espiga y la ranura no cambian (el encastre sigue igual)
+    assert rep["espiga_mm"] == filoso["reporte"]["espiga_mm"]
+    assert rep["ranura_mm"] == filoso["reporte"]["ranura_mm"]
+    # la base: ningún vértice en las esquinas del rectángulo
+    Vb, _ = pieza(romo, "BASE")
+    (x0, x1), (y0, y1), _ = caja(Vb)
+    for cx, cy in ((x0, y0), (x0, y1), (x1, y0), (x1, y1)):
+        assert min(math.hypot(x - cx, y - cy) for x, y, _ in Vb) > 0.5
+    Vb0, _ = pieza(filoso, "BASE")
+    (a, b), (c, d), _ = caja(Vb0)
+    assert min(math.hypot(x - a, y - c) for x, y, _ in Vb0) < 1e-6         # sin redondeo, esquina viva
+
+
+@pytest.mark.spec("TRO-006")
+def test_redondeo_grande_se_limita_y_avisa():
+    r = trofeo(figura="hojas", redondeo=8.0)
+    rep = r["reporte"]
+    assert rep["redondeo_figura_mm"] < 8.0
+    assert any("redondearon" in a for a in rep["avisos"])
+
+
+@pytest.mark.spec("TRO-006")
+def test_redondeo_en_la_pagina():
+    import os
+    web = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "web")
+    html = open(os.path.join(web, "trofeo.html"), encoding="utf-8").read()
+    js = open(os.path.join(web, "trofeo.js"), encoding="utf-8").read()
+    assert 'id="redondeo"' in html and 'max="8"' in html.split('id="redondeo"')[1][:80]
+    assert "redondeo: [1" in js and "f-redondeo" in js
+    assert tr.DEFECTO["redondeo"] == 2.0

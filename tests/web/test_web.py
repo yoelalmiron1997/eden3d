@@ -868,15 +868,16 @@ def test_vista_desde_todos_los_angulos(browser, base_url):
         page.wait_for_function("window.%s && window.%s.builds >= 1 && !window.%s.busy" % (st, st, st), timeout=READY_MS)
         V = "window." + visor[path]
         assert page.evaluate("!!%s" % V), path
-        assert page.locator(T % "vistas" + " button").count() == 9, path        # Inicio + 7 vistas + 360°
-        assert page.locator(T % "vistas" + " button").first.get_attribute("data-testid") == "vista-inicio", path
+        # cubo de orientación (6 caras) + ⌂ (vista inicial) + 360°
+        assert page.locator(T % "vistas" + " button").count() == 8, path
+        assert page.locator(T % "cubo-vista" + " .cara").count() == 6, path
         assert page.evaluate("%s.controls.maxPolarAngle" % V) >= 3.14, path
-        page.locator(T % "vista-abajo").click()
+        page.locator(T % "vista-abajo").dispatch_event("click")         # (las caras de atrás no se tocan)
         page.wait_for_function("!%s.vuelo" % V, timeout=10_000)
         page.wait_for_timeout(200)
         assert page.evaluate("%s.camera.position.y < 0 && %s.stats.desdeAbajo" % (V, V)), path
         assert not page.evaluate("%s.ground.visible || (%s.sceneGroup && %s.sceneGroup.visible)" % (V, V, V)), path
-        page.locator(T % "vista-arriba").click()
+        page.locator(T % "vista-arriba").dispatch_event("click")
         page.wait_for_function("!%s.vuelo" % V, timeout=10_000)
         page.wait_for_timeout(200)
         assert page.evaluate("!%s.stats.desdeAbajo && %s.camera.position.y > %s.controls.target.y" % (V, V, V)), path

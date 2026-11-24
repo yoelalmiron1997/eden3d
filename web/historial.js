@@ -1,12 +1,12 @@
 // © 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados.
 // Historial de cada generador: deshacer / rehacer (Ctrl+Z, Ctrl+Shift+Z o Ctrl+Y), volver
-// a la vista inicial de la cámara y empezar de cero con los datos de arranque.
+// a la vista inicial de la cámara y volver a los valores por defecto ("Default").
 //
 // Cada vez que el motor termina de armar un modelo se guarda un paso: el valor de los
 // controles del modelo (no los de la vista: colores, escenario, plantas) y el estado propio
 // de la página (la forma de la chapita, la figura del trofeo, la decoración del mate…).
 // Deshacer vuelve a poner esos valores, refresca la página y vuelve a armar el modelo; ese
-// armado no crea un paso nuevo. El primer modelo es el "origen": "De cero" vuelve a él como
+// armado no crea un paso nuevo. El primer modelo es el "origen": "Default" vuelve a él como
 // un paso más, así que también se puede deshacer.
 //
 //   window.__historial = montarHistorial({
@@ -123,7 +123,7 @@ export function montarHistorial({ controles, extra = null, refrescar = () => {},
   bar.innerHTML = `
     <button type="button" data-h="deshacer" data-testid="btn-deshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer">↶</button>
     <button type="button" data-h="rehacer" data-testid="btn-rehacer" title="Rehacer (Ctrl+Shift+Z o Ctrl+Y)" aria-label="Rehacer">↷</button>
-    <button type="button" data-h="cero" data-testid="btn-de-cero" title="Volver a los datos de arranque (se puede deshacer)">De cero</button>`;
+    <button type="button" data-h="cero" data-testid="btn-default" title="Volver a los valores por defecto del generador (se puede deshacer)">Default</button>`;
   bar.addEventListener("click", (ev) => {
     const b = ev.target.closest("button[data-h]");
     if (!b || b.disabled) return;

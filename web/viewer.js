@@ -132,6 +132,7 @@ export class Viewer {
       const dt = Math.min(this.clock.getDelta(), this.lowPower ? 0.6 : 0.1);
       this.tickVuelo(dt);
       this.tickInicio(dt);
+      this.tickCubo();
       this.controls.update();
       this.tickAbajo();
       this.tickWater(dt);
@@ -262,16 +263,22 @@ export class Viewer {
   }
 
   // ------------------------------------------------------------ vistas (todos los ángulos)
+  // Cubo de orientación (arriba a la derecha): gira con la cámara y muestra desde dónde se
+  // mira la pieza; tocando una cara la cámara va a esa vista. Debajo, ⌂ vuelve al encuadre
+  // del modelo y 360° la hace girar.
   mountVistas(host) {
     const bar = document.createElement("div");
     bar.className = "vistas";
     bar.setAttribute("role", "toolbar");
     bar.setAttribute("aria-label", "Vistas de la cámara");
     bar.dataset.testid = "vistas";
-    bar.innerHTML = `<button type="button" data-vista="inicio" data-testid="vista-inicio" title="Volver a la vista inicial" aria-label="Volver a la vista inicial">Inicio</button>`
-      + Object.entries(VISTAS).map(([k, V]) =>
-      `<button type="button" data-vista="${k}" data-testid="vista-${k}" title="${V.titulo}" aria-label="${V.titulo}">${V.label}</button>`).join("")
-      + `<button type="button" data-vista="girar" data-testid="vista-girar" title="Girar 360°" aria-label="Girar 360°" aria-pressed="false">360°</button>`;
+    const caras = ["frente", "atras", "izquierda", "derecha", "arriba", "abajo"].map((k) =>
+      `<button type="button" class="cara cara-${k}" data-vista="${k}" data-testid="vista-${k}" title="${VISTAS[k].titulo}" aria-label="${VISTAS[k].titulo}">${VISTAS[k].label}</button>`).join("");
+    bar.innerHTML = `<div class="cubo-vista" data-testid="cubo-vista"><div class="cubo">${caras}</div></div>
+      <div class="vistas-botones">
+        <button type="button" data-vista="inicio" data-testid="vista-inicio" title="Volver a la vista inicial" aria-label="Volver a la vista inicial">⌂</button>
+        <button type="button" data-vista="girar" data-testid="vista-girar" title="Girar 360°" aria-label="Girar 360°" aria-pressed="false">360°</button>
+      </div>`;
     bar.addEventListener("click", (ev) => {
       const b = ev.target.closest("button[data-vista]");
       if (!b) return;
@@ -284,6 +291,21 @@ export class Viewer {
     });
     host.appendChild(bar);
     this.vistasBar = bar;
+    this.cuboEl = bar.querySelector(".cubo");
+    this.cuboQ = new THREE.Quaternion(NaN, 0, 0, 0);
+  }
+
+  // el cubo muestra el mundo como lo ve la cámara: su rotación es la inversa de la de la
+  // cámara (en CSS el eje y va para abajo, de ahí los signos)
+  tickCubo() {
+    if (!this.cuboEl) return;
+    const q = this.camera.quaternion;
+    if (q.equals(this.cuboQ)) return;
+    this.cuboQ.copy(q);
+    const m = new THREE.Matrix4().makeRotationFromQuaternion(q.clone().invert()).elements;
+    const r = (v) => (Math.abs(v) < 1e-6 ? 0 : +v.toFixed(6));
+    this.cuboEl.style.transform = `matrix3d(${[
+      r(m[0]), r(-m[1]), r(m[2]), 0, r(-m[4]), r(m[5]), r(-m[6]), 0, r(m[8]), r(-m[9]), r(m[10]), 0, 0, 0, 0, 1].join(",")})`;
   }
 
   // lleva la cámara (sin cambiar la distancia) a la vista pedida, en un vuelo corto

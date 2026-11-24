@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # © 2026 TecnoBear — Yoel Almirón. Todos los derechos reservados. Ver LICENSE.
-"""Deshacer / rehacer (HIS-001), De cero (HIS-002) y vista inicial (HIS-003)."""
+"""Deshacer / rehacer (HIS-001), Default (HIS-002) y cubo de orientación (HIS-003)."""
 import pytest
 
 from web_helpers import READY_MS
@@ -47,7 +47,7 @@ def test_historial_chapita(browser, base_url):
     clave = lambda: pg.evaluate("window.__historial.capturar().clave")
     activo = lambda t: pg.evaluate(f"!document.querySelector('[data-testid={t}]').disabled")
     c0 = clave()
-    assert not activo("btn-deshacer") and not activo("btn-rehacer") and not activo("btn-de-cero")
+    assert not activo("btn-deshacer") and not activo("btn-rehacer") and not activo("btn-default")
     _slider(pg, "__chapita", "ancho", "60")
     c1 = clave()
     otra = pg.evaluate("[...document.querySelectorAll('#formas button[data-forma]')].map(b => b.dataset.forma)"
@@ -69,10 +69,10 @@ def test_historial_chapita(browser, base_url):
     # un cambio nuevo descarta lo que se podía rehacer
     _slider(pg, "__chapita", "ancho", "50")
     assert not activo("btn-rehacer") and pg.evaluate("window.__historial.pasos") == 3
-    # De cero: los datos de arranque, como un paso que se puede deshacer
+    # Default: los datos de arranque, como un paso que se puede deshacer
     c3 = clave()
-    _clic(pg, "__chapita", "[data-testid=btn-de-cero]")
-    assert clave() == c0 and not activo("btn-de-cero")
+    _clic(pg, "__chapita", "[data-testid=btn-default]")
+    assert clave() == c0 and not activo("btn-default")
     _tecla(pg, "__chapita", "Control+z")
     assert clave() == c3
     # en un campo de texto Ctrl+Z deshace lo escrito, no el modelo
@@ -84,8 +84,21 @@ def test_historial_chapita(browser, base_url):
     pg.keyboard.press("Control+z")
     pg.wait_for_timeout(300)
     assert pg.input_value("#nombre") == nombre and pg.evaluate("window.__historial.posicion") == pos
-    # vista inicial: después de mover la cámara, "Inicio" vuelve al encuadre del modelo
-    pg.click("[data-testid=vista-arriba]")
+    # cubo de orientación: sigue a la cámara; desde arriba se ve la cara "Arriba" de frente
+    pg.locator("[data-testid=vista-arriba]").dispatch_event("click")
+    pg.wait_for_timeout(1200)
+    cara = pg.evaluate("""(() => { const r = document.querySelector('[data-testid=cubo-vista]').getBoundingClientRect();
+        const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return el && el.dataset.vista; })()""")
+    assert cara == "arriba"
+    pg.locator("[data-testid=vista-frente]").dispatch_event("click")
+    pg.wait_for_timeout(1200)
+    cara = pg.evaluate("""(() => { const r = document.querySelector('[data-testid=cubo-vista]').getBoundingClientRect();
+        const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return el && el.dataset.vista; })()""")
+    assert cara == "frente"
+    # tocar la cara visible lleva a esa vista; ⌂ vuelve al encuadre del modelo
+    pg.locator("[data-testid=vista-arriba]").dispatch_event("click")
     pg.click("[data-testid=vista-girar]")
     pg.wait_for_timeout(1200)
     V = "window.__chapitaViewer"

@@ -410,7 +410,7 @@ window.__cotizador = montarCotizador({
   nombre: "la banda",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["texto", "separador", "fuente", "relleno", "caras", ...Object.keys(SL)],
   refrescar: () => contarLetras(),
