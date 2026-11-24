@@ -757,7 +757,7 @@ window.__cotizador = montarCotizador({
   nombre: "el mate",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["tipo", "inserto", "auto", "hq", "cuna", "cuna-ang", ...Object.keys(SL)],
   extra: {

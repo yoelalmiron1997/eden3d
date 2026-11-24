@@ -19,24 +19,27 @@ specs:
     nivel: web
     estado: activa
   - id: HIS-002
-    titulo: Empezar de cero
+    titulo: Volver a los valores por defecto
     descripcion: >
-      El botón "De cero" vuelve a los datos con los que arrancó el generador (el primer
+      El botón "Default" vuelve a los datos con los que arrancó el generador (el primer
       modelo armado) como un paso más del historial, así que se puede deshacer.
     criterio: >
-      Después de cambios, "De cero" deja los mismos valores que al cargar la página y
+      Después de cambios, "Default" deja los mismos valores que al cargar la página y
       Ctrl+Z vuelve a lo que había antes; con los datos de arranque el botón está apagado.
     prioridad: alta
     nivel: web
     estado: activa
   - id: HIS-003
-    titulo: Volver a la vista inicial
+    titulo: Cubo de orientación y vista inicial
     descripcion: >
-      La barra de vistas del visor suma "Inicio": la cámara vuelve, en un vuelo corto, al
-      encuadre automático del modelo y deja de girar si estaba en 360°.
+      Arriba a la derecha del visor, un cubo que gira con la cámara muestra desde dónde se
+      mira la pieza (frente, atrás, izquierda, derecha, arriba, abajo); tocando una cara la
+      cámara va a esa vista. Debajo, ⌂ vuelve en un vuelo corto al encuadre automático del
+      modelo (y corta el 360°) y 360° hace girar la cámara.
     criterio: >
-      Después de mover la cámara (otra vista, 360° o arrastrando), "Inicio" la deja en la
-      posición y el punto de mira del encuadre del modelo.
+      El cubo sigue a la cámara (desde arriba se ve la cara "Arriba" de frente); cada cara
+      lleva a su vista; después de mover la cámara, ⌂ la deja en la posición y el punto de
+      mira del encuadre del modelo.
     prioridad: media
     nivel: web
     estado: activa

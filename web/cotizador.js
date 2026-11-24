@@ -40,17 +40,22 @@ const FILAMENTO_CM3_POR_M = Math.PI * 0.0875 * 0.0875 * 100;   // 1,75 mm: 2,405
 
 // Gramos de UNA pieza, como un laminador: las paredes llevan "perimetros" líneas de
 // 0,42 mm, los techos 5 capas macizas y los pisos 3 (de 0,2 mm), y el resto del interior
-// el relleno elegido. Los factores salen de calibrar contra PrusaSlicer (grilla, capa
-// 0,2 mm) con las piezas de todos los generadores: error medio 5 % por pieza y menos de
-// 12 % en el total de cada producto; al 100 % coincide con volumen × densidad.
-export const K_PARED = 1.4;     // las paredes ocupan algo más que n × ancho de línea (solapes, anclajes)
-export const K_TAPAS = 0.85;
-export const K_RELLENO = 0.95;
+// el relleno elegido. En piezas finas (una chapita) las cáscaras casi la llenan, pero no
+// del todo: se combinan con un mínimo suave, así el relleno siempre cuenta algo, como en
+// el laminador. Factores calibrados contra PrusaSlicer (grilla, capa 0,2 mm) con piezas
+// de todos los generadores: error medio 4,7 % por pieza y menos de 11 % en el total de
+// cada producto; al 100 % coincide con volumen × densidad.
+export const K_PARED = 1.55;    // las paredes ocupan algo más que n × ancho de línea (solapes, anclajes)
+export const K_TAPAS = 0.8;
+export const K_RELLENO = 0.9;
+const SUAVE = 4;
 export function gramosPieza(p, { relleno = 15, perimetros = 2, densidad = 1.24 } = {}) {
   const vol = p.volumen_mm3;
+  if (!(vol > 0)) return 0;
   const arriba = p.arriba_mm2 || 0, abajo = p.abajo_mm2 || 0;
   const lados = Math.max(0, p.area_mm2 - arriba - abajo);
-  const macizo = Math.min(vol, lados * perimetros * ANCHO_LINEA * K_PARED + (arriba * 5 + abajo * 3) * 0.2 * K_TAPAS);
+  const cascaras = lados * perimetros * ANCHO_LINEA * K_PARED + (arriba * 5 + abajo * 3) * 0.2 * K_TAPAS;
+  const macizo = cascaras > 0 ? (cascaras ** -SUAVE + vol ** -SUAVE) ** (-1 / SUAVE) : 0;
   const fraccion = relleno >= 100 ? 1 : Math.max(0, relleno) / 100 * K_RELLENO;
   return ((macizo + (vol - macizo) * fraccion) / 1000) * densidad;
 }

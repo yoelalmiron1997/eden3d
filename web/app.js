@@ -653,7 +653,7 @@ window.__cotizador = montarCotizador({
   nombre: "la maceta",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["design", "size", "mode", "drain", "patitas", "pies", "eslabones", "holgura-patas", "hq",
     ...SLIDERS.map(([k]) => "s-" + k)],

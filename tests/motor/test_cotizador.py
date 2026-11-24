@@ -94,3 +94,14 @@ def test_gramos_cerca_del_laminador():
     for e, c in zip(est, casos):
         if c["relleno"] == 100:
             assert abs(e / (c["volumen_mm3"] / 1000 * 1.24) - 1) < 0.03
+
+
+@pytest.mark.spec("COT-002")
+@pytest.mark.skipif(not shutil.which("node"), reason="hace falta Node para correr la fórmula de la web")
+def test_el_relleno_cuenta_en_piezas_finas():
+    """La chapita (3 mm) casi se llena de cáscaras, pero el relleno igual cambia los gramos
+    (PrusaSlicer: 2,28 g al 15 % y 2,52 g al 100 %)."""
+    ch = [c for c in REF["casos"] if c["producto"] == "chapita" and c["relleno"] == 15][0]
+    g15, g50, g100 = _gramos_js([dict(ch, relleno=r, perimetros=2) for r in (15, 50, 100)])
+    assert g15 < g50 < g100
+    assert abs(g15 / 2.28 - 1) < 0.06 and abs(g100 / 2.52 - 1) < 0.03

@@ -25,7 +25,8 @@ specs:
     criterio: >
       Contra los gramos de PrusaSlicer guardados (15 % y 2 perímetros, 40 % y 3, 100 %), el
       error medio por pieza es menor a 8 % y el total de cada producto queda dentro de ±15 %;
-      al 100 % coincide con volumen × densidad (±3 %).
+      al 100 % coincide con volumen × densidad (±3 %); en una pieza fina (la chapita) el
+      relleno igual cambia los gramos, como en el laminador.
     prioridad: alta
     nivel: motor
     estado: activa

@@ -484,7 +484,7 @@ window.__cotizador = montarCotizador({
   nombre: "el topper",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["linea-1", "fuente-1", "escala-1", "linea-2", "fuente-2", "escala-2", "linea-3", "fuente-3", "escala-3",
     "numero-on", "numero", "estilo-num", "fuente-num", "palitos-num", "alto-num", "estilo", "marco", "palitos", ...Object.keys(SL)],

@@ -34,10 +34,10 @@ DEFECTO = {"figura": "estrella", "caracter": "1", "texto_figura": "", "fuente_fi
            "alto": 160.0, "grosor": 8.0, "tallo": 14.0, "borde": 1.6, "relieve": 1.2,
            "base": "escalonada", "base_ancho": 70.0, "base_alto": 32.0, "base_fondo": 40.0,
            "linea1": "CAMPEÓN", "linea2": "Torneo 2026", "fuente": "archivo_black",
-           "texto": "relieve", "colores": "uno", "holgura": 0.25, "calidad": "preview"}
+           "texto": "relieve", "colores": "uno", "holgura": 0.25, "redondeo": 2.0, "calidad": "preview"}
 LIMITES = {"alto": (90.0, 260.0), "grosor": (5.0, 14.0), "tallo": (0.0, 50.0), "borde": (0.0, 3.0),
            "relieve": (0.6, 2.0), "base_ancho": (40.0, 140.0), "base_alto": (20.0, 60.0),
-           "base_fondo": (25.0, 80.0), "holgura": (0.1, 0.5),
+           "base_fondo": (25.0, 80.0), "holgura": (0.1, 0.5), "redondeo": (0.0, 8.0),
            "caracteres1": 22, "caracteres2": 28, "caracteres_figura": 4, "caracteres_numero": 3}
 FIGURA_MIN = 40.0       # mm de alto mínimo de la figura (sin tallo)
 CAMA = 220.0            # mm: lo que entra en una cama común
@@ -85,7 +85,8 @@ def opciones(o):
             raise ValueError("La figura puede tener hasta %d números o letras" % LIMITES["caracteres_numero"])
     if o["figura"] in ("numero", "pelota"):
         o["texto_figura"] = ""                       # la figura ya es el texto / lleva su dibujo
-    for k in ("alto", "grosor", "tallo", "borde", "relieve", "base_ancho", "base_alto", "base_fondo", "holgura"):
+    for k in ("alto", "grosor", "tallo", "borde", "relieve", "base_ancho", "base_alto", "base_fondo", "holgura",
+              "redondeo"):
         o[k] = _f(o.get(k), DEFECTO[k], *LIMITES[k])
     o["calidad"] = o.get("calidad") if o.get("calidad") in ("preview", "normal") else "preview"
     if o["alto"] - o["base_alto"] - o["tallo"] < FIGURA_MIN:
@@ -288,12 +289,51 @@ def _juntar(*mallas):
     return V, F
 
 
-def _caja(x0, y0, z0, x1, y1, z1, hueco=None):
-    """Prisma de planta rectangular (con un hueco rectangular pasante opcional)."""
-    L = [_rect(x0, y0, x1, y1)]
+def _rect_redondo(x0, y0, x1, y1, r, n=10):
+    """Rectángulo antihorario con las esquinas redondeadas (radio r)."""
+    r = max(0.0, min(r, (x1 - x0) / 2.0 - 0.01, (y1 - y0) / 2.0 - 0.01))
+    if r <= 0.05:
+        return _rect(x0, y0, x1, y1)
+    P = []
+    for cx, cy, a0 in ((x1 - r, y0 + r, -90.0), (x1 - r, y1 - r, 0.0), (x0 + r, y1 - r, 90.0), (x0 + r, y0 + r, 180.0)):
+        for k in range(n + 1):
+            a = math.radians(a0 + 90.0 * k / n)
+            P.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return P
+
+
+def _caja(x0, y0, z0, x1, y1, z1, hueco=None, r=0.0):
+    """Prisma de planta rectangular, con las esquinas verticales redondeadas (radio r) y
+    un hueco rectangular pasante opcional."""
+    L = [_rect_redondo(x0, y0, x1, y1, r)]
     if hueco:
         L.append(_rect(*hueco)[::-1])
     return tc.extruir(L, z0, z1)
+
+
+def _redondear(M, g, radio):
+    """Apertura de la máscara M (en el lugar) con el radio pedido en mm; devuelve el radio
+    usado. Las puntas quedan redondeadas; lo de más de 2·radio de ancho no cambia."""
+    if radio <= 0:
+        return 0.0
+    area0 = sum(sum(f) for f in M)
+    _, comp0, _ = tc.componentes(M, g.nx, g.ny)
+    r = radio
+    while r >= 0.4:
+        R2 = (r / g.res) ** 2
+        Din = tc.edt(M, g.nx, g.ny, 0)                 # distancia (al cuadrado) a lo vacío
+        E = [bytearray(1 if d > R2 else 0 for d in fila) for fila in Din]
+        if any(any(f) for f in E):
+            Dd = tc.edt(E, g.nx, g.ny, 1)
+            O = [bytearray(1 if (m and d <= R2) else 0 for m, d in zip(fm, fd)) for fm, fd in zip(M, Dd)]
+            area = sum(sum(f) for f in O)
+            _, comp, _ = tc.componentes(O, g.nx, g.ny)
+            if comp == comp0 and area >= 0.9 * area0:
+                for j in range(g.ny):
+                    M[j][:] = O[j]
+                return round(r, 2)
+        r /= 2.0
+    return 0.0
 
 
 # ===========================================================================
@@ -316,6 +356,10 @@ def _figura(o, Ds, wt):
     if ncomp > 1:
         zocalo = _rect(fx0, y_pie, fx1, y_pie + max(3.0, 0.07 * H))
         g.llenar([zocalo], Fm)
+    # redondeo de las puntas (una apertura: erosión + dilatación del mismo radio), para que
+    # la figura no tenga puntas filosas. Si con ese radio se borraría una parte fina o se
+    # separaría un pedazo, se achica el radio hasta que no pase.
+    r_fig = _redondear(Fm, g, o["redondeo"])
     # la espiga: de la punta de abajo (en la ranura) hasta adentro de la figura
     alto_cuello = y_pie + CUELLO.get(o["figura"], 0.32) * H
     # (lo que entra en la ranura es un prisma exacto, sin el redondeo de la grilla)
@@ -388,7 +432,7 @@ def _figura(o, Ds, wt):
     Vf, Ff = _juntar(tc.extruir(lB, 0.0, t), tc.extruir([_rect(-wt / 2, 0.0, wt / 2, Ds + 0.8)], 0.0, t))
     Vd, Fd = tc.extruir(lT, t - 0.01, t + r) if lT else ([], [])
     info = {"ancho": fx1 - fx0, "alto": H, "y_pie": y_pie, "letra": letra,
-            "zocalo": zocalo is not None, "res": res}
+            "zocalo": zocalo is not None, "res": res, "redondeo": r_fig}
     return (Vf, Ff), (Vd, Fd), info, (g, B, Fm, T_)
 
 
@@ -414,16 +458,18 @@ def _malla_base(o, b, wt, t):
     rf = r if grab else 0.0                          # en el grabado el frente es otra pieza
     yf = -D / 2.0
     ranura = (-wt / 2 - c, -t / 2 - c, wt / 2 + c, t / 2 + c)
+    # esquinas verticales redondeadas (el escalón, con el mismo centro: radio + saliente)
+    rb = max(0.0, min(o["redondeo"], BW / 2.0 - 2.0, (D - rf) / 2.0 - 2.0))
     partes = []
     if hz > 0:
-        partes.append(_caja(-BW / 2 - ext, yf - ext, 0.0, BW / 2 + ext, D / 2 + ext, hz))
+        partes.append(_caja(-BW / 2 - ext, yf - ext, 0.0, BW / 2 + ext, D / 2 + ext, hz, r=rb + ext if rb else 0.0))
     z0 = hz - 0.01 if hz > 0 else 0.0
-    partes.append(_caja(-BW / 2, yf + rf, z0, BW / 2, D / 2, BH - Ds))
-    partes.append(_caja(-BW / 2, yf + rf, BH - Ds - 0.01, BW / 2, D / 2, BH, hueco=ranura))
-    # el texto del frente, dibujado en el plano (u = x, v = z)
+    partes.append(_caja(-BW / 2, yf + rf, z0, BW / 2, D / 2, BH - Ds, r=rb))
+    partes.append(_caja(-BW / 2, yf + rf, BH - Ds - 0.01, BW / 2, D / 2, BH, hueco=ranura, r=rb))
+    # el texto del frente, dibujado en el plano (u = x, v = z); lejos de las esquinas redondeadas
     P1 = _texto(o["linea1"], o["fuente"]) if o["linea1"] else None
     P2 = _texto(o["linea2"], o["fuente"]) if o["linea2"] else None
-    mx, my = 3.5, 2.6
+    mx, my = max(3.5, rb + 1.0), 2.6
     u0, u1, v0, v1 = -BW / 2 + mx, BW / 2 - mx, hz + my, BH - my
     k2, sep = 0.62, 0.22
     lineas = [x for x in (P1, P2) if x]
@@ -452,7 +498,7 @@ def _malla_base(o, b, wt, t):
         Vm, Fm = tc.extruir(malla, w0, w1)
         return [(u, yf - w, vv) for u, vv, w in Vm], Fm
     if grab:
-        cara = _rect(-BW / 2, hz - 0.005 if hz else 0.0, BW / 2, BH)
+        cara = _rect(-BW / 2 + rb, hz - 0.005 if hz else 0.0, BW / 2 - rb, BH)   # la parte plana del frente
         fC = [[min(a, -b) for a, b in zip(fa, fb)] for fa, fb in zip(_campo_rect(g, cara), fT)]
         lC = _lazos(fC, g, eps, 0.03)
         partes.append(frente(lC, -r - 0.01, 0.0))           # el frente con las letras hundidas
@@ -460,7 +506,7 @@ def _malla_base(o, b, wt, t):
     else:
         letras = frente(lT, -0.01, r)                        # en relieve, para adelante
     base = _juntar(*partes)
-    return base, letras, {"letra": alto, "rf": rf, "grilla": g, "texto": M, "ranura": ranura}
+    return base, letras, {"letra": alto, "rf": rf, "grilla": g, "texto": M, "ranura": ranura, "redondeo": rb}
 
 
 def _campo_rect(g, R):
@@ -529,6 +575,9 @@ def construir(opts):
         avisos.append("El texto de la base queda de %.1f mm: con menos letras o una base más ancha se lee mejor." % bi["letra"])
     if o["texto_figura"] and fi["letra"] < LETRA_MIN:
         avisos.append("El texto de la figura queda de %.1f mm: probá con menos letras." % fi["letra"])
+    if o["redondeo"] > 0 and fi["redondeo"] < o["redondeo"]:
+        avisos.append("Las puntas de la figura se redondearon %s mm (con %s mm se perdía una parte fina)."
+                      % (("%.1f" % fi["redondeo"]).replace(".", ","), ("%.1f" % o["redondeo"]).replace(".", ",")))
     if fi["zocalo"]:
         avisos.append("Las cifras van unidas por un zócalo abajo, para que la figura sea una sola pieza.")
     ranura = bi["ranura"]
@@ -543,6 +592,7 @@ def construir(opts):
            "espiga_mm": [round(wt, 1), round(t, 1), round(b["Ds"], 1)],
            "ranura_mm": [round(ranura[2] - ranura[0], 2), round(ranura[3] - ranura[1], 2), round(b["Ds"], 1)],
            "holgura_mm": o["holgura"], "tallo_mm": o["tallo"], "relieve_mm": r, "borde_mm": o["borde"],
+           "redondeo_mm": o["redondeo"], "redondeo_figura_mm": fi["redondeo"], "redondeo_base_mm": round(bi["redondeo"], 2),
            "letra_base_mm": round(bi["letra"], 1), "letra_figura_mm": round(fi["letra"], 1),
            "cambio_mm": round(t, 2) if dos and Vd else None,
            "piezas": [p[0] for p in piezas],

@@ -101,7 +101,7 @@ Object.defineProperty(state, "viewer", { get: () => ({
 
 // ------------------------------------------------------------------ opciones
 const SL = { alto: [0, " mm"], tallo: [0, " mm"], grosor: [1, " mm"], base_ancho: [0, " mm"], base_alto: [0, " mm"],
-  base_fondo: [0, " mm"], borde: [1, " mm"], relieve: [1, " mm"], holgura: [2, " mm"] };
+  base_fondo: [0, " mm"], redondeo: [1, " mm"], borde: [1, " mm"], relieve: [1, " mm"], holgura: [2, " mm"] };
 
 function opts() {
   const o = { figura: state.figura, caracter: $("caracter").value.trim(), texto_figura: $("texto_figura").value.trim(),
@@ -136,6 +136,7 @@ function showReport(s) {
     ["Figura", `${Math.round(s.figura_mm[0])} × ${Math.round(s.figura_mm[1])} mm · ${num(s.figura_mm[2])} mm de grosor`, "f-figura"],
     ["Base", mm3(s.base_mm), "f-base"],
     ["Encastre", `espiga ${Math.round(s.espiga_mm[0])} × ${num(s.espiga_mm[1])} mm · ${num(s.holgura_mm, 2)} mm de juego`, "f-encastre"],
+    ...(s.redondeo_mm > 0 ? [["Redondeo", `puntas ${num(s.redondeo_figura_mm)} mm · esquinas ${num(s.redondeo_base_mm)} mm`, "f-redondeo"]] : []),
     ["Texto", `${num(s.letra_base_mm)} mm de alto · ${s.texto === "grabado" ? "grabado" : "en relieve"} ${num(s.relieve_mm)} mm`, "f-texto"],
     ...(s.texto_figura ? [["En la figura", `«${esc(s.texto_figura)}» de ${num(s.letra_figura_mm)} mm`, "f-texto-figura"]] : []),
     ...(s.colores === "dos" ? [["Dos colores", (s.cambio_mm ? `figura: cambiá el filamento a los ${num(s.cambio_mm)} mm · ` : "")
@@ -371,7 +372,7 @@ window.__cotizador = montarCotizador({
   nombre: "el trofeo",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["caracter", "texto_figura", "fuente_figura", "linea1", "linea2", "fuente", "base", "texto", "colores",
     ...Object.keys(SL)],

@@ -409,7 +409,7 @@ window.__cotizador = montarCotizador({
   nombre: "la sopa de letras",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["palabras", "dificultad", "grilla", "cama", "piezas", "lista", "bloques", ...Object.keys(SL)],
   extra: { capturar: () => ({ semilla: state.semilla }), restaurar: (x) => { state.semilla = x.semilla; } },

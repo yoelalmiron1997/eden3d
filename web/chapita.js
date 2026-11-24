@@ -364,7 +364,7 @@ window.__cotizador = montarCotizador({
   nombre: "la chapita",
 });
 
-// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "Default"
 window.__historial = montarHistorial({
   controles: () => ["ancho", "nombre", "linea2", "fuente", "impresora", "texto", "colores", "patitas", ...Object.keys(SL)],
   extra: { capturar: () => ({ forma: state.forma }), restaurar: (x) => { state.forma = x.forma; formaButtons(); } },

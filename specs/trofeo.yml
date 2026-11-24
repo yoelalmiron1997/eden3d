@@ -68,3 +68,21 @@ specs:
     prioridad: alta
     nivel: web
     estado: activa
+  - id: TRO-006
+    titulo: Puntas y esquinas redondeadas
+    descripcion: >
+      Para que el trofeo no quede peligroso, "Redondeo" (0 a 8 mm, 2 mm por defecto)
+      redondea las puntas de la figura (estrella, rayo, cifras…) y las esquinas verticales
+      de la base (el escalón con el mismo centro). La espiga que entra en la ranura queda
+      exacta. Si con el radio pedido se borraría una parte fina de la figura o se separaría
+      un pedazo, se usa el radio más grande que no lo hace y se avisa. El texto del frente
+      se aleja de las esquinas redondeadas.
+    criterio: >
+      Con redondeo, las puntas de la figura se achican (la figura pierde área sólo en las
+      puntas, menos de 10 %) y sigue siendo una sola pieza cerrada; la planta de la base no
+      tiene vértices en las esquinas del rectángulo; la espiga y la ranura miden lo mismo
+      que sin redondeo; con 0 mm sale igual que antes; la página tiene el control y el
+      reporte muestra el radio usado.
+    prioridad: alta
+    nivel: motor
+    estado: activa
