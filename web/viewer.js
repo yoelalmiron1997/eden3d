@@ -40,7 +40,7 @@ export class Viewer {
     this.controls = new OrbitControls(this.camera, r.domElement);
     this.controls.enableDamping = true;
     this.controls.maxPolarAngle = Math.PI;              // todos los ángulos, también desde abajo
-    this.controls.addEventListener("start", () => { this.vuelo = null; });
+    this.controls.addEventListener("start", () => { this.vuelo = null; this.vueloInicio = null; });
     this.ocultarAbajo = [];                              // lo que cada página esconde al mirar desde abajo
 
     this.hemi = new THREE.HemisphereLight(0xfff6e8, 0x8a7a66, 0.6);
@@ -131,6 +131,7 @@ export class Viewer {
       const t0 = performance.now();
       const dt = Math.min(this.clock.getDelta(), this.lowPower ? 0.6 : 0.1);
       this.tickVuelo(dt);
+      this.tickInicio(dt);
       this.controls.update();
       this.tickAbajo();
       this.tickWater(dt);
@@ -267,7 +268,8 @@ export class Viewer {
     bar.setAttribute("role", "toolbar");
     bar.setAttribute("aria-label", "Vistas de la cámara");
     bar.dataset.testid = "vistas";
-    bar.innerHTML = Object.entries(VISTAS).map(([k, V]) =>
+    bar.innerHTML = `<button type="button" data-vista="inicio" data-testid="vista-inicio" title="Volver a la vista inicial" aria-label="Volver a la vista inicial">Inicio</button>`
+      + Object.entries(VISTAS).map(([k, V]) =>
       `<button type="button" data-vista="${k}" data-testid="vista-${k}" title="${V.titulo}" aria-label="${V.titulo}">${V.label}</button>`).join("")
       + `<button type="button" data-vista="girar" data-testid="vista-girar" title="Girar 360°" aria-label="Girar 360°" aria-pressed="false">360°</button>`;
     bar.addEventListener("click", (ev) => {
@@ -277,7 +279,8 @@ export class Viewer {
         this.controls.autoRotate = !this.controls.autoRotate;
         this.controls.autoRotateSpeed = 2.2;
         b.setAttribute("aria-pressed", String(this.controls.autoRotate));
-      } else this.vista(b.dataset.vista);
+      } else if (b.dataset.vista === "inicio") this.volverAlInicio();
+      else this.vista(b.dataset.vista);
     });
     host.appendChild(bar);
     this.vistasBar = bar;
@@ -338,6 +341,32 @@ export class Viewer {
     this.camera.position.copy(c).addScaledVector(dir, d);
     this.controls.target.copy(c).add(new THREE.Vector3(0, size.y * 0.08, 0));
     this.controls.update();
+    // el encuadre automático del modelo: a donde vuelve el botón "Inicio"
+    this.encuadre = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
+  }
+
+  // vuelve la cámara al encuadre del modelo (deja de girar), en un vuelo corto
+  volverAlInicio(inmediato = false) {
+    if (!this.encuadre) { this.fit(); return; }
+    this.controls.autoRotate = false;
+    const g = this.vistasBar && this.vistasBar.querySelector("[data-vista=girar]");
+    if (g) g.setAttribute("aria-pressed", "false");
+    this.vuelo = null;
+    this.vistaActual = null;
+    this.vueloInicio = { p0: this.camera.position.clone(), t0: this.controls.target.clone(),
+      p1: this.encuadre.pos.clone(), t1: this.encuadre.target.clone(), t: inmediato ? 1 : 0, dur: 0.6 };
+    this.tickInicio(0);
+  }
+
+  tickInicio(dt) {
+    const F = this.vueloInicio;
+    if (!F) return;
+    F.t = Math.min(1, F.t + dt / F.dur);
+    const e = F.t < 0.5 ? 4 * F.t ** 3 : 1 - (-2 * F.t + 2) ** 3 / 2;
+    this.camera.position.lerpVectors(F.p0, F.p1, e);
+    this.controls.target.lerpVectors(F.t0, F.t1, e);
+    this.camera.lookAt(this.controls.target);
+    if (F.t >= 1) { this.vueloInicio = null; this.controls.update(); }
   }
 
   // ------------------------------------------------------------ agua interactiva

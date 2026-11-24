@@ -683,3 +683,19 @@ dialog.modal::backdrop { background: rgba(5, 8, 9, .78); backdrop-filter: none; 
 
 /* trofeos: los campos que dependen de la figura */
 .panel label[hidden], .panel div[hidden] { display: none; }
+
+/* ---- historial (deshacer / rehacer / de cero), arriba a la izquierda del visor ---- */
+.historial { position: absolute; left: 10px; top: 10px; z-index: 5; display: flex; gap: 4px; }
+.historial button {
+  min-height: 0; height: 30px; min-width: 34px; padding: 0 9px; font: 600 13px/1 "Barlow Condensed", "Inter", sans-serif;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(4px); cursor: pointer;
+}
+.historial button[data-h="deshacer"], .historial button[data-h="rehacer"] { font-size: 18px; padding: 0 6px; }
+.historial button:hover:not(:disabled) { border-color: var(--lima, var(--green)); }
+.historial button:disabled { opacity: .4; cursor: default; }
+@media (max-width: 560px) {
+  .historial { left: 6px; top: 6px; gap: 3px; }
+  .historial button { height: 28px; min-width: 30px; padding: 0 6px; font-size: 12px; }
+}

@@ -6,6 +6,7 @@ import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
 import { montarCotizador } from "./cotizador.js";
+import { montarHistorial } from "./historial.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Viewer, LIGHTS, SCENES } from "./viewer.js";
 import { Cebado, ESTILOS } from "./mate-cebado.js";
@@ -754,4 +755,29 @@ window.__cotizador = montarCotizador({
   pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
   version: () => state.builds,
   nombre: "el mate",
+});
+
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+window.__historial = montarHistorial({
+  controles: () => ["tipo", "inserto", "auto", "hq", "cuna", "cuna-ang", ...Object.keys(SL)],
+  extra: {
+    capturar: () => ({ deco: state.deco, cuna: state.cuna, marca: state.marca }),
+    restaurar: (x) => {
+      state.deco = x.deco;
+      state.cuna = x.cuna;
+      state.marca = x.marca;
+      if (x.marca !== null) $("brand").value = x.marca;
+      $("deco-txt").value = x.deco.texto || "";
+    },
+  },
+  refrescar: () => {
+    decoUi();
+    $("cuna-row").hidden = !state.cuna;
+    $("o-cuna").textContent = $("cuna-ang").value + "°";
+    $("propio").hidden = $("inserto").value !== "propio";
+  },
+  generar: () => build(),
+  version: () => state.builds,
+  ocupado: () => state.busy,
+  viewer,
 });

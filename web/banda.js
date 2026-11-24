@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
 import { montarCotizador } from "./cotizador.js";
+import { montarHistorial } from "./historial.js";
 import { botonesPremium } from "./premium.js";
 import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { Viewer, SCENES } from "./viewer.js";
@@ -407,4 +408,14 @@ window.__cotizador = montarCotizador({
   pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
   version: () => state.builds,
   nombre: "la banda",
+});
+
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+window.__historial = montarHistorial({
+  controles: () => ["texto", "separador", "fuente", "relleno", "caras", ...Object.keys(SL)],
+  refrescar: () => contarLetras(),
+  generar: () => build(),
+  version: () => state.builds,
+  ocupado: () => state.busy,
+  viewer,
 });

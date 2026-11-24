@@ -6,6 +6,7 @@ import { exportar, pdfConsideracionesArchivo } from "./servidor.js";
 import { pantallaCarga } from "./cargando.js";
 import { tomarWorker } from "./motor-temprano.js";
 import { montarCotizador } from "./cotizador.js";
+import { montarHistorial } from "./historial.js";
 import { Viewer, SCENES } from "./viewer.js";
 import { mountAccount, openLogin } from "./auth-ui.js";
 import { onAuth } from "./auth.js";
@@ -406,4 +407,15 @@ window.__cotizador = montarCotizador({
   pedir: () => call("cotizar", { opts: state.builtOpts || opts() }),
   version: () => state.builds,
   nombre: "la sopa de letras",
+});
+
+// historial: deshacer / rehacer (Ctrl+Z), vista inicial y "De cero"
+window.__historial = montarHistorial({
+  controles: () => ["palabras", "dificultad", "grilla", "cama", "piezas", "lista", "bloques", ...Object.keys(SL)],
+  extra: { capturar: () => ({ semilla: state.semilla }), restaurar: (x) => { state.semilla = x.semilla; } },
+  refrescar: () => contar(),
+  generar: () => build(),
+  version: () => state.builds,
+  ocupado: () => state.busy,
+  viewer,
 });
